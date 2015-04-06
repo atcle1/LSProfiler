@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
+import kr.ac.snu.cares.lsprofiler.daemon.DaemonStarter;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
@@ -97,7 +98,9 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.bTStartService) {
+                // start daemon
                 Toast.makeText(v.getContext(), "start", Toast.LENGTH_SHORT).show();
+                DaemonStarter.startDaemon();
 
                 // start service
                 Intent startServiceIntent = new Intent(v.getContext(), LSPService.class);
