@@ -35,9 +35,9 @@ public class MyConsoleExe {
             if (bSu)
 			    process = runtime.exec(new String[]{"su", "-c", "'" + comm + "'"});
             else {
-                process = runtime.exec(new String[]{"su", "-c", "/system/bin/sh -c '/data/local/sprofiler 6'"});
+                //process = runtime.exec(new String[]{"su", "-c", "/system/bin/sh -c '/data/local/sprofiler 6'"});
                 //process = runtime.exec("/system/bin/sh -c '/data/local/sprofiler 6'");
-                //process = runtime.exec("/data/local/sprofiler 6");
+                process = runtime.exec("/data/local/sprofiler 6");
             }
 
 			//process = runtime.exec(comm);

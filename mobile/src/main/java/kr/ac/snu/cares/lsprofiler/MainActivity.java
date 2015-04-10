@@ -13,11 +13,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonStarter;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
+import kr.ac.snu.cares.lsprofiler.resolvers.CallLogResolver;
+import kr.ac.snu.cares.lsprofiler.resolvers.SmsLogResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
+import kr.ac.snu.cares.lsprofiler.util.CallLogMerger;
+import kr.ac.snu.cares.lsprofiler.util.Util;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -32,6 +39,7 @@ public class MainActivity extends ActionBarActivity {
     private Button btReadLog;
 
     private Button btSendMail;
+    private Button btCallLog;
 
 
     private DaemonClient clientHandler;
@@ -53,6 +61,9 @@ public class MainActivity extends ActionBarActivity {
         btReadLog = (Button)findViewById(R.id.bTReadLog);
 
         btSendMail = (Button)findViewById(R.id.bTSendMail);
+        btCallLog = (Button)findViewById(R.id.bTCallLog);
+
+
 
         onServiceBtClickListener serviceBtClickListener = new onServiceBtClickListener();
         btStartStresser.setOnClickListener(serviceBtClickListener);
@@ -63,6 +74,8 @@ public class MainActivity extends ActionBarActivity {
         btReadLog.setOnClickListener(serviceBtClickListener);
 
         btSendMail.setOnClickListener(serviceBtClickListener);
+
+        btCallLog.setOnClickListener(serviceBtClickListener);
 
         daemonClientThread = new HandlerThread("daemon client thread");
         daemonClientThread.start();
@@ -131,6 +144,27 @@ public class MainActivity extends ActionBarActivity {
                         Log.i(TAG, "mail send end");
                     }
                 });
+            } else if (v.getId() == R.id.bTCallLog) {
+                CallLogResolver callLogResolver = new CallLogResolver(getContentResolver());
+                SmsLogResolver smsLogResolver = new SmsLogResolver(getContentResolver());
+
+                ArrayList<CallLogItem> smsList = smsLogResolver.getSmsLog(Util.getTodayTimestamp());
+                ArrayList<CallLogItem> callList = callLogResolver.queryCallLog(Util.getTodayTimestamp());
+                ArrayList<CallLogItem> mergeList = CallLogMerger.merge(callList, smsList);
+
+                Log.i(TAG, "callList total : "+ callList.size());
+                for (CallLogItem i : callList) {
+                    Log.i(TAG, i.summary());
+                }
+                Log.i(TAG, "smsList total : "+ smsList.size());
+                for (CallLogItem i : smsList) {
+                    Log.i(TAG, i.summary());
+                }
+                Log.i(TAG, "mergeList total : "+ mergeList.size());
+                for (CallLogItem i : mergeList) {
+                    Log.i(TAG, i.summary());
+                }
+
             }
         }
     }
