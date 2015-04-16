@@ -17,6 +17,17 @@ public class LSPNotificationService extends NotificationListenerService{
     public static final String TAG = DaemonClientCore.class.getSimpleName();
     private LPNotificationServiceReceiver lpNotificationServiceReceiver;
 
+    public void startSelf(Context context) {
+        // start service
+        Intent startServiceIntent = new Intent(this, LSPNotificationService.class);
+        //startServiceIntent.putExtra("setting", setting);
+        context.startService(startServiceIntent);
+    }
+
+    public void stopSelf(Context context) {
+        stopService(new Intent(context, LSPNotificationService.class));
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

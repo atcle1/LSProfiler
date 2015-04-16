@@ -43,6 +43,14 @@ public class ReceiverManager extends BroadcastReceiver {
         Log.i(TAG, "registerReceivers()");
     }
 
+    public void unregisterReceivers() {
+        try {
+            context.unregisterReceiver(this);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();

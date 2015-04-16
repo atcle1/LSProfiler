@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
+
 /**
  * Created by summer on 3/26/15.
  */
@@ -22,5 +24,8 @@ public class ShutdownReceiver extends BroadcastReceiver{
                 ex.printStackTrace();
             }
         }
+
+        // power off
+        LSPLog.onPowerStateChagned(0);
     }
 }

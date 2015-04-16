@@ -64,7 +64,8 @@
             android:layout_height="wrap_content"
             android:textSize="25sp"
             android:text="ReadLog"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            android:visibility="invisible"/>
 
         <Button
             android:id="@+id/bTSendMail"

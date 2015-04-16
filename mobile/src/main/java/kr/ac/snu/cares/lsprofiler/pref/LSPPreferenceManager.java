@@ -30,14 +30,14 @@ public class LSPPreferenceManager {
         return lprPrefMnager;
     }
 
-    public void setServiceState(String state) {
+    public void setLoggingState(String state) {
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("service_state", "state");
+        editor.putString("logging_state", "state");
         editor.commit();
     }
 
     public String getServiceState() {
-        String state = prefs.getString("service_state", "unknown");
+        String state = prefs.getString("logging_state", "unknown");
         return state;
     }
 }

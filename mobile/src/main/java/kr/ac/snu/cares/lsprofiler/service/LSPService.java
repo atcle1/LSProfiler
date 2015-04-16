@@ -14,7 +14,6 @@ import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
 
 public class LSPService extends Service {
     public static final String TAG = LSPService.class.getSimpleName();
-
     ReceiverManager receiverManager;
 
     public LSPService() {

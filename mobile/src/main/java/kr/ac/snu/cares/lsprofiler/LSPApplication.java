@@ -6,7 +6,9 @@ import android.util.Log;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
+import kr.ac.snu.cares.lsprofiler.receivers.LocationTracer;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
+import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 
 /**
  * Created by summer on 3/28/15.
@@ -18,18 +20,23 @@ public class LSPApplication extends Application {
                                               "pause",
                                               "stop-shutdown",
                                               "stop-send"};
-    private LSPLoggerManager logMgr;
     private LogDbHandler dbHandler;
     private LSPPreferenceManager prefMgr;
+
+    private LSPLog lspLog;
+
     private ReceiverManager receiverManager;
+    private LocationTracer locationTracker;
+    private LSPNotificationService notificationService;
 
     @Override
     public void onCreate() {
         super.onCreate();
         dbHandler = new LogDbHandler(this);
-        logMgr = new LSPLoggerManager(this);
+        lspLog = new LSPLog(this);
         prefMgr = LSPPreferenceManager.getInstance(this);
         receiverManager = new ReceiverManager(this);
+        locationTracker = new LocationTracer(this);
         Log.i(TAG, "onCreate()");
 
         receiverManager.registerReceivers();
@@ -55,5 +62,19 @@ public class LSPApplication extends Application {
 
     public LogDbHandler getDbHandler() {
         return dbHandler;
+    }
+
+    public void startLogging() {
+        lspLog.resumeLogging();
+        receiverManager.registerReceivers();
+        locationTracker.startTrace();
+        notificationService.startSelf(this);
+    }
+
+    public void stopLogging() {
+        lspLog.pauseLogging();
+        receiverManager.unregisterReceivers();
+        locationTracker.stopTrace();
+        notificationService.stopSelf(this);
     }
 }
