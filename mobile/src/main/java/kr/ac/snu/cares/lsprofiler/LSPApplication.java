@@ -20,6 +20,7 @@ public class LSPApplication extends Application {
                                               "pause",
                                               "stop-shutdown",
                                               "stop-send"};
+    public String state = "";
     private LogDbHandler dbHandler;
     private LSPPreferenceManager prefMgr;
 
@@ -28,6 +29,7 @@ public class LSPApplication extends Application {
     private ReceiverManager receiverManager;
     private LocationTracer locationTracker;
     private LSPNotificationService notificationService;
+    private LSPAlarmManager alarmManager;
 
     @Override
     public void onCreate() {
@@ -37,6 +39,7 @@ public class LSPApplication extends Application {
         prefMgr = LSPPreferenceManager.getInstance(this);
         receiverManager = new ReceiverManager(this);
         locationTracker = new LocationTracer(this);
+        alarmManager = new LSPAlarmManager(this);
         Log.i(TAG, "onCreate()");
 
         receiverManager.registerReceivers();
@@ -65,16 +68,35 @@ public class LSPApplication extends Application {
     }
 
     public void startLogging() {
+        if (state.equals("start")) {
+            Log.i(TAG, "startLogging() already logging()");
+            return;
+        }
         lspLog.resumeLogging();
         receiverManager.registerReceivers();
         locationTracker.startTrace();
-        notificationService.startSelf(this);
+        LSPNotificationService.startSelf(this);
+        alarmManager.setFirstAlarm();
     }
 
     public void stopLogging() {
+        if (!state.equals("start")) {
+            Log.i(TAG, "stopLogging() not started");
+            return;
+        }
         lspLog.pauseLogging();
         receiverManager.unregisterReceivers();
         locationTracker.stopTrace();
-        notificationService.stopSelf(this);
+        LSPNotificationService.stopSelf(this);
+        alarmManager.clearAlarm();
+    }
+
+    public void doReport() {
+        Log.i(TAG, "doReport()");
+        stopLogging();
+
+
+
+        startLogging();
     }
 }

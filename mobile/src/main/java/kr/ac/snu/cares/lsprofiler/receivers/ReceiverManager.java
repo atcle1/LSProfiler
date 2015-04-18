@@ -10,6 +10,7 @@ import android.util.Log;
 
 import java.util.Date;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClientReader;
 
 /**
@@ -56,10 +57,13 @@ public class ReceiverManager extends BroadcastReceiver {
         String action = intent.getAction();
         if(action.equals(Intent.ACTION_SCREEN_ON)){
             Log.i(TAG, "Screen ON");
+            LSPLog.onScreenChagned(1);
         }  else if(action.equals(Intent.ACTION_SCREEN_OFF)) {
             Log.i(TAG, "Screen OFF");
+            LSPLog.onScreenChagned(0);
         } else if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
             Log.i(TAG, action);
+            LSPLog.onBatteryStatusChagned(intent);
         } else if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
             Bundle bundle = intent.getExtras();
             Object messages[] = (Object[])bundle.get("pdus");

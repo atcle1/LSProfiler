@@ -44,6 +44,7 @@ public class MainActivity extends ActionBarActivity {
 
     private DaemonClient clientHandler;
     HandlerThread daemonClientThread;
+    LSPApplication lspApplication;
 
 
     @Override
@@ -62,6 +63,8 @@ public class MainActivity extends ActionBarActivity {
 
         btSendMail = (Button)findViewById(R.id.bTSendMail);
         btCallLog = (Button)findViewById(R.id.bTCallLog);
+
+        lspApplication = (LSPApplication)getApplication();
 
 
 
@@ -120,9 +123,17 @@ public class MainActivity extends ActionBarActivity {
                 //startServiceIntent.putExtra("setting", setting);
                 startServiceIntent.putExtra("first_start", true);
                 startService(startServiceIntent);
+
+                lspApplication.startLogging();
+
+
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();
+
+                lspApplication.startLogging();
+
                 stopService(new Intent(v.getContext(), LSPService.class));
+
             } else if (v.getId() == R.id.bTConnect) {
                 clientHandler.sendMsg(DaemonClient.DAEMON_CONNECT);
 

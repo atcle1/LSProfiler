@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -22,6 +23,7 @@ public class LocationTracer implements LocationListener {
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 60; // 1 hour
     private Context context;
     private LocationManager locationManager;
+    private Criteria criteria = new Criteria();
     // 현재 GPS 사용유무
     private boolean isGPSEnabled = false;
     // 네트워크 사용유무
@@ -29,6 +31,10 @@ public class LocationTracer implements LocationListener {
 
     public LocationTracer(Context context) {
         this.context = context;
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteria.setSpeedRequired(false);
+        criteria.setVerticalAccuracy(Criteria.NO_REQUIREMENT);
     }
 
     public void startTrace() {
@@ -40,8 +46,13 @@ public class LocationTracer implements LocationListener {
         if (!isGPSEnabled && !isNetworkEnabled) {
             showSettingsAlert();
         }
+        String provider = locationManager.getBestProvider(criteria, true);
+        if (provider == null) {
+            provider = LocationManager.GPS_PROVIDER;
+        }
+
         //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+        locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
     }
 
     public void checkState() {

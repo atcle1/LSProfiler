@@ -1,6 +1,9 @@
 package kr.ac.snu.cares.lsprofiler;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.BatteryManager;
+import android.service.notification.StatusBarNotification;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 
@@ -35,17 +38,28 @@ public class LSPLog {
         logDbHandler.writeLog("LOC : "+lat+" "+lon);
 
     }
-    public static void onBatteryStatusChagned(int a) {
+    public static void onBatteryStatusChagned(Intent intent) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("BAT : "+a);
+
+        int health= intent.getIntExtra(BatteryManager.EXTRA_HEALTH,0);
+        int icon_small= intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL,0);
+        int level= intent.getIntExtra(BatteryManager.EXTRA_LEVEL,0);
+        int plugged= intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
+        boolean present= intent.getExtras().getBoolean(BatteryManager.EXTRA_PRESENT);
+        int scale= intent.getIntExtra(BatteryManager.EXTRA_SCALE,0);
+        int status= intent.getIntExtra(BatteryManager.EXTRA_STATUS,0);
+        String technology= intent.getExtras().getString(BatteryManager.EXTRA_TECHNOLOGY);
+        int temperature= intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0);
+        int voltage= intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE,0);
+        logDbHandler.writeLog("BAT : "+plugged +" "+status+" "+level+" "+temperature);
     }
     public static void onTeleponyStateChagned(double a){
         if(!bWriteLog) return;
         logDbHandler.writeLog("TEL : "+a);
     }
-    public static void onScreenChagned(int on){
+    public static void onScreenChagned(int onOff){
         if(!bWriteLog) return;
-        logDbHandler.writeLog("SCR : "+on);
+        logDbHandler.writeLog("SCR : "+onOff);
     }
     public static void onPowerStateChagned(int state) {
         if(!bWriteLog) return;
@@ -54,5 +68,13 @@ public class LSPLog {
     public static void onForegroundAppChagned(String packageName) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("FAP : "+packageName);
+    }
+    public static void onNotificationPosted(StatusBarNotification sbn) {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("NOP : "+sbn.toString());
+    }
+    public static void onNotificationRemoved(StatusBarNotification sbn) {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("NOR : "+sbn.toString());
     }
 }

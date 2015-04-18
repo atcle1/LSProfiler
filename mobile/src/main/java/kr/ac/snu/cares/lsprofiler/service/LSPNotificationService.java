@@ -17,15 +17,15 @@ public class LSPNotificationService extends NotificationListenerService{
     public static final String TAG = DaemonClientCore.class.getSimpleName();
     private LPNotificationServiceReceiver lpNotificationServiceReceiver;
 
-    public void startSelf(Context context) {
+    public static void startSelf(Context context) {
         // start service
-        Intent startServiceIntent = new Intent(this, LSPNotificationService.class);
+        Intent startServiceIntent = new Intent(context, LSPNotificationService.class);
         //startServiceIntent.putExtra("setting", setting);
         context.startService(startServiceIntent);
     }
 
-    public void stopSelf(Context context) {
-        stopService(new Intent(context, LSPNotificationService.class));
+    public static void stopSelf(Context context) {
+        context.stopService(new Intent(context, LSPNotificationService.class));
     }
 
     @Override
@@ -50,6 +50,7 @@ public class LSPNotificationService extends NotificationListenerService{
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
         Log.i(TAG, "onNotificationPosted()");
+
     }
 
     @Override

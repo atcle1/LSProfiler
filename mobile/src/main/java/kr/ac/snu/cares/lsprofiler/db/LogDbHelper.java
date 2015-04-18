@@ -4,10 +4,15 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 /**
  * Created by summer on 3/28/15.
  */
 public class LogDbHelper extends SQLiteOpenHelper{
+    public SQLiteDatabase db;
     public LogDbHelper(Context context) {
         super(context, "lpdb.db", null, 1);
     }
@@ -18,11 +23,30 @@ public class LogDbHelper extends SQLiteOpenHelper{
                 "i_datetime INTEGER," + // as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
                 "t_log TEXT" + ")";
         db.execSQL(table);
+        this.db = db;
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS logdb");
         onCreate(db);
+    }
+
+    public void resetDB() {
+        db.execSQL("DROP TABLE IF EXISTS logdb");
+        onCreate(db);
+    }
+
+    public void backupDB(String backupFilePath){
+        try {
+            String pathStr = this.getWritableDatabase().getPath();
+            FileInputStream fis=new FileInputStream(new File(pathStr));
+            FileOutputStream fos=new FileOutputStream(new File(backupFilePath));
+            fos.getChannel().transferFrom(fis.getChannel(), 0, 32 * 1024 * 1024);
+            fos.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
