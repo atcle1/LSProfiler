@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.telephony.PhoneStateListener;
 import android.telephony.SmsMessage;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.util.Date;
@@ -19,6 +21,8 @@ import kr.ac.snu.cares.lsprofiler.daemon.DaemonClientReader;
 public class ReceiverManager extends BroadcastReceiver {
     public static final String TAG = DaemonClientReader.class.getSimpleName();
     private Context context;
+    private MyPhoneStateListener phoneStateListener;
+    private TelephonyManager telephonyManager;
 
     public ReceiverManager() {
         Log.e(TAG, "receiver manager ()");
@@ -41,14 +45,20 @@ public class ReceiverManager extends BroadcastReceiver {
         filter.addAction("android.provider.Telephony.SMS_RECEIVED");
 
         context.registerReceiver(this, filter);
+
+        phoneStateListener = new MyPhoneStateListener();
+        telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+
         Log.i(TAG, "registerReceivers()");
     }
 
     public void unregisterReceivers() {
         try {
             context.unregisterReceiver(this);
+            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
         }catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
         }
     }
 
@@ -83,6 +93,13 @@ public class ReceiverManager extends BroadcastReceiver {
             Log.d("문자 내용", "발신자 : "+origNumber+", 내용 : " + message);
         } else {
             Log.i(TAG, action);
+        }
+    }
+
+    class MyPhoneStateListener extends PhoneStateListener {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            LSPLog.onCallStateChanged(state, incomingNumber);
         }
     }
 }

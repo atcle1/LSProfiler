@@ -1,9 +1,12 @@
 package kr.ac.snu.cares.lsprofiler.service;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -18,7 +21,7 @@ public class LSPService extends Service {
     public static final String ACTION_ALARM = "kr.ac.snu.cares.lsprofiler.LSPService.ALARM";
     public static final String TAG = LSPService.class.getSimpleName();
     public static final int ALARM_REQUEST = 123121;
-    public LSPHandler lspHandler = new LSPHandler();
+    private static LSPHandler lspHandler;
     private LSPApplication application;
 
     public LSPService() {
@@ -37,32 +40,40 @@ public class LSPService extends Service {
         Log.i(TAG, "onCreate()");
         Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
         application = (LSPApplication)getApplication();
+        lspHandler = new LSPHandler();
     }
     private static final int NOTIFICATION_ID = 1;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "onStartCommand() %d %d" + flags + " " + startId);
+        Log.i(TAG, "onStartCommand() : flags " + flags + " startId " + startId);
         Toast.makeText(this, TAG + " onStartCommand", Toast.LENGTH_SHORT).show();
-        if (startId == 0) {
 
-        }
         if (intent == null) {
-            // start by system
-            Log.i(TAG, "intent == null");
+            // service is terminated by system, and restarted. start by system
+            Log.i(TAG, "onStartCommand() : intent == null");
         } else {
-            int requestCode = intent.getExtras().getInt("requestCode");
+            Bundle bundle = intent.getExtras();
+            if (bundle == null) {
+                return 0;
+            }
+            int requestCode = bundle.getInt("requestCode");
             if (requestCode == LSPService.ALARM_REQUEST) {
                 // backup
                 application.doReport();
             }
         }
+
         //showForegroundNotification("Running LSProfiler in foreground");
         return START_STICKY;
     }
 
+    public static Handler getHandler() {
+        return lspHandler;
+    }
     @Override
     public void onDestroy() {
+        lspHandler = null;
         Toast.makeText(this, TAG + " onDestroy", Toast.LENGTH_SHORT).show();
         Log.i(TAG, "onDestroy()");
     }
@@ -70,6 +81,7 @@ public class LSPService extends Service {
     private class LSPHandler extends Handler  {
         @Override
         public void handleMessage(Message msg) {
+            Log.i(TAG, "LSPHandler "+msg);
             super.handleMessage(msg);
             switch (msg.what) {
                 case 0:
@@ -107,5 +119,16 @@ public class LSPService extends Service {
                 .setPriority(Notification.PRIORITY_MIN)
                 .build();
         startForeground(NOTIFICATION_ID, notification);
+    }
+
+
+    public static boolean isServiceRunning(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (LSPService.class.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

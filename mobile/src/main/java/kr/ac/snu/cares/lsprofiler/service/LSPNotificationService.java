@@ -8,13 +8,13 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
-import kr.ac.snu.cares.lsprofiler.daemon.DaemonClientCore;
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 
 /**
  * Created by summer on 3/28/15.
  */
 public class LSPNotificationService extends NotificationListenerService{
-    public static final String TAG = DaemonClientCore.class.getSimpleName();
+    public static final String TAG = LSPNotificationService.class.getSimpleName();
     private LPNotificationServiceReceiver lpNotificationServiceReceiver;
 
     public static void startSelf(Context context) {
@@ -39,6 +39,12 @@ public class LSPNotificationService extends NotificationListenerService{
         Log.i(TAG, "onCreate()");
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(lpNotificationServiceReceiver);
+    }
+
     class LPNotificationServiceReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -50,6 +56,7 @@ public class LSPNotificationService extends NotificationListenerService{
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
         Log.i(TAG, "onNotificationPosted()");
+        LSPLog.onNotificationPosted(sbn);
 
     }
 
@@ -57,6 +64,7 @@ public class LSPNotificationService extends NotificationListenerService{
     public void onNotificationRemoved(StatusBarNotification sbn) {
         super.onNotificationRemoved(sbn);
         Log.i(TAG, "onNotificationRemoved()");
+        LSPLog.onNotificationRemoved(sbn);
     }
 
     @Override

@@ -4,10 +4,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-
 /**
  * Created by summer on 3/28/15.
  */
@@ -32,21 +28,10 @@ public class LogDbHelper extends SQLiteOpenHelper{
         onCreate(db);
     }
 
-    public void resetDB() {
+    public void resetDB(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS logdb");
         onCreate(db);
     }
 
-    public void backupDB(String backupFilePath){
-        try {
-            String pathStr = this.getWritableDatabase().getPath();
-            FileInputStream fis=new FileInputStream(new File(pathStr));
-            FileOutputStream fos=new FileOutputStream(new File(backupFilePath));
-            fos.getChannel().transferFrom(fis.getChannel(), 0, 32 * 1024 * 1024);
-            fos.close();
-            fis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 }

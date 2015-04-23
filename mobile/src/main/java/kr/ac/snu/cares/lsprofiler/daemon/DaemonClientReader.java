@@ -32,6 +32,7 @@ public class DaemonClientReader extends Thread {
         state = 2;
         interrupt();
     }
+
     @Override
     public void run() {
         state = 1;
@@ -39,6 +40,10 @@ public class DaemonClientReader extends Thread {
             try {
                 int i = dis.readInt();
                 Log.i(TAG, "receiver " + i);
+
+
+                if (core.bWaittingReplay)
+                    core.bReplayed = true;
             } catch (java.io.EOFException ex){
                 core.setDisconnected();
                 break;

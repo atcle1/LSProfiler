@@ -40,4 +40,15 @@ public class LSPPreferenceManager {
         String state = prefs.getString("logging_state", "unknown");
         return state;
     }
+
+    public void setDeviceID(String deviceID) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("deviceID", "");
+        editor.commit();
+    }
+
+    public String getDeviceID() {
+        String deviceID = prefs.getString("deviceID", "");
+        return deviceID;
+    }
 }

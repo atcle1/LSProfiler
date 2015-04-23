@@ -22,7 +22,6 @@ import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
 import kr.ac.snu.cares.lsprofiler.resolvers.CallLogResolver;
 import kr.ac.snu.cares.lsprofiler.resolvers.SmsLogResolver;
-import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.CallLogMerger;
 import kr.ac.snu.cares.lsprofiler.util.Util;
 
@@ -47,43 +46,45 @@ public class MainActivity extends ActionBarActivity {
     LSPApplication lspApplication;
 
 
+    private void setButton(int id, View.OnClickListener listener)
+    {
+        Button button = (Button)findViewById(id);
+        button.setOnClickListener(listener);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        onServiceBtClickListener serviceBtClickListener = new onServiceBtClickListener();
 
         btStartStresser = (Button)findViewById(R.id.bTStartService);
         btStopStresser = (Button)findViewById(R.id.bTStopService);
-
         btConnect = (Button)findViewById(R.id.bTConnect);
         btSend = (Button)findViewById(R.id.bTSend);
-
         btInsertLog = (Button)findViewById(R.id.bTInsertLog);
         btReadLog = (Button)findViewById(R.id.bTReadLog);
-
         btSendMail = (Button)findViewById(R.id.bTSendMail);
         btCallLog = (Button)findViewById(R.id.bTCallLog);
-
         lspApplication = (LSPApplication)getApplication();
 
-
-
-        onServiceBtClickListener serviceBtClickListener = new onServiceBtClickListener();
         btStartStresser.setOnClickListener(serviceBtClickListener);
         btStopStresser.setOnClickListener(serviceBtClickListener);
         btConnect.setOnClickListener(serviceBtClickListener);
         btSend.setOnClickListener(serviceBtClickListener);
         btInsertLog.setOnClickListener(serviceBtClickListener);
         btReadLog.setOnClickListener(serviceBtClickListener);
-
         btSendMail.setOnClickListener(serviceBtClickListener);
-
         btCallLog.setOnClickListener(serviceBtClickListener);
 
+        setButton(R.id.bTBackupLog, serviceBtClickListener);
+
+        /*
         daemonClientThread = new HandlerThread("daemon client thread");
         daemonClientThread.start();
         clientHandler = new DaemonClient(daemonClientThread.getLooper());
         clientHandler.init(this);
+        */
     }
 
 
@@ -118,11 +119,7 @@ public class MainActivity extends ActionBarActivity {
                 Toast.makeText(v.getContext(), "start", Toast.LENGTH_SHORT).show();
                 DaemonStarter.startDaemon();
 
-                // start service
-                Intent startServiceIntent = new Intent(v.getContext(), LSPService.class);
-                //startServiceIntent.putExtra("setting", setting);
-                startServiceIntent.putExtra("first_start", true);
-                startService(startServiceIntent);
+
 
                 lspApplication.startLogging();
 
@@ -130,9 +127,9 @@ public class MainActivity extends ActionBarActivity {
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();
 
-                lspApplication.startLogging();
+                lspApplication.stopLogging();
 
-                stopService(new Intent(v.getContext(), LSPService.class));
+
 
             } else if (v.getId() == R.id.bTConnect) {
                 clientHandler.sendMsg(DaemonClient.DAEMON_CONNECT);
@@ -176,6 +173,8 @@ public class MainActivity extends ActionBarActivity {
                     Log.i(TAG, i.summary());
                 }
 
+            } else if (v.getId() == R.id.bTBackupLog) {
+                lspApplication.doReport();
             }
         }
     }

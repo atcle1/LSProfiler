@@ -3,14 +3,19 @@ package kr.ac.snu.cares.lsprofiler;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
+import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
+import kr.ac.snu.cares.lsprofiler.util.Util;
 
 /**
  * Created by summer on 3/28/15.
  */
 public class LSPLog {
+    public static final String TAG = LSPLog.class.getSimpleName();
     private Context context;
     private static boolean bWriteLog = false;
     private static LogDbHandler logDbHandler;
@@ -62,7 +67,7 @@ public class LSPLog {
         logDbHandler.writeLog("SCR : "+onOff);
     }
     public static void onPowerStateChagned(int state) {
-        if(!bWriteLog) return;
+        //if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
     }
     public static void onForegroundAppChagned(String packageName) {
@@ -70,11 +75,53 @@ public class LSPLog {
         logDbHandler.writeLog("FAP : "+packageName);
     }
     public static void onNotificationPosted(StatusBarNotification sbn) {
+        String title = "", text = "", bigtext="";
+        String packName = sbn.getPackageName();
+        //if (sbn.getNotification().tickerText != null)
+        //    ticker = sbn.getNotification().tickerText.toString();
+        Bundle extras = sbn.getNotification().extras;
+        if (extras != null) {
+            /*
+            for (String key : extras.keySet()) {
+                Object value = extras.get(key);
+                if (value != null)
+                    Log.d(TAG, String.format("- %s %s (%s)", key,
+                        value.toString(), value.getClass().getName()));
+            }
+            */
+            title = extras.getString("android.title");
+            text = extras.getCharSequence("android.text").toString();
+            if (extras.containsKey("android.bigText"))
+                bigtext = extras.getCharSequence("android.bigText").toString();
+        }
+
+        Log.i("id", "" + sbn.getId());
+        Log.i("Text", "tag "+sbn.getTag());
         if(!bWriteLog) return;
-        logDbHandler.writeLog("NOP : "+sbn.toString());
+        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title+"|"+text+"|"+bigtext);
+
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {
+//        Log.i("id", "" + sbn.toString());
+//        Log.i("id", "" + sbn.getId());
+//        Log.i("Text", "tag "+sbn.getTag());
         if(!bWriteLog) return;
-        logDbHandler.writeLog("NOR : "+sbn.toString());
+        String packName = sbn.getPackageName();
+        logDbHandler.writeLog("NOR : "+sbn.getPackageName()+"|"+sbn.getId());
+    }
+    public static void onCallStateChanged(int state, String incomingNumber) {
+        if(!bWriteLog) return;
+        String enc = Util.encryptData(incomingNumber);
+        switch (state) {
+            case TelephonyManager.CALL_STATE_RINGING:
+                logDbHandler.writeLog("CST : RINGING " + enc);
+                break;
+            case TelephonyManager.CALL_STATE_OFFHOOK:
+                logDbHandler.writeLog("CST : OFFHOOK" + enc);
+                break;
+            case TelephonyManager.CALL_STATE_IDLE:
+                logDbHandler.writeLog("CST : IDLE" + enc);
+                break;
+        }
     }
 }

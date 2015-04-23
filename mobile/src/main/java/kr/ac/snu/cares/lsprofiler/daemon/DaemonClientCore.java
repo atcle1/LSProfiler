@@ -23,8 +23,34 @@ public class DaemonClientCore {
     private DataOutputStream out;
     private DaemonClientReader reader;
 
+    public boolean bWaittingReplay = false;
+    public boolean bReplayed = false;
+
     public DaemonClientCore(Context context) {
         this.context = context;
+    }
+
+    public void setWaitForReply(boolean bWait) {
+        if (bWait) {
+            bWaittingReplay = true;
+            bReplayed = false;
+        }else {
+            bWaittingReplay = false;
+        }
+    }
+    public boolean waitForReply() {
+        try {
+            for (int i = 0; i < 10; i++) {
+                Thread.sleep(500, 0);
+            }
+            if (bReplayed) {
+                return true;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return false;
     }
 
     public void sendInt(int val) {

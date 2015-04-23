@@ -1,6 +1,8 @@
 package kr.ac.snu.cares.lsprofiler.email;
 
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
@@ -114,5 +116,28 @@ public class Mail {
             System.out.println("Could not send email.");
             ex.printStackTrace();
         }
+    }
+
+    public static int sendReport(String subject, String message, String []attachFiles)
+    {
+        // SMTP info
+        String host = "smtp.gmail.com";
+        String port = "587";
+        String mailFrom = "lgcareslab@gmail.com";
+        String password = "jxhjdwdvmkymcisp";
+
+        // message info
+        String mailTo = "summer@davinci.snu.ac.kr";
+
+        try {
+            sendEmailWithAttachments(host, port, mailFrom, password, mailTo,
+                    subject, message, attachFiles);
+            Log.i("EMAIL", "Email sent.");
+        } catch (Exception ex) {
+            Log.i("EMAIL", "Email sent exception");
+            ex.printStackTrace();
+            return -1;
+        }
+        return 0;
     }
 }

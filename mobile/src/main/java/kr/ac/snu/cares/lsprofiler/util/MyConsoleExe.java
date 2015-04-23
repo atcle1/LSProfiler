@@ -27,7 +27,7 @@ public class MyConsoleExe {
 		return exec(comm, null, bSu);
 	}
 
-	int exec(String comm, StringBuilder result, Boolean bSu) {
+	public int exec(String comm, StringBuilder result, Boolean bSu) {
 		int exitCode = -1;
 		String line = "";
 		StringBuffer output = new StringBuffer();

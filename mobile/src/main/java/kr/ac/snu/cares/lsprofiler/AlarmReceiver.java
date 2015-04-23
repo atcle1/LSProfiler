@@ -11,17 +11,24 @@ import kr.ac.snu.cares.lsprofiler.service.LSPService;
  * Created by summer on 4/18/15.
  */
 public class AlarmReceiver extends BroadcastReceiver {
-    public static final String TAG = BroadcastReceiver.class.getSimpleName();
+    public static final String TAG = AlarmReceiver.class.getSimpleName();
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG, "onReceive()");
+        Log.i(TAG, "onReceive() "+context.getPackageName());
 
+        Boolean bRunning = LSPService.isServiceRunning(context);
         // if service is not started...
-        Intent startServiceIntent = new Intent(context, LSPService.class);
-        startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
-        context.startService(startServiceIntent);
+        if (bRunning == false) {
+            Log.i(TAG, "onReceive() service isn't started, starting it...");
+            Intent startServiceIntent = new Intent(context, LSPService.class);
+            startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
+            context.startService(startServiceIntent);
+        } else {
+            Log.i(TAG, "onReceive() service already started.");
+            LSPService.getHandler().sendEmptyMessage(LSPService.ALARM_REQUEST);
+        }
 
-        // set next alarm
-        LSPAlarmManager.setNextAlarm(context);
+        // set next first alarm
+        LSPAlarmManager.getInstance(context).setFirstAlarm();
     }
 }

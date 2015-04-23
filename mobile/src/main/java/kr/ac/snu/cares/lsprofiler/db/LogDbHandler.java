@@ -7,6 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -31,9 +34,7 @@ public class LogDbHandler {
 
     public LogDbHandler(Context context) {
         this.context = context;
-        helper = new LogDbHelper(context);
-        db = helper.getWritableDatabase();
-        prepareStatement();
+        open();
     }
 
     private void prepareStatement() {
@@ -41,9 +42,20 @@ public class LogDbHandler {
                 "VALUES (strftime('%s', 'now', 'localtime'), ?)";
         InsertLogdbStmt = db.compileStatement(sql);
     }
+    private void closePrepareStatement() {
+        if (InsertLogdbStmt != null)
+            InsertLogdbStmt.close();
+    }
 
     public void close() {
-        helper.close();
+        closePrepareStatement();
+        if (helper != null)
+            helper.close();
+    }
+    public void open() {
+        helper = new LogDbHelper(context);
+        db = helper.getWritableDatabase();
+        prepareStatement();
     }
 
     public long insert(int a, String b) {
@@ -98,4 +110,39 @@ public class LogDbHandler {
         cursor.close();
     }
 
+    public void backupDB(String backupFilePath){
+        try {
+            String pathStr = helper.getWritableDatabase().getPath();
+            FileInputStream fis=new FileInputStream(new File(pathStr));
+            FileOutputStream fos=new FileOutputStream(new File(backupFilePath));
+            fos.getChannel().transferFrom(fis.getChannel(), 0, 32 * 1024 * 1024);
+            fos.close();
+            fis.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void restoreDB(String backupFilePath) {
+        try {
+            String pathStr = helper.getWritableDatabase().getPath();
+            close();
+            FileInputStream fis=new FileInputStream(new File(backupFilePath));
+            FileOutputStream fos=new FileOutputStream(new File(pathStr));
+            fos.getChannel().transferFrom(fis.getChannel(), 0, 32 * 1024 * 1024);
+            fos.close();
+            fis.close();
+            open();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resetDB() {
+        if (db == null) {
+            Log.i(TAG, "resetDB() db == null");
+            open();
+        }
+        helper.resetDB(db);
+    }
 }

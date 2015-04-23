@@ -13,6 +13,7 @@ public class DaemonClient extends Handler {
     public static final String TAG = DaemonClient.class.getSimpleName();
     public static final int DAEMON_CONNECT = 0;
     public static final int DAEMON_SEND    = 1;
+    public static final int DAEMON_COLLECT = 2;
 
     private Context context;
     private DaemonClientCore core;
@@ -31,6 +32,21 @@ public class DaemonClient extends Handler {
         this.sendEmptyMessage(msg);
     }
 
+    public boolean requestCollectLog() {
+        boolean bSuccess = false;
+        Log.i(TAG, "requestCollectLog()");
+        try {
+            core.sendInt(DAEMON_COLLECT);
+            core.setWaitForReply(true);
+            bSuccess = core.waitForReply();
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return bSuccess;
+    }
+
+
     @Override
     public void handleMessage(Message msg) {
         super.handleMessage(msg);
@@ -39,7 +55,10 @@ public class DaemonClient extends Handler {
                 core.connect(10001);
                 break;
             case DAEMON_SEND:
-                core.sendInt(100);
+                core.sendInt(DAEMON_SEND);
+                break;
+            case DAEMON_COLLECT:
+                core.sendInt(DAEMON_COLLECT);
                 break;
             default:
                 Log.e(TAG, "unknown mesg " + msg.what);

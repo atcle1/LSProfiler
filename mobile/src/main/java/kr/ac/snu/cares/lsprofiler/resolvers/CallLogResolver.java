@@ -58,7 +58,6 @@ public class CallLogResolver {
         int typeColumn = c.getColumnIndex(android.provider.CallLog.Calls.TYPE);
         int dateColumn=c.getColumnIndex(android.provider.CallLog.Calls.DATE);
 
-
         while(c.moveToNext()){
             CallLogItem item=new CallLogItem();
             item.logType = CallLogItem.LOGTYPE_CALL;
