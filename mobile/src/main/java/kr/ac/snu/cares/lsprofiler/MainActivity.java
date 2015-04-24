@@ -132,7 +132,9 @@ public class MainActivity extends ActionBarActivity {
 
 
             } else if (v.getId() == R.id.bTConnect) {
-                clientHandler.sendMsg(DaemonClient.DAEMON_CONNECT);
+                //clientHandler.sendMsg(DaemonClient.DAEMON_CONNECT);
+                lspApplication.doKLogBackup();
+
 
             } else if (v.getId() == R.id.bTSend) {
                 clientHandler.sendMsg(DaemonClient.DAEMON_SEND);

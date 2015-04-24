@@ -4,15 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
-import android.os.HandlerThread;
-import android.os.PowerManager;
 import android.util.Log;
 
-import java.io.File;
-import java.util.Arrays;
-
-import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
@@ -21,21 +14,23 @@ import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
-import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
-import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
+import kr.ac.snu.cares.lsprofiler.util.Su;
 
 /**
  * Created by summer on 3/28/15.
  */
 public class LSPApplication extends Application {
     public static final String TAG = LSPApplication.class.getSimpleName();
+    private static LSPApplication app;
     public enum State {stopped, started, resumed, paused, error};
     public State state = State.stopped;
+    private Su su;
 
-    private DaemonClient clientHandler;
-    HandlerThread daemonClientThread;
+    private LSPReporter reporter;
 
+    //private DaemonClient clientHandler;
+    //HandlerThread daemonClientThread;
 
     private LogDbHandler dbHandler;
     private LSPPreferenceManager prefMgr;
@@ -48,10 +43,14 @@ public class LSPApplication extends Application {
     private LSPAlarmManager alarmManager;
 
     private Mail mail;
-    private PowerManager pm;
-    private PowerManager.WakeLock wl;
 
-    private String deviceID;
+
+    public String deviceID;
+
+    public LSPAlarmManager getAlarmManager()
+    {
+        return alarmManager;
+    }
 
     @Override
     public void onCreate() {
@@ -64,8 +63,8 @@ public class LSPApplication extends Application {
         receiverManager = new ReceiverManager(context);
         locationTracker = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
-        pm = (PowerManager) getSystemService(this.POWER_SERVICE);
-        wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "send report");
+
+
 
         receiverManager.registerReceivers();
 
@@ -75,15 +74,24 @@ public class LSPApplication extends Application {
             prefMgr.setDeviceID(deviceID);
         }
 
+        reporter = new LSPReporter();
+
+        /*
         daemonClientThread = new HandlerThread("daemon client thread");
         daemonClientThread.start();
         clientHandler = new DaemonClient(daemonClientThread.getLooper());
         clientHandler.init(this);
+        */
+        app = this;
+
+        su = new Su();
+        su.prepare();
     }
 
     public LogDbHandler getDbHandler() {
         return dbHandler;
     }
+    public static LSPApplication getInstance() { return LSPApplication.app; }
 
 
     public void startLogging() {
@@ -122,6 +130,7 @@ public class LSPApplication extends Application {
     }
 
     public void stopLogging() {
+
         if (state == State.resumed)
             pauseLogging();
 
@@ -135,124 +144,21 @@ public class LSPApplication extends Application {
         stopService(new Intent(this, LSPService.class));
     }
 
-    public static final String COLLECT_PATH = "/sdcard/LSP/";
-    public static final String BACKUP_BASE_PATH = "/sdcard/LSP_backup/";
-
-    public void collectReport(ReportItem item) {
-        // mkdir
-        File baseDir = new File(COLLECT_PATH);
-        if(!baseDir.exists())
-            baseDir.mkdirs();
-
-        // copy db
-        dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".db");
-        // reset db
-        dbHandler.resetDB();
-
-        clientHandler.requestCollectLog();
-
-        File collectDir = new File(COLLECT_PATH);
-        File[] logFileArray = collectDir.listFiles();
-
-        if (logFileArray == null)
-            return;
-        item.fileList.addAll(Arrays.asList(logFileArray));
-     }
-
-    public void sendReport(ReportItem item) {
-        SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
-        sendMailAsyncTask.title = "LSP report from " + deviceID;
-        sendMailAsyncTask.message = "deviceID";
-
-        // get file path
-        //sendMailAsyncTask.files = new String []{backupDbPath};
-        sendMailAsyncTask.files = new String [item.fileList.size()];
-        for (int i = 0; i < item.fileList.size(); i++) {
-            sendMailAsyncTask.files[i] = item.fileList.get(i).getAbsolutePath();
-        }
-
-        sendMailAsyncTask.wl = this.wl;
-        Log.i(TAG, "send "+item.fileList.size()+" items.");
-        sendMailAsyncTask.reportItem = item;
-        sendMailAsyncTask.execute();
-    }
-
-    public void backReport(ReportItem item) {
-        File baseDir = new File(item.backupPath);
-        if(!baseDir.exists())
-            baseDir.mkdirs();
-
-        MyConsoleExe exe = new MyConsoleExe();
-        StringBuilder result = new StringBuilder();
-
-       // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupPath, result, false);
-        Log.i(TAG, "backupReport() : " + result);
-    }
-
     public void doReport() {
-        Log.i(TAG, "doReport()");
-        pauseLogging();
-        ReportItem item = new ReportItem();
-
-        // collect reports...
-        collectReport(item);
-
-        if (NetworkUtil.getConnectivityStatus(this) != NetworkUtil.TYPE_WIFI) {
-            // not wifi
-            alarmManager.clearAlarm();
-            alarmManager.setNextAlarmAfter(60);
-
-        } else {
-            // send report via email
-            sendReport(item);
-        }
-
-        // backup report
-        // backReport(item);
-        resumeLogging();
+        reporter.doReport();
     }
 
-    private class SendMailAsyncTask extends AsyncTask<Void, Void, Void> {
-        public String title = "";
-        public String message = "";
-        public String []files = null;
-        public PowerManager.WakeLock wl;
-        public ReportItem reportItem = null;
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            wl.acquire();
-            try {
-                int result = Mail.sendReport(title, message, files);
-                if (result != 0) {
-                    Log.i(TAG, "send mail failed!");
-                }
-
-                // make backup dir
-                File backupDir = new File(reportItem.backupPath);
-                if(!backupDir.exists())
-                    backupDir.mkdirs();
-
-                // move
-                for (int i = 0; i < reportItem.fileList.size(); i++) {
-                    File origFile = reportItem.fileList.get(i);
-                    File destFile = new File(reportItem.backupPath + origFile.getName());
-                    origFile.renameTo(destFile);
-                    Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
-                }
-            }catch(Exception ex) {
-                ex.printStackTrace();
-            }
-            wl.release();
-            return null;
-        }
-
+    public void doKLogBackup() {
+        ReportItem item = new ReportItem();
+        reporter.requestReportToDaemon(item);
     }
 
     @Override
     public void onTerminate() {
         super.onTerminate();
         Log.i(TAG, "onTerminate()");
+        su.stopSu();
+        receiverManager.unregisterReceivers();
     }
 
     @Override

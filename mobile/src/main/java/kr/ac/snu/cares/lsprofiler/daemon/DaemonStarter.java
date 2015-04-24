@@ -22,4 +22,21 @@ public class DaemonStarter {
         // [2] 5965
         Log.i(TAG, stdout);
     }
+    public static void startKernelProfile() {
+        startDaemon("1");
+    }
+    public static void stopKernelProfile() {
+        startDaemon("2");
+    }
+    public static void startForReport(String dirPath, String fileName) {
+        startDaemon("3 " + dirPath + " " + fileName);
+    }
+    public static void startDaemon(String args) {
+        MyConsoleExe exe = new MyConsoleExe();
+        String stdout;
+
+        stdout = exe.exec("/data/local/sprofiler " + args, true);
+
+        Log.i(TAG, "stdout : "+stdout);
+    }
 }

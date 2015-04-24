@@ -3,7 +3,9 @@ package kr.ac.snu.cares.lsprofiler.receivers;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
+import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 
 /**
@@ -12,8 +14,8 @@ import kr.ac.snu.cares.lsprofiler.LSPLog;
 public class ShutdownReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         int i = 0;
+        Log.v("ShutdownReceiver", "action - " + intent.getAction());
         /*
-        Log.v("ShutdownReceiver", "ver - " + intent.getAction());
         while (i++ < 1000) {
             // test :)
             try {
@@ -27,5 +29,10 @@ public class ShutdownReceiver extends BroadcastReceiver{
 
         // power off
         LSPLog.onPowerStateChagned(0);
+        LSPApplication app = LSPApplication.getInstance();
+        if (app != null)
+            app.doKLogBackup();
+
+
     }
 }

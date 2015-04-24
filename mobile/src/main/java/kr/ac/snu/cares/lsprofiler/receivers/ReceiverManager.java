@@ -13,16 +13,16 @@ import android.util.Log;
 import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
-import kr.ac.snu.cares.lsprofiler.daemon.DaemonClientReader;
 
 /**
  * Created by summer on 3/28/15.
  */
 public class ReceiverManager extends BroadcastReceiver {
-    public static final String TAG = DaemonClientReader.class.getSimpleName();
+    public static final String TAG = ReceiverManager.class.getSimpleName();
     private Context context;
     private MyPhoneStateListener phoneStateListener;
     private TelephonyManager telephonyManager;
+    private boolean isRegisteredReceivers = false;
 
     public ReceiverManager() {
         Log.e(TAG, "receiver manager ()");
@@ -49,7 +49,7 @@ public class ReceiverManager extends BroadcastReceiver {
         phoneStateListener = new MyPhoneStateListener();
         telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-
+        isRegisteredReceivers = true;
         Log.i(TAG, "registerReceivers()");
     }
 
@@ -57,6 +57,7 @@ public class ReceiverManager extends BroadcastReceiver {
         try {
             context.unregisterReceiver(this);
             telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+            isRegisteredReceivers = false;
         }catch (Exception ex) {
             //ex.printStackTrace();
         }

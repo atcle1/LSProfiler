@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import kr.ac.snu.cares.lsprofiler.LSPApplication;
+import kr.ac.snu.cares.lsprofiler.LSPReporter;
 
 /**
  * Created by summer on 4/22/15.
@@ -24,7 +24,7 @@ public class ReportItem {
         reportDateString = transFormat.format(reportDate);
         transFormat = new SimpleDateFormat("yyyy-MM-dd");
         String dirStr = transFormat.format(reportDate);
-        backupPath = LSPApplication.BACKUP_BASE_PATH + dirStr + "/";
+        backupPath = LSPReporter.BACKUP_BASE_PATH + dirStr + "/";
         fileList = new ArrayList<File>();
     }
 }

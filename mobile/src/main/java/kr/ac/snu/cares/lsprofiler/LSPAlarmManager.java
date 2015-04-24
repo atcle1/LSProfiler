@@ -47,11 +47,12 @@ public class LSPAlarmManager {
     }
 
     public void setFirstAlarm() {
-         setTestTime();   // for test...
+        //setTestTime();   // for test...
         Calendar calendar = Calendar.getInstance();
         //calendar.setTimeInMillis(System.currentTimeMillis()); //test code...
         calendar.set(Calendar.HOUR_OF_DAY, start_hour);
         calendar.set(Calendar.MINUTE, start_minute);
+        calendar.set(Calendar.SECOND, 0);
         if (System.currentTimeMillis() > calendar.getTimeInMillis()) {
             calendar.add(Calendar.DAY_OF_YEAR, 1);
         }
@@ -78,10 +79,10 @@ public class LSPAlarmManager {
         setNextAlarmAfter(LSPAlarmManager.repeat_interver);
     }
 
-    public void setNextAlarmAfter(int seconds) {
-        setTestTime();
+    public void setNextAlarmAfter(int millis) {
+        // setTestTime();
         Calendar calendar = Calendar.getInstance();
-        LSPAlarmManager.nextAlarmTime = calendar.getTimeInMillis() + 1000 * seconds;
+        LSPAlarmManager.nextAlarmTime = calendar.getTimeInMillis() + millis;
 
         Intent intent = new Intent(context, AlarmReceiver.class);
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
