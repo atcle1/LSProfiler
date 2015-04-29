@@ -5,10 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
+import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
-import kr.ac.snu.cares.lsprofiler.util.Su;
 
 /**
  * Created by summer on 3/24/15.
@@ -40,14 +41,21 @@ public class BootReceiver extends BroadcastReceiver {
 
 
             // power on
+        goAsync();
+
+
+
+        LSPApplication app = LSPApplication.getInstance();
+        if (app != null) {
+
+            app.startProfilingIfStarted();
+        } else {
+            Log.i(TAG, "app is null");
+        }
         LSPLog.onPowerStateChagned(1);
-        Su su = new Su();
-        su.prepare();
-        su.execSu("su 0 setenforce 0");
-        su.execSu("dumpsys batterystats --enable full-wake-history");
-        su.execSu("dumpsys batterystats --disable no-auto-reset");
-        su.execSu("/data/local/sprofiler 3 /sdcard/LSP/ test.klog");
-        su.stopSu();
         //}
+
+        Intent startServiceIntent = new Intent(context, LSPBootService.class);
+        context.startService(startServiceIntent);
     }
 }

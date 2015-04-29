@@ -41,7 +41,7 @@ public class LSPReporter {
         Su su = new Su();
         su.prepare();
         su.execSu("/data/local/sprofiler 3 "+COLLECT_PATH +" "+ item.reportDateString + ".klog");
-        su.stopSu();
+        su.stopSu(1000);
     }
 
     public void collectReport(ReportItem item) {
@@ -57,6 +57,12 @@ public class LSPReporter {
 
         //clientHandler.requestCollectLog();
         requestReportToDaemon(item);
+
+        try {
+            Thread.sleep(500);
+        } catch (Exception ex) {};
+
+        //listing log files...
         try {
             for (int i = 0; i < 3; i++) {
                 File klogFile = new File(COLLECT_PATH + item.reportDateString + ".klog");
@@ -119,6 +125,7 @@ public class LSPReporter {
 
         if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
             // not wifi
+            Log.i(TAG, "doReport() but not connected WIFI");
             app.getAlarmManager().clearAlarm();
             app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2);
 

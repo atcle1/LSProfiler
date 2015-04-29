@@ -46,11 +46,12 @@ public class MyConsoleExe {
             //process = runtime.exec(comm);
             reader = new BufferedReader(new InputStreamReader(
                     process.getInputStream()));
-
+/*
             while ((line = reader.readLine()) != null) {
                 output.append(line + "\n");
-                //System.out.println(line);
+                System.out.println(line);
             }
+            */
             exitCode = process.waitFor();
             System.out.println("exe : "+comm + " return : "+exitCode);
 
@@ -83,11 +84,12 @@ public class MyConsoleExe {
 			//process = runtime.exec(comm);
 			reader = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
-
+/*
 			while ((line = reader.readLine()) != null) {
 				output.append(line + "\n");
-				//System.out.println(line);
+				System.out.println(line);
 			}
+            */
 			exitCode = process.waitFor();
 			System.out.println("exe : "+comm + " return : "+exitCode);
 		} catch (IOException e) {

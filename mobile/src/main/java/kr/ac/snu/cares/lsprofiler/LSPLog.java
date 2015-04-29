@@ -124,4 +124,8 @@ public class LSPLog {
                 break;
         }
     }
+    public static void onTopActivityResuming(String packageName) {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("FGA : " + packageName);
+    }
 }

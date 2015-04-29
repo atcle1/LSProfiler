@@ -64,10 +64,6 @@ public class LSPApplication extends Application {
         locationTracker = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
 
-
-
-        receiverManager.registerReceivers();
-
         deviceID = prefMgr.getDeviceID();
         if (deviceID.equals("")) {
             deviceID = DeviceID.getDeviceID(this);
@@ -83,9 +79,6 @@ public class LSPApplication extends Application {
         clientHandler.init(this);
         */
         app = this;
-
-        su = new Su();
-        su.prepare();
     }
 
     public LogDbHandler getDbHandler() {
@@ -93,6 +86,23 @@ public class LSPApplication extends Application {
     }
     public static LSPApplication getInstance() { return LSPApplication.app; }
 
+    public void startProfiling() {
+        prefMgr.setLoggingState("start");
+        startLogging();
+    }
+    public void stopProfiling() {
+        prefMgr.setLoggingState("stop");
+        stopLogging();
+    }
+    public void startProfilingIfStarted() {
+        String savedState = prefMgr.getLoggingState();
+        if (savedState.equals("start")) {
+            Log.i(TAG, "startProfilingIfStarted() start profiling...");
+            startProfiling();
+        } else {
+            Log.i(TAG, "startProfilingIfStarted() not start");
+        }
+    }
 
     public void startLogging() {
         if (state != State.stopped) {
@@ -100,6 +110,7 @@ public class LSPApplication extends Application {
             return;
         }
         state = State.started;
+        prefMgr.setAppState(State.started.name());
         // start service
         Intent startServiceIntent = new Intent(this, LSPService.class);
         //startServiceIntent.putExtra("setting", setting);
@@ -107,6 +118,7 @@ public class LSPApplication extends Application {
         startService(startServiceIntent);
 
         alarmManager.setFirstAlarm();
+
         resumeLogging();
     }
     public void resumeLogging() {
@@ -130,7 +142,6 @@ public class LSPApplication extends Application {
     }
 
     public void stopLogging() {
-
         if (state == State.resumed)
             pauseLogging();
 
@@ -140,6 +151,8 @@ public class LSPApplication extends Application {
         }
 
         state = State.stopped;
+        prefMgr.setAppState(State.stopped.name());
+
         alarmManager.clearAlarm();
         stopService(new Intent(this, LSPService.class));
     }
@@ -157,7 +170,6 @@ public class LSPApplication extends Application {
     public void onTerminate() {
         super.onTerminate();
         Log.i(TAG, "onTerminate()");
-        su.stopSu();
         receiverManager.unregisterReceivers();
     }
 

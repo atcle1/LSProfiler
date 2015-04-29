@@ -16,13 +16,13 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
-import kr.ac.snu.cares.lsprofiler.daemon.DaemonStarter;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
 import kr.ac.snu.cares.lsprofiler.resolvers.CallLogResolver;
 import kr.ac.snu.cares.lsprofiler.resolvers.SmsLogResolver;
 import kr.ac.snu.cares.lsprofiler.util.CallLogMerger;
+import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.util.Util;
 
 
@@ -112,22 +112,21 @@ public class MainActivity extends ActionBarActivity {
 
     class onServiceBtClickListener implements View.OnClickListener
     {
+        Su su;
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.bTStartService) {
                 // start daemon
                 Toast.makeText(v.getContext(), "start", Toast.LENGTH_SHORT).show();
-                DaemonStarter.startDaemon();
-
-
-
-                lspApplication.startLogging();
-
+                //DaemonStarter.startDaemon();
+                //lspApplication.startLogging();
+                lspApplication.startProfiling();
 
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();
 
-                lspApplication.stopLogging();
+                //lspApplication.stopLogging();
+                lspApplication.stopProfiling();
 
 
 
@@ -137,10 +136,17 @@ public class MainActivity extends ActionBarActivity {
 
 
             } else if (v.getId() == R.id.bTSend) {
-                clientHandler.sendMsg(DaemonClient.DAEMON_SEND);
+                //clientHandler.sendMsg(DaemonClient.DAEMON_SEND);
+                    Log.i(TAG, "is rooted ? " + Su.isRooted());
+//                Log.i(TAG, "su available () : " + Shell.SU.available());
+
             } else if (v.getId() == R.id.bTInsertLog) {
-                LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
-                logDbHandler.writeLog("test "+ Math.random());
+                //LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
+                //logDbHandler.writeLog("test "+ Math.random());
+                su = new Su();
+                su.prepare();
+                su.execSu("id");
+                su.stopSu(100);
             } else if (v.getId() == R.id.bTReadLog) {
                 LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
                 logDbHandler.printLog();
