@@ -92,6 +92,7 @@
             </intent-filter>
         </receiver>
 
+
         <service
             android:name=".service.LSPNotificationService"
             android:label="@string/app_name"

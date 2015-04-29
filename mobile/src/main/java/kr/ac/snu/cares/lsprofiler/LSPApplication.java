@@ -122,6 +122,7 @@ public class LSPApplication extends Application {
         resumeLogging();
     }
     public void resumeLogging() {
+        Log.i(TAG, "resumeLogging()");
         state = State.resumed;
         lspLog.resumeLogging();
         receiverManager.registerReceivers();
@@ -130,6 +131,7 @@ public class LSPApplication extends Application {
     }
 
     public void pauseLogging() {
+        Log.i(TAG, "pauseLogging()");
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
