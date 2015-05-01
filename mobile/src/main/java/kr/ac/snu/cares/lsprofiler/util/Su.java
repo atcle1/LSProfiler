@@ -31,6 +31,19 @@ public class Su {
         runtime = Runtime.getRuntime();
     }
 
+    public int executeOnce(String cmd, int timeout) {
+        try {
+            su = Runtime.getRuntime().exec("su -c \"" + cmd+"\"");
+
+            su.waitFor();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
     public int prepare() {
         try {
             su = Runtime.getRuntime().exec("sh -c su");

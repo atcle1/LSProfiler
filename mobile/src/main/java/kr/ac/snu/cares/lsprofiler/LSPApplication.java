@@ -70,7 +70,7 @@ public class LSPApplication extends Application {
             prefMgr.setDeviceID(deviceID);
         }
 
-        reporter = new LSPReporter();
+        reporter = new LSPReporter(this);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -87,10 +87,12 @@ public class LSPApplication extends Application {
     public static LSPApplication getInstance() { return LSPApplication.app; }
 
     public void startProfiling() {
+        Log.i(TAG, "startProfiling()");
         prefMgr.setLoggingState("start");
         startLogging();
     }
     public void stopProfiling() {
+        Log.i(TAG, "stopProfiling()");
         prefMgr.setLoggingState("stop");
         stopLogging();
     }
@@ -105,6 +107,7 @@ public class LSPApplication extends Application {
     }
 
     public void startLogging() {
+        Log.i(TAG, "startLogging()");
         if (state != State.stopped) {
             Log.i(TAG, "startLogging() : not stopped");
             return;

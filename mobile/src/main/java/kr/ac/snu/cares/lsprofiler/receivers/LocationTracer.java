@@ -35,6 +35,8 @@ public class LocationTracer implements LocationListener {
     // 네트워크 사용유무
     private boolean isNetworkEnabled = false;
 
+    private TimeoutableLocationListener timeoutableLocationListener;
+
     private PendingIntent pendingIntent;
 
     public LocationTracer(Context context) {
@@ -71,7 +73,9 @@ public class LocationTracer implements LocationListener {
         if (provider == null) {
             provider = LocationManager.GPS_PROVIDER;
         }
+
         locationManager.requestLocationUpdates(provider, 0, 0, this);
+        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 5, null);
         Log.i(TAG, "requestUpdate()");
     }
 
@@ -117,9 +121,9 @@ public class LocationTracer implements LocationListener {
     public void onLocationChanged(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        LSPLog.onLocationChanged(latitude, longitude);
+        LSPLog.onLocationUpdate(latitude, longitude);
         locationManager.removeUpdates(this);
-        Log.i(TAG, "onLocationChanged() "+latitude + " "  + longitude);
+        Log.i(TAG, "onLocationUpdate() "+latitude + " "  + longitude);
     }
 
     @Override
@@ -143,9 +147,22 @@ public class LocationTracer implements LocationListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "GPS AlarmReceiver onReceive");
+            Log.i(TAG, "GPS AlarmReceiver onReceive()");
+            Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            Location location2 = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+                LSPLog.onKnownLocation("NET", latitude, longitude);
+            } else if (location2 != null) {
+                double latitude = location2.getLatitude();
+                double longitude = location2.getLongitude();
+                LSPLog.onKnownLocation("GPS", latitude, longitude);
+            }
 
             requestUpdate();
         }
     }
+
+
 }

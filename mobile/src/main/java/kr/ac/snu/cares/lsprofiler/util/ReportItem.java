@@ -13,7 +13,7 @@ import kr.ac.snu.cares.lsprofiler.LSPReporter;
 public class ReportItem {
     public Date reportDate;
     public String reportDateString;
-    public String backupPath;
+    public String backupDir;
     public boolean result;
     public ArrayList<File> fileList;
 
@@ -24,7 +24,7 @@ public class ReportItem {
         reportDateString = transFormat.format(reportDate);
         transFormat = new SimpleDateFormat("yyyy-MM-dd");
         String dirStr = transFormat.format(reportDate);
-        backupPath = LSPReporter.BACKUP_BASE_PATH + dirStr + "/";
+        backupDir = LSPReporter.BACKUP_BASE_PATH + dirStr + "/";
         fileList = new ArrayList<File>();
     }
 }

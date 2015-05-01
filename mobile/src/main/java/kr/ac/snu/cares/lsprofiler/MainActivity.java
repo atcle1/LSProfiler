@@ -120,6 +120,7 @@ public class MainActivity extends ActionBarActivity {
                 Toast.makeText(v.getContext(), "start", Toast.LENGTH_SHORT).show();
                 //DaemonStarter.startDaemon();
                 //lspApplication.startLogging();
+                Su.isRooted();
                 lspApplication.startProfiling();
 
             } else if (v.getId() == R.id.bTStopService) {

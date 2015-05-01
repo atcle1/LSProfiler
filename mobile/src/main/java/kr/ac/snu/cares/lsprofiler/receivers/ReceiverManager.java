@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.telephony.PhoneStateListener;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
@@ -24,11 +25,6 @@ public class ReceiverManager extends BroadcastReceiver {
     private TelephonyManager telephonyManager;
     private boolean isRegisteredReceivers = false;
 
-    public ReceiverManager() {
-        Log.e(TAG, "receiver manager ()");
-
-    }
-
     public ReceiverManager(Context context) {
         this.context = context;
     }
@@ -42,8 +38,9 @@ public class ReceiverManager extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
+        //filter.addAction("android.provider.Telephony.SMS_RECEIVED");
+        filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
         filter.addAction("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING");
-        filter.addAction("android.provider.Telephony.SMS_RECEIVED");
 
         context.registerReceiver(this, filter);
 
@@ -74,7 +71,6 @@ public class ReceiverManager extends BroadcastReceiver {
             Log.i(TAG, "Screen OFF");
             LSPLog.onScreenChagned(0);
         } else if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
-            Log.i(TAG, action);
             LSPLog.onBatteryStatusChagned(intent);
         } else if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
             Bundle bundle = intent.getExtras();

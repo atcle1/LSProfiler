@@ -38,11 +38,16 @@ public class LSPLog {
     }
 
     /* logging methods */
-    public static void onLocationChanged(double lat, double lon) {
+    public static void onLocationUpdate(double lat, double lon) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("LOC : "+lat+" "+lon);
-
     }
+
+    public static void onKnownLocation(String provider, double lat, double lon) {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("ULC : " + provider + " "+lat+" "+lon);
+    }
+
     public static void onBatteryStatusChagned(Intent intent) {
         if(!bWriteLog) return;
 

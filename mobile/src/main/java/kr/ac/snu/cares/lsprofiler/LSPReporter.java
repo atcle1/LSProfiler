@@ -27,7 +27,7 @@ public class LSPReporter {
     private PowerManager pm;
     private PowerManager.WakeLock wl;
 
-    public void LSPReporter(LSPApplication app)
+    public LSPReporter(LSPApplication app)
     {
         this.app = app;
         dbHandler = app.getDbHandler();
@@ -59,7 +59,8 @@ public class LSPReporter {
         requestReportToDaemon(item);
 
         try {
-            Thread.sleep(500);
+            // klog should be finished within 2s.
+            Thread.sleep(2000);
         } catch (Exception ex) {};
 
         //listing log files...
@@ -70,7 +71,7 @@ public class LSPReporter {
                     Log.i(TAG, "klog not founded, wait");
                     Thread.sleep(500, 0);
                 } else
-                    Log.i(TAG, "klog exists");
+                    Log.i(TAG, "klog exists " + klogFile.getAbsolutePath());
             }
 
         } catch (Exception ex) {
@@ -104,34 +105,38 @@ public class LSPReporter {
     }
 
     public void backReport(ReportItem item) {
-        File baseDir = new File(item.backupPath);
+        File baseDir = new File(item.backupDir);
         if(!baseDir.exists())
             baseDir.mkdirs();
 
         MyConsoleExe exe = new MyConsoleExe();
         StringBuilder result = new StringBuilder();
 
-        // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupPath, result, false);
+        // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupDir, result, false);
         Log.i(TAG, "backupReport() : " + result);
     }
 
     public void doReport() {
         Log.i(TAG, "doReport()");
         app.pauseLogging();
-        ReportItem item = new ReportItem();
+        try {
+            ReportItem item = new ReportItem();
 
-        // collect reports...
-        collectReport(item);
+            // collect reports...
+            collectReport(item);
 
-        if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
-            // not wifi
-            Log.i(TAG, "doReport() but not connected WIFI");
-            app.getAlarmManager().clearAlarm();
-            app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2);
+            if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
+                // not wifi
+                Log.i(TAG, "doReport() but not connected WIFI");
+                app.getAlarmManager().clearAlarm();
+                app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2);
 
-        } else {
-            // send report via email
-            sendReport(item);
+            } else {
+                // send report via email
+                sendReport(item);
+            }
+        }catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         // backup report
@@ -156,14 +161,14 @@ public class LSPReporter {
                 }
 
                 // make backup dir
-                File backupDir = new File(reportItem.backupPath);
+                File backupDir = new File(reportItem.backupDir);
                 if(!backupDir.exists())
                     backupDir.mkdirs();
 
                 // move
                 for (int i = 0; i < reportItem.fileList.size(); i++) {
                     File origFile = reportItem.fileList.get(i);
-                    File destFile = new File(reportItem.backupPath + origFile.getName());
+                    File destFile = new File(reportItem.backupDir + origFile.getName());
                     origFile.renameTo(destFile);
                     Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
                 }
