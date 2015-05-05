@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.util.Log;
+import android.widget.Toast;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
@@ -123,18 +124,29 @@ public class LSPApplication extends Application {
         alarmManager.setFirstAlarm();
 
         resumeLogging();
+        LSPLog.onTextMsg("startLogging()");
+
     }
     public void resumeLogging() {
+        showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
+        LSPLog.onTextMsg("resumeLogging()");
         state = State.resumed;
-        lspLog.resumeLogging();
-        receiverManager.registerReceivers();
-        locationTracker.startTrace();
-        LSPNotificationService.startSelf(this);
+        try {
+            lspLog.resumeLogging();
+            receiverManager.registerReceivers();
+            locationTracker.startTrace();
+            LSPNotificationService.startSelf(this);
+        }catch (Exception ex) {
+            ex.printStackTrace();;
+            LSPLog.onTextMsg(ex.getLocalizedMessage());
+        }
     }
 
     public void pauseLogging() {
+        showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
+        LSPLog.onTextMsg("pauseLogging()");
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -147,6 +159,7 @@ public class LSPApplication extends Application {
     }
 
     public void stopLogging() {
+        LSPLog.onTextMsg("stopLogging()");
         if (state == State.resumed)
             pauseLogging();
 
@@ -163,6 +176,7 @@ public class LSPApplication extends Application {
     }
 
     public void doReport() {
+        showToast("doReport()");
         reporter.doReport();
     }
 
@@ -173,6 +187,8 @@ public class LSPApplication extends Application {
 
     @Override
     public void onTerminate() {
+        LSPLog.onTextMsgForce("APP onTerminate()");
+        showToast("onTerminate()");
         super.onTerminate();
         Log.i(TAG, "onTerminate()");
         receiverManager.unregisterReceivers();
@@ -182,11 +198,17 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
+        LSPLog.onTextMsgForce("APP onLowMemory()");
+        showToast("onLowMemory()");
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.i(TAG, "onConfigureationChanged()");
+    }
+
+    public void showToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

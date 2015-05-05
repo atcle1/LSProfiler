@@ -26,6 +26,8 @@ public class Util {
 
     public static String encryptData(String str) {
         StringBuilder sb = new StringBuilder();
+
+        if (str == null) return "null";
         try{
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             md5.update(str.getBytes());

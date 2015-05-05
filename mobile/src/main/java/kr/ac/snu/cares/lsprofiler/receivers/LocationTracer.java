@@ -59,7 +59,6 @@ public class LocationTracer implements LocationListener {
         }
 
         //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-        requestUpdate();
         context.registerReceiver(gpsAlarmReceiver, new IntentFilter(GPSAlarmIntentStr));
 
                 Intent intent = new Intent(GPSAlarmIntentStr);
@@ -75,7 +74,7 @@ public class LocationTracer implements LocationListener {
         }
 
         locationManager.requestLocationUpdates(provider, 0, 0, this);
-        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 5, null);
+        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 5, this);
         Log.i(TAG, "requestUpdate()");
     }
 
@@ -121,9 +120,9 @@ public class LocationTracer implements LocationListener {
     public void onLocationChanged(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        LSPLog.onLocationUpdate(latitude, longitude);
+        LSPLog.onLocationUpdate(location.getProvider(), latitude, longitude);
+        Log.i(TAG, "onLocationUpdate() "+location.getProvider()+" "+latitude + " "  + longitude);
         locationManager.removeUpdates(this);
-        Log.i(TAG, "onLocationUpdate() "+latitude + " "  + longitude);
     }
 
     @Override

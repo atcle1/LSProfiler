@@ -25,14 +25,16 @@ public class LSPReporter {
     public static final String BACKUP_BASE_PATH = "/sdcard/LSP_backup/";
     private LogDbHandler dbHandler;
     private PowerManager pm;
-    private PowerManager.WakeLock wl;
+    private PowerManager.WakeLock sendWl;
+    private PowerManager.WakeLock reportWl;
 
     public LSPReporter(LSPApplication app)
     {
         this.app = app;
         dbHandler = app.getDbHandler();
         pm = (PowerManager) app.getSystemService(Context.POWER_SERVICE);
-        wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "send report");
+        sendWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "send report");
+        reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "do report");
     }
 
     public void requestReportToDaemon(ReportItem item) {
@@ -44,6 +46,26 @@ public class LSPReporter {
         su.stopSu(1000);
     }
 
+    public boolean isKlogEnabled() {
+        File f = new File("/data/local/sprofiler");
+        try {
+            if (!f.exists()) {
+                Log.i(TAG, "sprofiler not founded!");
+                LSPLog.onTextMsg("sprofiler not founded!");
+                return false;
+            }
+            if (!Su.isRooted()) {
+                Log.i(TAG, "not rooted! but try report!");
+                LSPLog.onTextMsg("not rooted! but try report!");
+                return true;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return false;
+        }
+        return true;
+
+    }
     public void collectReport(ReportItem item) {
         // mkdir
         File baseDir = new File(COLLECT_PATH);
@@ -56,26 +78,39 @@ public class LSPReporter {
         dbHandler.resetDB();
 
         //clientHandler.requestCollectLog();
-        requestReportToDaemon(item);
+        if (isKlogEnabled()) {
+            requestReportToDaemon(item);
 
-        try {
-            // klog should be finished within 2s.
-            Thread.sleep(2000);
-        } catch (Exception ex) {};
-
-        //listing log files...
-        try {
-            for (int i = 0; i < 3; i++) {
-                File klogFile = new File(COLLECT_PATH + item.reportDateString + ".klog");
-                if (!klogFile.exists()) {
-                    Log.i(TAG, "klog not founded, wait");
-                    Thread.sleep(500, 0);
-                } else
-                    Log.i(TAG, "klog exists " + klogFile.getAbsolutePath());
+            try {
+                // klog should be finished within 2s.
+                Thread.sleep(1000);
+                File finishFile = new File(COLLECT_PATH + item.reportDateString + ".klog.finish");
+                for (int i = 0; i < 10; i++) {
+                    if (finishFile.exists()) {
+                        Log.i(TAG, "KLSP finished detected! " + i);
+                        finishFile.delete();
+                        break;
+                    }
+                    Thread.sleep(1000);
+                }
+            } catch (Exception ex) {
             }
+            ;
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            //listing log files...
+            try {
+                for (int i = 0; i < 3; i++) {
+                    File klogFile = new File(COLLECT_PATH + item.reportDateString + ".klog");
+                    if (!klogFile.exists()) {
+                        Log.i(TAG, "klog not founded, wait");
+                        Thread.sleep(500, 0);
+                    } else
+                        Log.i(TAG, "klog exists " + klogFile.getAbsolutePath());
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         File collectDir = new File(COLLECT_PATH);
@@ -98,7 +133,7 @@ public class LSPReporter {
             sendMailAsyncTask.files[i] = item.fileList.get(i).getAbsolutePath();
         }
 
-        sendMailAsyncTask.wl = this.wl;
+        sendMailAsyncTask.wl = this.sendWl;
         Log.i(TAG, "send "+item.fileList.size()+" items.");
         sendMailAsyncTask.reportItem = item;
         sendMailAsyncTask.execute();
@@ -118,8 +153,9 @@ public class LSPReporter {
 
     public void doReport() {
         Log.i(TAG, "doReport()");
-        app.pauseLogging();
         try {
+            reportWl.acquire();
+            app.pauseLogging();
             ReportItem item = new ReportItem();
 
             // collect reports...
@@ -128,8 +164,9 @@ public class LSPReporter {
             if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
                 // not wifi
                 Log.i(TAG, "doReport() but not connected WIFI");
+                LSPLog.onTextMsg("try report, NOT WIFI");
                 app.getAlarmManager().clearAlarm();
-                app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2);
+                app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
 
             } else {
                 // send report via email
@@ -142,6 +179,7 @@ public class LSPReporter {
         // backup report
         // backReport(item);
         app.resumeLogging();
+        reportWl.release();
     }
 
     private class SendMailAsyncTask extends AsyncTask<Void, Void, Void> {

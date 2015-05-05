@@ -22,8 +22,8 @@ public class LSPAlarmManager {
     private static LSPAlarmManager instance;
 
 
-    public static int start_hour = 11;
-    public static int start_minute = 56;
+    public static int start_hour = 2;
+    public static int start_minute = 0;
     //public static int repeat_interver = 1000 * 60 * 60 * 24; // 1 day
     public static int repeat_interver = 1000 * 60 * 60 * 2;
 
@@ -47,7 +47,7 @@ public class LSPAlarmManager {
     }
 
     public void setFirstAlarm() {
-        setTestTime();   // for test...
+        //setTestTime();   // for test...
         Calendar calendar = Calendar.getInstance();
         //calendar.setTimeInMillis(System.currentTimeMillis()); //test code...
         Log.i(TAG, "start_hour "+start_hour + " minute "+start_minute);

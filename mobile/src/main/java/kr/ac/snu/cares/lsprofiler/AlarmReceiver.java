@@ -3,6 +3,7 @@ package kr.ac.snu.cares.lsprofiler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.util.Log;
 
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
@@ -25,7 +26,9 @@ public class AlarmReceiver extends BroadcastReceiver {
             context.startService(startServiceIntent);
         } else {
             Log.i(TAG, "onReceive() service already started.");
-            LSPService.getHandler().sendEmptyMessage(LSPService.ALARM_REQUEST);
+            Handler handler = LSPService.getHandler();
+            if (handler != null)
+                handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
         }
 
         // set next first alarm

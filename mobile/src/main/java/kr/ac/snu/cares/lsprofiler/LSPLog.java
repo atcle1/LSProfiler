@@ -38,9 +38,9 @@ public class LSPLog {
     }
 
     /* logging methods */
-    public static void onLocationUpdate(double lat, double lon) {
+    public static void onLocationUpdate(String provider, double lat, double lon) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("LOC : "+lat+" "+lon);
+        logDbHandler.writeLog("LOC : "+provider+" " +lat+" "+lon);
     }
 
     public static void onKnownLocation(String provider, double lat, double lon) {
@@ -132,5 +132,20 @@ public class LSPLog {
     public static void onTopActivityResuming(String packageName) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("FGA : " + packageName);
+    }
+
+    public static void onTextMsg(String msg){
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("TXT : " + msg);
+    }
+
+    public static void onTextMsgForce(String msg){
+        if (logDbHandler != null) {
+            try {
+                logDbHandler.writeLog("TFC : " + msg);
+            }catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }

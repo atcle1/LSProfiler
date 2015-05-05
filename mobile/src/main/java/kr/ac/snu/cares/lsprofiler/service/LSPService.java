@@ -14,6 +14,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.MainActivity;
 import kr.ac.snu.cares.lsprofiler.R;
 
@@ -31,16 +32,16 @@ public class LSPService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.i(TAG, "onBind()");
-        Toast.makeText(this, TAG + " onBind", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, TAG + " onBind", Toast.LENGTH_SHORT).show();
         return null;
     }
 
     @Override
     public void onCreate() {
         Log.i(TAG, "onCreate()");
-        Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
         application = (LSPApplication)getApplication();
-        lspHandler = new LSPHandler();
+
     }
     private static final int NOTIFICATION_ID = 1;
 
@@ -48,6 +49,7 @@ public class LSPService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand() : flags " + flags + " startId " + startId);
         Toast.makeText(this, TAG + " onStartCommand", Toast.LENGTH_SHORT).show();
+        LSPLog.onTextMsg("LSPService onStart()");
 
         if (intent == null) {
             // service is terminated by system, and restarted. start by system
@@ -63,6 +65,7 @@ public class LSPService extends Service {
                 application.doReport();
             }
         }
+        lspHandler = new LSPHandler();
 
         //showForegroundNotification("Running LSProfiler in foreground");
         return START_STICKY;
@@ -74,8 +77,13 @@ public class LSPService extends Service {
     @Override
     public void onDestroy() {
         lspHandler = null;
-        Toast.makeText(this, TAG + " onDestroy", Toast.LENGTH_SHORT).show();
+        try {
+            Toast.makeText(getApplicationContext(), TAG + " onDestroy", Toast.LENGTH_SHORT).show();
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
         Log.i(TAG, "onDestroy()");
+        LSPLog.onTextMsg("LSPService onDestroy()");
     }
 
     private class LSPHandler extends Handler  {
