@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -110,17 +111,47 @@ public class LogDbHandler {
         cursor.close();
     }
 
-    public void backupDB(String backupFilePath){
+    public boolean backupDB(String backupFilePath){
+        Log.i(TAG, "backupDB()");
+        ReadableByteChannel readableByteChannel;
         try {
+            if (db == null || helper == null || !db.isOpen()) {
+                Log.i(TAG, "resetDB() db == null || helper == null");
+                open();
+            }
+
             String pathStr = helper.getWritableDatabase().getPath();
             FileInputStream fis=new FileInputStream(new File(pathStr));
             FileOutputStream fos=new FileOutputStream(new File(backupFilePath));
-            fos.getChannel().transferFrom(fis.getChannel(), 0, 32 * 1024 * 1024);
+            readableByteChannel = fis.getChannel();
+            if (readableByteChannel == null) {
+                Log.i(TAG, "readableByteChannel == null");
+                return false;
+            }
+            fos.getChannel().transferFrom(readableByteChannel, 0, 32 * 1024 * 1024);
             fos.close();
             fis.close();
+
+            Log.i(TAG, "backupDB() end, test");
+            File f1 = new File(pathStr);
+            File f2 = new File(backupFilePath);
+            if (!f1.exists() || !f2.exists()) {
+                Log.i(TAG, "!f1.exists() || !f2.exists()");
+                return false;
+            }
+            if (f2.length() == 0) {
+                Log.i(TAG, "f2.length() == 0");
+                return false;
+            }
+            if (f1.length() != f2.length()) {
+                Log.i(TAG, "f1.length() != f2.length()");
+                return false;
+            }
+            return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     public void restoreDB(String backupFilePath) {

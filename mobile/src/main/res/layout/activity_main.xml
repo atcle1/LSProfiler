@@ -13,12 +13,10 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical">
-        <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
 
-        <TextView android:id="@+id/tvStatus"
-            android:text="@string/hello_world"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/txtStatus"
+            android:text="status" android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <Button
@@ -37,30 +35,20 @@
             android:text="Stop"
             android:layout_gravity="center_horizontal"/>
 
-
         <Button
-            android:id="@+id/bTConnect"
+            android:id="@+id/bTStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="25sp"
-            android:text="Connect"
-            android:layout_gravity="center_horizontal"/>
-
-
-        <Button
-            android:id="@+id/bTSend"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="Send"
+            android:text="Status"
             android:layout_gravity="center_horizontal"/>
 
         <Button
-            android:id="@+id/bTInsertLog"
+            android:id="@+id/bTRoot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="25sp"
-            android:text="InsertLog"
+            android:text="Root"
             android:layout_gravity="center_horizontal"/>
 
         <Button

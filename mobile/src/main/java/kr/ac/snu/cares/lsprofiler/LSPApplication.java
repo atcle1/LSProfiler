@@ -7,6 +7,8 @@ import android.content.res.Configuration;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.Calendar;
+
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
@@ -130,7 +132,7 @@ public class LSPApplication extends Application {
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsg("resumeLogging()");
+        LSPLog.onTextMsg("resumeLogging() "+ Calendar.getInstance().getTime().toString());
         state = State.resumed;
         try {
             lspLog.resumeLogging();
@@ -146,7 +148,7 @@ public class LSPApplication extends Application {
     public void pauseLogging() {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsg("pauseLogging()");
+        LSPLog.onTextMsg("pauseLogging() "+ Calendar.getInstance().getTime().toString());
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;

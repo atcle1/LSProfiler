@@ -1,5 +1,6 @@
 package kr.ac.snu.cares.lsprofiler;
 
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,15 +30,12 @@ import kr.ac.snu.cares.lsprofiler.util.Util;
 
 public class MainActivity extends ActionBarActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
+    private TextView txtStatus;
+
     private Button btStartStresser;
     private Button btStopStresser;
-
-    private Button btConnect;
-    private Button btSend;
-
-    private Button btInsertLog;
+    private Button btStatus;
     private Button btReadLog;
-
     private Button btSendMail;
     private Button btCallLog;
 
@@ -58,11 +57,10 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         onServiceBtClickListener serviceBtClickListener = new onServiceBtClickListener();
 
+        txtStatus = (TextView)findViewById(R.id.txtStatus);
+
         btStartStresser = (Button)findViewById(R.id.bTStartService);
         btStopStresser = (Button)findViewById(R.id.bTStopService);
-        btConnect = (Button)findViewById(R.id.bTConnect);
-        btSend = (Button)findViewById(R.id.bTSend);
-        btInsertLog = (Button)findViewById(R.id.bTInsertLog);
         btReadLog = (Button)findViewById(R.id.bTReadLog);
         btSendMail = (Button)findViewById(R.id.bTSendMail);
         btCallLog = (Button)findViewById(R.id.bTCallLog);
@@ -70,14 +68,13 @@ public class MainActivity extends ActionBarActivity {
 
         btStartStresser.setOnClickListener(serviceBtClickListener);
         btStopStresser.setOnClickListener(serviceBtClickListener);
-        btConnect.setOnClickListener(serviceBtClickListener);
-        btSend.setOnClickListener(serviceBtClickListener);
-        btInsertLog.setOnClickListener(serviceBtClickListener);
         btReadLog.setOnClickListener(serviceBtClickListener);
         btSendMail.setOnClickListener(serviceBtClickListener);
         btCallLog.setOnClickListener(serviceBtClickListener);
 
         setButton(R.id.bTBackupLog, serviceBtClickListener);
+        setButton(R.id.bTStatus, serviceBtClickListener);
+        setButton(R.id.bTRoot, serviceBtClickListener);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -109,6 +106,20 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
+    private void updateStatus() {
+        String status = "";
+        status += "status : " + lspApplication.state + "\n";
+        status += "nextAlarm : " + LSPAlarmManager.getNextAlarm().getTime().toString() + "\n";
+
+        txtStatus.setText(status);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateStatus();
+    }
 
     class onServiceBtClickListener implements View.OnClickListener
     {
@@ -122,32 +133,13 @@ public class MainActivity extends ActionBarActivity {
                 //lspApplication.startLogging();
                 Su.isRooted();
                 lspApplication.startProfiling();
-
+                updateStatus();
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();
 
                 //lspApplication.stopLogging();
                 lspApplication.stopProfiling();
-
-
-
-            } else if (v.getId() == R.id.bTConnect) {
-                //clientHandler.sendMsg(DaemonClient.DAEMON_CONNECT);
-                lspApplication.doKLogBackup();
-
-
-            } else if (v.getId() == R.id.bTSend) {
-                //clientHandler.sendMsg(DaemonClient.DAEMON_SEND);
-                    Log.i(TAG, "is rooted ? " + Su.isRooted());
-//                Log.i(TAG, "su available () : " + Shell.SU.available());
-
-            } else if (v.getId() == R.id.bTInsertLog) {
-                //LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
-                //logDbHandler.writeLog("test "+ Math.random());
-                su = new Su();
-                su.prepare();
-                su.execSu("id");
-                su.stopSu(100);
+                updateStatus();
             } else if (v.getId() == R.id.bTReadLog) {
                 LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
                 logDbHandler.printLog();
@@ -162,6 +154,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
             } else if (v.getId() == R.id.bTCallLog) {
+                /*
                 CallLogResolver callLogResolver = new CallLogResolver(getContentResolver());
                 SmsLogResolver smsLogResolver = new SmsLogResolver(getContentResolver());
 
@@ -181,9 +174,15 @@ public class MainActivity extends ActionBarActivity {
                 for (CallLogItem i : mergeList) {
                     Log.i(TAG, i.summary());
                 }
+*/
 
             } else if (v.getId() == R.id.bTBackupLog) {
                 lspApplication.doReport();
+            } else if (v.getId() == R.id.bTStatus) {
+                updateStatus();
+            } else if (v.getId() == R.id.bTRoot) {
+                boolean isRooted = Su.isRooted();
+                Toast.makeText(getApplicationContext(), "Rooted : "+isRooted, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -54,22 +54,19 @@ public class LSPNotificationService extends NotificationListenerService{
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        super.onNotificationPosted(sbn);
-        Log.i(TAG, "onNotificationPosted()");
+        //Log.i(TAG, "onNotificationPosted()");
         LSPLog.onNotificationPosted(sbn);
 
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-        super.onNotificationRemoved(sbn);
-        Log.i(TAG, "onNotificationRemoved()");
+        //Log.i(TAG, "onNotificationRemoved()");
         LSPLog.onNotificationRemoved(sbn);
     }
 
     @Override
     public void onNotificationRankingUpdate(RankingMap rankingMap) {
-        super.onNotificationRankingUpdate(rankingMap);
-        Log.i(TAG, "onNotificationRankingUpdate()");
+        //Log.i(TAG, "onNotificationRankingUpdate()");
     }
 }

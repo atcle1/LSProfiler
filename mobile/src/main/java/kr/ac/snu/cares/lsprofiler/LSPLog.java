@@ -8,6 +8,8 @@ import android.service.notification.StatusBarNotification;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.sun.mail.util.BASE64DecoderStream;
+
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.Util;
 
@@ -48,20 +50,57 @@ public class LSPLog {
         logDbHandler.writeLog("ULC : " + provider + " "+lat+" "+lon);
     }
 
+    private static int prev_status = -1;
+    private static int prev_chargePlug = -1;
+    private static int prev_batteryPct = -1;
     public static void onBatteryStatusChagned(Intent intent) {
         if(!bWriteLog) return;
 
-        int health= intent.getIntExtra(BatteryManager.EXTRA_HEALTH,0);
-        int icon_small= intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL,0);
-        int level= intent.getIntExtra(BatteryManager.EXTRA_LEVEL,0);
-        int plugged= intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
-        boolean present= intent.getExtras().getBoolean(BatteryManager.EXTRA_PRESENT);
-        int scale= intent.getIntExtra(BatteryManager.EXTRA_SCALE,0);
-        int status= intent.getIntExtra(BatteryManager.EXTRA_STATUS,0);
-        String technology= intent.getExtras().getString(BatteryManager.EXTRA_TECHNOLOGY);
-        int temperature= intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE,0);
-        int voltage= intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE,0);
-        logDbHandler.writeLog("BAT : "+plugged +" "+status+" "+level+" "+temperature);
+        //int health= intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
+        //int icon_small= intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, 0);
+        //boolean present= intent.getExtras().getBoolean(BatteryManager.EXTRA_PRESENT);
+        //String technology= intent.getExtras().getString(BatteryManager.EXTRA_TECHNOLOGY);
+        int temperature= intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
+        //int voltage= intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE,0);
+
+        int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        String statusStr = "";
+        if (status == BatteryManager.BATTERY_STATUS_CHARGING) {
+            statusStr = "CHARGING";
+        } else if (status == BatteryManager.BATTERY_STATUS_DISCHARGING) {
+            statusStr = "DISCHARGING";
+        } else if (status == BatteryManager.BATTERY_STATUS_FULL) {
+            statusStr = "FULL";
+        } else if (status == BatteryManager.BATTERY_STATUS_NOT_CHARGING) {
+            statusStr = "NOT_CHARGING";
+        } else {
+            statusStr = "UNKNOWN:"+status;
+        }
+
+        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        String plugStr = "";
+        if (chargePlug == BatteryManager.BATTERY_PLUGGED_AC) {
+            plugStr = "AC";
+        } else if (chargePlug == BatteryManager.BATTERY_PLUGGED_USB) {
+            plugStr = "USB";
+        } else if (chargePlug == BatteryManager.BATTERY_PLUGGED_WIRELESS) {
+            plugStr = "WIRELESS";
+        } else {
+            plugStr = "" + chargePlug;
+        }
+
+        int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        int batteryPct = (int)(level / (float)scale);
+
+        if (prev_batteryPct != batteryPct || prev_status != status || prev_chargePlug != chargePlug) {
+            prev_batteryPct = batteryPct;
+            prev_status = status;
+            prev_chargePlug = chargePlug;
+            logDbHandler.writeLog("BAT : "+batteryPct+" "+statusStr+" "+plugStr + " " + temperature);
+        }
+
+
     }
     public static void onTeleponyStateChagned(double a){
         if(!bWriteLog) return;
@@ -80,7 +119,7 @@ public class LSPLog {
         logDbHandler.writeLog("FAP : "+packageName);
     }
     public static void onNotificationPosted(StatusBarNotification sbn) {
-        String title = "", text = "", bigtext="";
+        String title = "null", text = "null", bigtext="null";
         String packName = sbn.getPackageName();
         //if (sbn.getNotification().tickerText != null)
         //    ticker = sbn.getNotification().tickerText.toString();
@@ -95,15 +134,18 @@ public class LSPLog {
             }
             */
             title = extras.getString("android.title");
-            text = extras.getCharSequence("android.text").toString();
+            CharSequence textSequence = extras.getCharSequence("android.text");
+            if (textSequence != null)
+                text = textSequence.toString();
             if (extras.containsKey("android.bigText"))
                 bigtext = extras.getCharSequence("android.bigText").toString();
         }
 
-        Log.i("id", "" + sbn.getId());
-        Log.i("Text", "tag "+sbn.getTag());
+        //Log.i("id", "" + sbn.getId());
+        //Log.i("Text", "tag "+sbn.getTag());
+        Log.i("TAG", "NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
         if(!bWriteLog) return;
-        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title+"|"+text+"|"+bigtext);
+        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
 
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {
@@ -112,6 +154,7 @@ public class LSPLog {
 //        Log.i("Text", "tag "+sbn.getTag());
         if(!bWriteLog) return;
         String packName = sbn.getPackageName();
+        Log.i(TAG, "NOR : "+sbn.getPackageName()+"|"+sbn.getId());
         logDbHandler.writeLog("NOR : "+sbn.getPackageName()+"|"+sbn.getId());
     }
     public static void onCallStateChanged(int state, String incomingNumber) {
