@@ -38,16 +38,10 @@ public class LSPLog {
     }
 
     /* logging methods */
-    public static void onLocationUpdate(String provider, double lat, double lon) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("LOC : "+provider+" " +lat+" "+lon);
+    public static void onPowerStateChagned(int state) {
+        //if(!bWriteLog) return;
+        logDbHandler.writeLog("PST : "+state);
     }
-
-    public static void onKnownLocation(String provider, double lat, double lon) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("ULC : " + provider + " "+lat+" "+lon);
-    }
-
     private static int prev_status = -1;
     private static int prev_chargePlug = -1;
     private static int prev_batteryPct = -1;
@@ -107,72 +101,6 @@ public class LSPLog {
     public static void onScreenChagned(int onOff){
         if(!bWriteLog) return;
         logDbHandler.writeLog("SCR : "+onOff);
-    }
-    public static void onPowerStateChagned(int state) {
-        //if(!bWriteLog) return;
-        logDbHandler.writeLog("PST : "+state);
-    }
-    public static void onForegroundAppChagned(String packageName) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("FAP : "+packageName);
-    }
-    public static void onNotificationPosted(StatusBarNotification sbn) {
-        String title = "null", text = "null", bigtext="null";
-        String packName = sbn.getPackageName();
-        //if (sbn.getNotification().tickerText != null)
-        //    ticker = sbn.getNotification().tickerText.toString();
-        Bundle extras = sbn.getNotification().extras;
-        if (extras != null) {
-            /*
-            for (String key : extras.keySet()) {
-                Object value = extras.get(key);
-                if (value != null)
-                    Log.d(TAG, String.format("- %s %s (%s)", key,
-                        value.toString(), value.getClass().getName()));
-            }
-            */
-            title = extras.getString("android.title");
-            CharSequence textSequence = extras.getCharSequence("android.text");
-            if (textSequence != null)
-                text = textSequence.toString();
-            if (extras.containsKey("android.bigText"))
-                bigtext = extras.getCharSequence("android.bigText").toString();
-        }
-
-        //Log.i("id", "" + sbn.getId());
-        //Log.i("Text", "tag "+sbn.getTag());
-        Log.i("TAG", "NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
-
-    }
-    public static void onNotificationRemoved(StatusBarNotification sbn) {
-//        Log.i("id", "" + sbn.toString());
-//        Log.i("id", "" + sbn.getId());
-//        Log.i("Text", "tag "+sbn.getTag());
-        if(!bWriteLog) return;
-        String packName = sbn.getPackageName();
-        Log.i(TAG, "NOR : "+sbn.getPackageName()+"|"+sbn.getId());
-        logDbHandler.writeLog("NOR : "+sbn.getPackageName()+"|"+sbn.getId());
-    }
-    public static void onCallStateChanged(int state, String incomingNumber) {
-        if(!bWriteLog) return;
-        String enc = Util.encryptData(incomingNumber);
-        switch (state) {
-            case TelephonyManager.CALL_STATE_RINGING:
-                logDbHandler.writeLog("CST : RINGING " + enc);
-                break;
-            case TelephonyManager.CALL_STATE_OFFHOOK:
-                logDbHandler.writeLog("CST : OFFHOOK" + enc);
-                break;
-            case TelephonyManager.CALL_STATE_IDLE:
-                logDbHandler.writeLog("CST : IDLE" + enc);
-                break;
-        }
-    }
-    public static void onTopActivityResuming(String packageName) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("FGA : " + packageName);
     }
 
     public static void onTextMsg(String msg){

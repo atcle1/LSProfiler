@@ -21,8 +21,6 @@ import kr.ac.snu.cares.lsprofiler.LSPLog;
 public class ReceiverManager extends BroadcastReceiver {
     public static final String TAG = ReceiverManager.class.getSimpleName();
     private Context context;
-    private MyPhoneStateListener phoneStateListener;
-    private TelephonyManager telephonyManager;
     private boolean isRegisteredReceivers = false;
 
     public ReceiverManager(Context context) {
@@ -44,9 +42,6 @@ public class ReceiverManager extends BroadcastReceiver {
 
         context.registerReceiver(this, filter);
 
-        phoneStateListener = new MyPhoneStateListener();
-        telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
         isRegisteredReceivers = true;
         Log.i(TAG, "registerReceivers()");
     }
@@ -54,7 +49,6 @@ public class ReceiverManager extends BroadcastReceiver {
     public void unregisterReceivers() {
         try {
             context.unregisterReceiver(this);
-            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
             isRegisteredReceivers = false;
         }catch (Exception ex) {
             //ex.printStackTrace();
@@ -64,47 +58,16 @@ public class ReceiverManager extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if(action.equals(Intent.ACTION_SCREEN_ON)){
+        if (action.equals(Intent.ACTION_SCREEN_ON)) {
             Log.i(TAG, "Screen ON");
             LSPLog.onScreenChagned(1);
-        }  else if(action.equals(Intent.ACTION_SCREEN_OFF)) {
+        } else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
             Log.i(TAG, "Screen OFF");
             LSPLog.onScreenChagned(0);
         } else if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
             LSPLog.onBatteryStatusChagned(intent);
-        } else if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
-            Bundle bundle = intent.getExtras();
-            Object messages[] = (Object[]) bundle.get("pdus");
-            SmsMessage smsMessage[] = new SmsMessage[messages.length];
-
-            for (int i = 0; i < messages.length; i++) {
-                // PDU 포맷으로 되어 있는 메시지를 복원합니다.
-                smsMessage[i] = SmsMessage.createFromPdu((byte[]) messages[i]);
-            }
-            // SMS 수신 시간 확인
-            Date curDate = new Date(smsMessage[0].getTimestampMillis());
-            Log.d("문자 수신 시간", curDate.toString());
-            // SMS 발신 번호 확인
-            String origNumber = smsMessage[0].getOriginatingAddress();
-            // SMS 메시지 확인
-            String message = smsMessage[0].getMessageBody().toString();
-            Log.d("문자 내용", "발신자 : " + origNumber + ", 내용 : " + message);
-        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING")) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String packageName = (String) bundle.getString("packageName");
-                LSPLog.onTopActivityResuming(packageName);
-                Log.i(TAG, "top activity : " + packageName);
-            }
         } else {
             Log.i(TAG, action);
-        }
-    }
-
-    class MyPhoneStateListener extends PhoneStateListener {
-        @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
-            LSPLog.onCallStateChanged(state, incomingNumber);
         }
     }
 }

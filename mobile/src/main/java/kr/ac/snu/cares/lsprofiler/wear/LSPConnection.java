@@ -78,6 +78,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
 
     // Send Message 버튼을 클릭했을 때 실행
     public void sendMessage(String message) {
+        conneect();
         // 전송할 메시지 텍스트 생성
         this.message = message;
 

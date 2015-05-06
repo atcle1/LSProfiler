@@ -137,18 +137,7 @@ public class LSPReporter {
 
         Log.i(TAG, "send "+item.fileList.size()+" items.");
     }
-
-    public void backReport(ReportItem item) {
-        File baseDir = new File(item.backupDir);
-        if(!baseDir.exists())
-            baseDir.mkdirs();
-
-        StringBuilder result = new StringBuilder();
-
-        // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupDir, result, false);
-        Log.i(TAG, "backupReport() : " + result);
-    }
-
+/*
     public void doReport() {
         Log.i(TAG, "doReport()");
         try {
@@ -169,5 +158,6 @@ public class LSPReporter {
         app.resumeLogging();
         reportWl.release();
     }
+    */
 
 }

@@ -19,6 +19,7 @@ import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
+import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
 /**
  * Created by summer on 3/28/15.
@@ -44,6 +45,8 @@ public class LSPApplication extends Application {
     private LocationTracer locationTracker;
     private LSPNotificationService notificationService;
     private LSPAlarmManager alarmManager;
+
+    private LSPConnection connection;
 
     private Mail mail;
 
@@ -75,6 +78,9 @@ public class LSPApplication extends Application {
 
         reporter = new LSPReporter(this);
 
+        connection = new LSPConnection(this);
+        connection.conneect();
+
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
         daemonClientThread.start();
@@ -92,11 +98,13 @@ public class LSPApplication extends Application {
     public void startProfiling() {
         Log.i(TAG, "startProfiling()");
         prefMgr.setLoggingState("start");
+        connection.sendMessage("START");
         startLogging();
     }
     public void stopProfiling() {
         Log.i(TAG, "stopProfiling()");
         prefMgr.setLoggingState("stop");
+        connection.sendMessage("STOP");
         stopLogging();
     }
     public void startProfilingIfStarted() {
@@ -127,6 +135,7 @@ public class LSPApplication extends Application {
 
         resumeLogging();
         LSPLog.onTextMsg("startLogging()");
+
 
     }
     public void resumeLogging() {

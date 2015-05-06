@@ -164,9 +164,8 @@ public class LSPApplication extends Application {
         //stopService(new Intent(this, LSPService.class));
     }
 
-    public void doReport() {
-        showToast("doReport()");
-        reporter.doReport();
+    public void doWearReport() {
+
     }
 
     public void doKLogBackup() {
