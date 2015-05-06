@@ -40,11 +40,7 @@ public class BootReceiver extends BroadcastReceiver {
 
 
 
-            // power on
-        goAsync();
-
-
-
+        // power on
         LSPApplication app = LSPApplication.getInstance();
         if (app != null) {
 
@@ -57,5 +53,6 @@ public class BootReceiver extends BroadcastReceiver {
 
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
         context.startService(startServiceIntent);
+        Log.i("LP", "BootReceiver - onRecive() end");
     }
 }

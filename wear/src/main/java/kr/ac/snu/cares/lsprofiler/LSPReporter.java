@@ -9,9 +9,6 @@ import java.io.File;
 import java.util.Arrays;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
-import kr.ac.snu.cares.lsprofiler.email.Mail;
-import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
-import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 
@@ -125,21 +122,20 @@ public class LSPReporter {
     }
 
     public void sendReport(ReportItem item) {
-        SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
-        sendMailAsyncTask.title = "LSP report from " + app.deviceID;
-        sendMailAsyncTask.message = "deviceID";
+        //SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
+        //sendMailAsyncTask.title = "LSP report from " + app.deviceID;
+        //sendMailAsyncTask.message = "deviceID";
 
         // get file path
         //sendMailAsyncTask.files = new String []{backupDbPath};
+        /*
         sendMailAsyncTask.files = new String [item.fileList.size()];
         for (int i = 0; i < item.fileList.size(); i++) {
             sendMailAsyncTask.files[i] = item.fileList.get(i).getAbsolutePath();
         }
+        */
 
-        sendMailAsyncTask.wl = this.sendWl;
         Log.i(TAG, "send "+item.fileList.size()+" items.");
-        sendMailAsyncTask.reportItem = item;
-        sendMailAsyncTask.execute();
     }
 
     public void backReport(ReportItem item) {
@@ -147,7 +143,6 @@ public class LSPReporter {
         if(!baseDir.exists())
             baseDir.mkdirs();
 
-        MyConsoleExe exe = new MyConsoleExe();
         StringBuilder result = new StringBuilder();
 
         // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupDir, result, false);
@@ -164,17 +159,7 @@ public class LSPReporter {
             // collect reports...
             collectReport(item);
 
-            if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
-                // not wifi
-                Log.i(TAG, "doReport() but not connected WIFI");
-                LSPLog.onTextMsg("try report, NOT WIFI");
-                app.getAlarmManager().clearAlarm();
-                app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
-
-            } else {
-                // send report via email
-                sendReport(item);
-            }
+            sendReport(item);
         }catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -185,40 +170,4 @@ public class LSPReporter {
         reportWl.release();
     }
 
-    private class SendMailAsyncTask extends AsyncTask<Void, Void, Void> {
-        public String title = "";
-        public String message = "";
-        public String []files = null;
-        public PowerManager.WakeLock wl;
-        public ReportItem reportItem = null;
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            wl.acquire();
-            try {
-                int result = Mail.sendReport(title, message, files);
-                if (result != 0) {
-                    Log.i(TAG, "send mail failed!");
-                }
-
-                // make backup dir
-                File backupDir = new File(reportItem.backupDir);
-                if(!backupDir.exists())
-                    backupDir.mkdirs();
-
-                // move
-                for (int i = 0; i < reportItem.fileList.size(); i++) {
-                    File origFile = reportItem.fileList.get(i);
-                    File destFile = new File(reportItem.backupDir + origFile.getName());
-                    origFile.renameTo(destFile);
-                    Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
-                }
-            }catch(Exception ex) {
-                ex.printStackTrace();
-            }
-            wl.release();
-            return null;
-        }
-
-    }
 }

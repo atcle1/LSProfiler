@@ -26,6 +26,7 @@ import kr.ac.snu.cares.lsprofiler.resolvers.SmsLogResolver;
 import kr.ac.snu.cares.lsprofiler.util.CallLogMerger;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.util.Util;
+import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -50,7 +51,7 @@ public class MainActivity extends ActionBarActivity {
         Button button = (Button)findViewById(id);
         button.setOnClickListener(listener);
     }
-
+    LSPConnection connection;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +83,7 @@ public class MainActivity extends ActionBarActivity {
         clientHandler = new DaemonClient(daemonClientThread.getLooper());
         clientHandler.init(this);
         */
+        connection = new LSPConnection(getApplicationContext());
     }
 
 
@@ -176,9 +178,14 @@ public class MainActivity extends ActionBarActivity {
                 }
 */
 
+
+                connection.conneect();
+                connection.sendMessage("LSP test message");
+
             } else if (v.getId() == R.id.bTBackupLog) {
                 lspApplication.doReport();
             } else if (v.getId() == R.id.bTStatus) {
+                connection.disconnect();
                 updateStatus();
             } else if (v.getId() == R.id.bTRoot) {
                 boolean isRooted = Su.isRooted();

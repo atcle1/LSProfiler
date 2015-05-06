@@ -72,8 +72,12 @@ public class LocationTracer implements LocationListener {
         if (provider == null) {
             provider = LocationManager.GPS_PROVIDER;
         }
-
-        locationManager.requestLocationUpdates(provider, 0, 0, this);
+        checkState();
+        //locationManager.requestLocationUpdates(provider, 0, 0, this);
+        if (isGPSEnabled)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+        if (isNetworkEnabled)
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
         timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 5, this);
         Log.i(TAG, "requestUpdate()");
     }
