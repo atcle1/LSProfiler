@@ -1,5 +1,7 @@
 package kr.ac.snu.cares.lsprofiler.util;
 
+import android.bluetooth.BluetoothAdapter;
+
 import java.security.MessageDigest;
 import java.util.Calendar;
 import java.util.Date;
@@ -41,5 +43,14 @@ public class Util {
             e.printStackTrace();
         }
         return sb.toString();
+    }
+
+    public static String getBluetoothAddress() {
+        BluetoothAdapter bluetoothAdapter;
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter != null)
+            return bluetoothAdapter.getAddress();
+        return "";
+
     }
 }

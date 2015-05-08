@@ -54,6 +54,7 @@ public class LSPService extends Service {
         if (intent == null) {
             // service is terminated by system, and restarted. start by system
             Log.i(TAG, "onStartCommand() : intent == null");
+            LSPLog.onTextMsgForce("start by system");
         } else {
             Bundle bundle = intent.getExtras();
             if (bundle == null) {

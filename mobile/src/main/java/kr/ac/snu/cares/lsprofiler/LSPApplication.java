@@ -79,7 +79,7 @@ public class LSPApplication extends Application {
         reporter = new LSPReporter(this);
 
         connection = new LSPConnection(this);
-        connection.conneect();
+        connection.connect();
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -98,13 +98,16 @@ public class LSPApplication extends Application {
     public void startProfiling() {
         Log.i(TAG, "startProfiling()");
         prefMgr.setLoggingState("start");
-        connection.sendMessage("START");
+        connection.sendMessage("/LSP/WINFO", "MAC");
+        //connection.sendMessage("/LSP/CONTROL", "START");
+        connection.sendMessage("/LSP/WINFO", "STATUS");
+
         startLogging();
     }
     public void stopProfiling() {
         Log.i(TAG, "stopProfiling()");
         prefMgr.setLoggingState("stop");
-        connection.sendMessage("STOP");
+        connection.sendMessage("/LSP/CONTROL", "STOP");
         stopLogging();
     }
     public void startProfilingIfStarted() {

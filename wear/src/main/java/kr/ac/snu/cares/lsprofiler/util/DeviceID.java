@@ -18,9 +18,9 @@ public class DeviceID {
         String deviceID = null;
 
         // deviceID = getPhoneNumber(context);
-        if (deviceID == null) {
-            deviceID = getMacAddress(context);
-        }
+        //if (deviceID == null) {
+        //    deviceID = getMacAddress(context);
+       // }
         if (deviceID == null) {
             deviceID = android.provider.Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         }

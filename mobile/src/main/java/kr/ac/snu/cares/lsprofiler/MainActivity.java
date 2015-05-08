@@ -1,6 +1,5 @@
 package kr.ac.snu.cares.lsprofiler;
 
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,17 +14,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
-import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
-import kr.ac.snu.cares.lsprofiler.resolvers.CallLogResolver;
-import kr.ac.snu.cares.lsprofiler.resolvers.SmsLogResolver;
-import kr.ac.snu.cares.lsprofiler.util.CallLogMerger;
 import kr.ac.snu.cares.lsprofiler.util.Su;
-import kr.ac.snu.cares.lsprofiler.util.Util;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
 
@@ -179,8 +171,8 @@ public class MainActivity extends ActionBarActivity {
 */
 
 
-                connection.conneect();
-                connection.sendMessage("LSP test message");
+                connection.connect();
+                connection.sendMessage("/LSP", "LSP test message");
 
             } else if (v.getId() == R.id.bTBackupLog) {
                 lspApplication.doReport();
