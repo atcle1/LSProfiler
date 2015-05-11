@@ -14,6 +14,8 @@ import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
+import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
+import kr.ac.snu.cares.lsprofiler.wear.LSPReportServer;
 
 /**
  * Created by summer on 4/24/15.
@@ -83,7 +85,7 @@ public class LSPReporter {
         } catch (Exception ex) {
         }
     }
-    public void collectReport(ReportItem item) {
+    public void collectPhoneReport(ReportItem item) {
         // mkdir
         File baseDir = new File(COLLECT_PATH);
         if(!baseDir.exists())
@@ -116,12 +118,7 @@ public class LSPReporter {
             }
         }
 
-        File collectDir = new File(COLLECT_PATH);
-        File[] logFileArray = collectDir.listFiles();
 
-        if (logFileArray == null)
-            return;
-        item.fileList.addAll(Arrays.asList(logFileArray));
     }
 
     public void sendReport(ReportItem item) {
@@ -137,7 +134,7 @@ public class LSPReporter {
         }
 
         sendMailAsyncTask.wl = this.sendWl;
-        Log.i(TAG, "send "+item.fileList.size()+" items.");
+        Log.i(TAG, "send " + item.fileList.size() + " items.");
         sendMailAsyncTask.reportItem = item;
         sendMailAsyncTask.execute();
     }
@@ -154,15 +151,86 @@ public class LSPReporter {
         Log.i(TAG, "backupReport() : " + result);
     }
 
+    public boolean collectWatchReport() {
+        LSPReportServer reportServer = new LSPReportServer();
+
+        LSPConnection connection = app.getLSPConnection();
+        if (connection == null ) {
+            return false;
+        }
+        connection.connect();
+
+        String btmac = NetworkUtil.getBluetoothAddress();
+        if (btmac == null)
+            return false;
+
+        reportServer.start();
+        Log.i(TAG, "send report message " + NetworkUtil.getBluetoothAddress());
+        //connection.sendMessage("/LSP/CONTROL", "STOP");
+        connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
+
+        try {
+            int i;
+            for (i = 0; i < 300; i++) {
+                reportServer.join(1000);
+                Log.i(TAG, "reportServer.join "+(i+1));
+            }
+            if (i == 300) {
+                Log.e(TAG, "reportServer join timeout, interrupt()");
+                reportServer.interrupt();
+                return false;
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    class WearCollectThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            collectWatchReport();
+        }
+    }
+
+
     public void doReport() {
         Log.i(TAG, "doReport()");
         try {
-            reportWl.acquire();
+            reportWl.acquire(1000 * 500);
             app.pauseLogging();
             ReportItem item = new ReportItem();
 
-            // collect reports...
-            collectReport(item);
+            // collect reports from wear...
+            WearCollectThread wearCollectThread = new WearCollectThread();
+            wearCollectThread.start();
+            Log.i(TAG, "wearCollectThread run() called");
+
+            // collect mobile logs....
+            collectPhoneReport(item);
+            Log.i(TAG, "collectphoneReport() ended");
+
+            // join for wearColl
+            int i;
+            for (i = 0; i < 100; i++)
+                wearCollectThread.join(1000);
+                Log.i(TAG, "wear collect finished "+ i);
+            if (i == 100) {
+                Log.e(TAG, "wearCollectThread isn't finished!, interrupt!");
+                wearCollectThread.interrupt();
+            }
+
+            // listing files...
+            File collectDir = new File(COLLECT_PATH);
+            File[] logFileArray = collectDir.listFiles();
+
+            if (logFileArray == null)
+                return;
+
+            item.fileList.addAll(Arrays.asList(logFileArray));
 
             if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
                 // not wifi

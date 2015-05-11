@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,6 +14,7 @@ import java.util.Calendar;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
+import kr.ac.snu.cares.lsprofiler.service.WSLPReportService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
@@ -26,6 +28,7 @@ public class LSPApplication extends Application {
     public enum State {stopped, started, resumed, paused, error};
     public State state = State.stopped;
     private Su su;
+    PowerManager pm;
 
     private LSPReporter reporter;
 
@@ -40,8 +43,6 @@ public class LSPApplication extends Application {
     private ReceiverManager receiverManager;
 
     public String deviceID;
-
-
 
     @Override
     public void onCreate() {
@@ -60,6 +61,7 @@ public class LSPApplication extends Application {
         }
 
         reporter = new LSPReporter(this);
+        pm =  (PowerManager) getSystemService( Context.POWER_SERVICE );
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -164,8 +166,12 @@ public class LSPApplication extends Application {
         //stopService(new Intent(this, LSPService.class));
     }
 
-    public void doWearReport() {
-
+    public void doWearReport(String mac) {
+        Intent startServiceIntent = new Intent(this, WSLPReportService.class);
+        startServiceIntent.putExtra("serverMac", mac);
+        startServiceIntent.putExtra("resumeWhenFinished", true);
+        pauseLogging();
+        startService(startServiceIntent);
     }
 
     public void doKLogBackup() {

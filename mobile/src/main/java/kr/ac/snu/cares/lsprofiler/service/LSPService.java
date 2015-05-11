@@ -41,15 +41,17 @@ public class LSPService extends Service {
         Log.i(TAG, "onCreate()");
         //Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
         application = (LSPApplication)getApplication();
+        lspHandler = new LSPHandler();
 
     }
     private static final int NOTIFICATION_ID = 1;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "onStartCommand() : flags " + flags + " startId " + startId);
-        Toast.makeText(this, TAG + " onStartCommand", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "onStartCommand() : flags " + flags + " startId " + startId + " " + intent);
+        Toast.makeText(this, TAG + " onStartCommand " + startId, Toast.LENGTH_SHORT).show();
         LSPLog.onTextMsg("LSPService onStart()");
+
 
         if (intent == null) {
             // service is terminated by system, and restarted. start by system
@@ -58,17 +60,20 @@ public class LSPService extends Service {
         } else {
             Bundle bundle = intent.getExtras();
             if (bundle == null) {
-                return 0;
+                return START_STICKY;
             }
             int requestCode = bundle.getInt("requestCode");
             if (requestCode == LSPService.ALARM_REQUEST) {
+                // first start routine...
                 // backup
-                application.doReport();
+                //application.doReport();
+                lspHandler.sendEmptyMessage(ALARM_REQUEST);
             }
         }
-        lspHandler = new LSPHandler();
+
 
         //showForegroundNotification("Running LSProfiler in foreground");
+        Log.i(TAG, "onStartCommand return");
         return START_STICKY;
     }
 

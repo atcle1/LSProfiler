@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
+import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
@@ -57,6 +59,8 @@ public class LSPApplication extends Application {
     {
         return alarmManager;
     }
+    public LSPConnection getLSPConnection() {return connection; }
+    private Handler handler;
 
     @Override
     public void onCreate() {
@@ -88,6 +92,8 @@ public class LSPApplication extends Application {
         clientHandler.init(this);
         */
         app = this;
+
+        handler = new Handler();
     }
 
     public LogDbHandler getDbHandler() {
@@ -100,7 +106,7 @@ public class LSPApplication extends Application {
         prefMgr.setLoggingState("start");
         connection.sendMessage("/LSP/WINFO", "MAC");
         //connection.sendMessage("/LSP/CONTROL", "START");
-        connection.sendMessage("/LSP/WINFO", "STATUS");
+        //connection.sendMessage("/LSP/WINFO", "STATUS");
 
         startLogging();
     }
@@ -137,14 +143,12 @@ public class LSPApplication extends Application {
         alarmManager.setFirstAlarm();
 
         resumeLogging();
-        LSPLog.onTextMsg("startLogging()");
-
-
     }
+
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsg("resumeLogging() "+ Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsgForce("resumeLogging() " + Calendar.getInstance().getTime().toString());
         state = State.resumed;
         try {
             lspLog.resumeLogging();
@@ -160,7 +164,7 @@ public class LSPApplication extends Application {
     public void pauseLogging() {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsg("pauseLogging() "+ Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsgForce("resumeLogging() " + Calendar.getInstance().getTime().toString());
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -189,8 +193,17 @@ public class LSPApplication extends Application {
         stopService(new Intent(this, LSPService.class));
     }
 
+    class LSPReportWorkThread extends Thread {
+        @Override
+        public void run() {
+            super.run();
+            reporter.doReport();
+        }
+    }
     public void doReport() {
         showToast("doReport()");
+        //LSPReportWorkThread lspReportWorkThread = new LSPReportWorkThread();
+        //lspReportWorkThread.start();
         reporter.doReport();
     }
 
@@ -222,7 +235,18 @@ public class LSPApplication extends Application {
         Log.i(TAG, "onConfigureationChanged()");
     }
 
+    class ToastMsgThread extends Thread{
+        public ToastMsgThread(String msg) {
+            this.msg = msg;
+        }
+        public String msg;
+
+        @Override
+        public void run() {
+            Toast.makeText(LSPApplication.getInstance(), msg, Toast.LENGTH_SHORT).show();
+        }
+    }
     public void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        handler.post(new ToastMsgThread(msg));
     }
 }

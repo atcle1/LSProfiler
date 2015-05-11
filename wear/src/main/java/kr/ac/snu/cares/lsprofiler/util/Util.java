@@ -51,6 +51,5 @@ public class Util {
         if (bluetoothAdapter != null)
             return bluetoothAdapter.getAddress();
         return "";
-
     }
 }

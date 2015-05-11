@@ -3,6 +3,7 @@ package kr.ac.snu.cares.lsprofiler;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
@@ -17,6 +18,8 @@ import android.widget.Toast;
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.service.LSPService;
+import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
@@ -138,6 +141,7 @@ public class MainActivity extends ActionBarActivity {
                 LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
                 logDbHandler.printLog();
                 Log.i(TAG, "onClick() - btReadLog()");
+
             } else if (v.getId() == R.id.bTSendMail) {
                 AsyncTask.execute(new Runnable() {
                     public void run() {
@@ -172,10 +176,22 @@ public class MainActivity extends ActionBarActivity {
 
 
                 connection.connect();
-                connection.sendMessage("/LSP", "LSP test message");
-
+                //connection.sendMessage("/LSP", "LSP test message");
+                connection.sendMessage("/LSP/CONTROL", "REPORT " + NetworkUtil.getBluetoothAddress());
             } else if (v.getId() == R.id.bTBackupLog) {
-                lspApplication.doReport();
+                Boolean bRunning = LSPService.isServiceRunning(getApplicationContext());
+                // if service is not started...
+                if (bRunning == false) {
+                    Log.i(TAG, "onReceive() service isn't started, starting it...");
+                    Intent startServiceIntent = new Intent(getApplicationContext(), LSPService.class);
+                    startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
+                    getApplicationContext().startService(startServiceIntent);
+                } else {
+                    Log.i(TAG, "onReceive() service already started.");
+                    Handler handler = LSPService.getHandler();
+                    if (handler != null)
+                        handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
+                }
             } else if (v.getId() == R.id.bTStatus) {
                 connection.disconnect();
                 updateStatus();

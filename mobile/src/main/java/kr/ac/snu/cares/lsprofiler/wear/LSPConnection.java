@@ -1,6 +1,7 @@
 package kr.ac.snu.cares.lsprofiler.wear;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -14,6 +15,8 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
+
+import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
 
 /**
  * Created by summer on 15. 5. 6.
@@ -141,7 +144,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         @Override
         public void onResult(Result result) {
             String resultString = "Sending Result : " + result.getStatus().isSuccess();
-            Toast.makeText(context, resultString, Toast.LENGTH_SHORT).show();
+            Log.i(TAG, resultString);
         }
     };
     /////

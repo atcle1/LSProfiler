@@ -33,6 +33,5 @@ public class ShutdownReceiver extends BroadcastReceiver{
         if (app != null)
             app.doKLogBackup();
 
-
     }
 }

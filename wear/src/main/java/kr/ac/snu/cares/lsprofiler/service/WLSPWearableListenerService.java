@@ -80,16 +80,20 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
 
         if (path.equals("/LSP/CONTROL")) {
             // 텍스트뷰에 적용 될 문자열을 지정한다.
-
             if (msg.equals("START")) {
                 LSPApplication.getInstance().startProfiling();
             } else if (msg.equals("STOP")) {
                 LSPApplication.getInstance().stopProfiling();
-            } else if (msg.equals("REPORT")) {
-                LSPApplication.getInstance().doWearReport();
+            } else if (msg.startsWith("REPORT")) {
+                String[] splits = msg.split(" ");
+                String mac = null;
+                if (splits.length == 2) {
+                    mac = splits[1];
+                    LSPApplication.getInstance().doWearReport(mac);
+                } else
+                    return;
             }
         } else if (path.equals("/LSP/WINFO")) {
-
             if (msg.equals("STATUS")) {
                 String state = LSPApplication.getInstance().state.name();
                 Log.i(TAG,"send state "+state);

@@ -1,5 +1,6 @@
 package kr.ac.snu.cares.lsprofiler.util;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -40,5 +41,14 @@ public class NetworkUtil {
             status = "Not connected to Internet";
         }
         return status;
+    }
+
+
+    public static String getBluetoothAddress() {
+        BluetoothAdapter bluetoothAdapter;
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter != null)
+            return bluetoothAdapter.getAddress();
+        return "";
     }
 }

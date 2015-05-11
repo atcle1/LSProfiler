@@ -98,7 +98,7 @@ public class LogDbHandler {
     public void printLog()
     {
         Cursor cursor=db.rawQuery(
-                "SELECT idx, datetime(i_datetime, 'unixepoch', 'localtime'), t_log " +
+                "z " +
                 "FROM logdb", null);
         if(cursor!=null){
             while(cursor.moveToNext()) {

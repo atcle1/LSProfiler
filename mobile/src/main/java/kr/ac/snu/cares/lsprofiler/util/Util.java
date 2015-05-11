@@ -1,5 +1,7 @@
 package kr.ac.snu.cares.lsprofiler.util;
 
+import android.bluetooth.BluetoothAdapter;
+
 import java.security.MessageDigest;
 import java.util.Calendar;
 import java.util.Date;
@@ -42,4 +44,5 @@ public class Util {
         }
         return sb.toString();
     }
+
 }

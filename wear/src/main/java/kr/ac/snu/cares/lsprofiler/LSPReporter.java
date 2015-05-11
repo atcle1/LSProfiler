@@ -39,8 +39,8 @@ public class LSPReporter {
         //DaemonStarter.startForReport(COLLECT_PATH, item.reportDateString + ".klog");
         Su su = new Su();
         su.prepare();
-        su.execSu("/data/local/sprofiler 3 "+COLLECT_PATH +" "+ item.reportDateString + ".klog");
-        su.stopSu(1000);
+        su.execSu("/data/local/sprofiler 3 "+COLLECT_PATH +" "+ item.reportDateString + ".w.klog");
+        su.stopSu(2000);
     }
 
     public boolean isKlogEnabled() {
@@ -64,11 +64,11 @@ public class LSPReporter {
 
     }
 
-    public void waitForKlogFinish(String filePath) {
+    public void waitForKlogFinish(ReportItem item) {
         try {
             // klog should be finished within 2s.
             Thread.sleep(1000);
-            File finishFile = new File(filePath);
+            File finishFile = new File(COLLECT_PATH + item.reportDateString + ".klog.finish");
             for (int i = 0; i < 10; i++) {
                 if (finishFile.exists()) {
                     Log.i(TAG, "KLSP finished detected! " + i);
@@ -78,6 +78,7 @@ public class LSPReporter {
                 Thread.sleep(1000);
             }
         } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
     public void collectReport(ReportItem item) {
@@ -87,15 +88,20 @@ public class LSPReporter {
             baseDir.mkdirs();
 
         // copy db
-        dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".db");
+        boolean backupDbSuccess = dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".w.db");
         // reset db
-        dbHandler.resetDB();
+        if (backupDbSuccess)
+            dbHandler.resetDB();
+        else {
+            LSPLog.onTextMsgForce("backup db failed");
+            Log.i(TAG, "backup db failed");
+        }
 
         //clientHandler.requestCollectLog();
         if (isKlogEnabled()) {
             requestReportToDaemon(item);
 
-            waitForKlogFinish(COLLECT_PATH + item.reportDateString + ".klog.finish");
+            waitForKlogFinish(item);
 
             //listing log files...
             try {
@@ -120,44 +126,4 @@ public class LSPReporter {
             return;
         item.fileList.addAll(Arrays.asList(logFileArray));
     }
-
-    public void sendReport(ReportItem item) {
-        //SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
-        //sendMailAsyncTask.title = "LSP report from " + app.deviceID;
-        //sendMailAsyncTask.message = "deviceID";
-
-        // get file path
-        //sendMailAsyncTask.files = new String []{backupDbPath};
-        /*
-        sendMailAsyncTask.files = new String [item.fileList.size()];
-        for (int i = 0; i < item.fileList.size(); i++) {
-            sendMailAsyncTask.files[i] = item.fileList.get(i).getAbsolutePath();
-        }
-        */
-
-        Log.i(TAG, "send "+item.fileList.size()+" items.");
-    }
-/*
-    public void doReport() {
-        Log.i(TAG, "doReport()");
-        try {
-            reportWl.acquire();
-            app.pauseLogging();
-            ReportItem item = new ReportItem();
-
-            // collect reports...
-            collectReport(item);
-
-            sendReport(item);
-        }catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        // backup report
-        // backReport(item);
-        app.resumeLogging();
-        reportWl.release();
-    }
-    */
-
 }
