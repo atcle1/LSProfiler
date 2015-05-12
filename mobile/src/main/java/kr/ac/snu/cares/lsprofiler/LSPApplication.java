@@ -35,6 +35,8 @@ public class LSPApplication extends Application {
 
     private LSPReporter reporter;
 
+    public boolean wearLoggingEnabled = true;
+
     //private DaemonClient clientHandler;
     //HandlerThread daemonClientThread;
 
@@ -104,8 +106,8 @@ public class LSPApplication extends Application {
     public void startProfiling() {
         Log.i(TAG, "startProfiling()");
         prefMgr.setLoggingState("start");
-        connection.sendMessage("/LSP/WINFO", "MAC");
-        //connection.sendMessage("/LSP/CONTROL", "START");
+        //connection.sendMessage("/LSP/WINFO", "MAC");
+        connection.sendMessage("/LSP/CONTROL", "START");
         //connection.sendMessage("/LSP/WINFO", "STATUS");
 
         startLogging();
@@ -161,10 +163,10 @@ public class LSPApplication extends Application {
         }
     }
 
-    public void pauseLogging() {
+    public void pauseLogging(String msg) {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsgForce("resumeLogging() " + Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsgForce("resumeLogging() " + msg + " " + Calendar.getInstance().getTime().toString());
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -179,7 +181,7 @@ public class LSPApplication extends Application {
     public void stopLogging() {
         LSPLog.onTextMsg("stopLogging()");
         if (state == State.resumed)
-            pauseLogging();
+            pauseLogging("called stopLogging");
 
         if (state != State.paused) {
             Log.i(TAG, "stopLogging() : not paused");
@@ -204,7 +206,9 @@ public class LSPApplication extends Application {
         showToast("doReport()");
         //LSPReportWorkThread lspReportWorkThread = new LSPReportWorkThread();
         //lspReportWorkThread.start();
+        pauseLogging("called doReport");
         reporter.doReport();
+        app.resumeLogging();
     }
 
     public void doKLogBackup() {

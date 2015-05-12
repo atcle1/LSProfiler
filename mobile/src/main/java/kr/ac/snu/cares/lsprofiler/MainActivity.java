@@ -107,7 +107,7 @@ public class MainActivity extends ActionBarActivity {
         String status = "";
         status += "status : " + lspApplication.state + "\n";
         status += "nextAlarm : " + LSPAlarmManager.getNextAlarm().getTime().toString() + "\n";
-
+        status += "watch : " + lspApplication.getLSPConnection().isWearConnected()+ "\n";
         txtStatus.setText(status);
 
     }
@@ -189,9 +189,10 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     Log.i(TAG, "onReceive() service already started.");
                     Handler handler = LSPService.getHandler();
-                    if (handler != null)
+                    if (handler != null && !handler.hasMessages(LSPService.ALARM_REQUEST))
                         handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
                 }
+                Log.i(TAG,"onClick btBackupLog end");
             } else if (v.getId() == R.id.bTStatus) {
                 connection.disconnect();
                 updateStatus();

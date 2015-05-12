@@ -25,7 +25,7 @@ import javax.mail.internet.MimeMultipart;
  */
 
 public class Mail {
-
+    final public static String TAG = Mail.class.getSimpleName();
     public static void sendEmailWithAttachments(String host, String port,
                                                 final String userName, final String password, String toAddress,
                                                 String subject, String message, String[] attachFiles)
@@ -67,6 +67,8 @@ public class Mail {
         // adds attachments
         if (attachFiles != null && attachFiles.length > 0) {
             for (String filePath : attachFiles) {
+                if (filePath == null || filePath.equals(""))
+                    continue;
                 MimeBodyPart attachPart = new MimeBodyPart();
 
                 try {
@@ -82,8 +84,10 @@ public class Mail {
         // sets the multi-part as e-mail's content
         msg.setContent(multipart);
 
+        Log.i(TAG, "mail : Transport.send() start");
         // sends the e-mail
         Transport.send(msg);
+        Log.i(TAG, "mail : Transport.send() end");
     }
 
     /**

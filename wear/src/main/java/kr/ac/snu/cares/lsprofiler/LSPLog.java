@@ -44,7 +44,7 @@ public class LSPLog {
     }
     private static int prev_status = -1;
     private static int prev_chargePlug = -1;
-    private static int prev_batteryPct = -1;
+    private static int prev_level = -1;
     public static void onBatteryStatusChagned(Intent intent) {
         if(!bWriteLog) return;
 
@@ -83,16 +83,14 @@ public class LSPLog {
 
         int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        int batteryPct = (int)(level / (float)scale);
+        int batteryPct = (int)(100 * level / (float)scale);
 
-        if (prev_batteryPct != batteryPct || prev_status != status || prev_chargePlug != chargePlug) {
-            prev_batteryPct = batteryPct;
+        if (prev_level != level || prev_status != status || prev_chargePlug != chargePlug) {
+            prev_level = level;
             prev_status = status;
             prev_chargePlug = chargePlug;
             logDbHandler.writeLog("BAT : "+batteryPct+" "+statusStr+" "+plugStr + " " + temperature);
         }
-
-
     }
     public static void onTeleponyStateChagned(double a){
         if(!bWriteLog) return;

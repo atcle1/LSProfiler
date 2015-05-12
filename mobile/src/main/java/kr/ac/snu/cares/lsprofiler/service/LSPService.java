@@ -8,7 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
@@ -41,7 +43,11 @@ public class LSPService extends Service {
         Log.i(TAG, "onCreate()");
         //Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
         application = (LSPApplication)getApplication();
-        lspHandler = new LSPHandler();
+
+        HandlerThread thread = new HandlerThread("Thread name", android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        Looper looper = thread.getLooper();
+        lspHandler = new LSPHandler(looper);
 
     }
     private static final int NOTIFICATION_ID = 1;
@@ -93,6 +99,10 @@ public class LSPService extends Service {
     }
 
     private class LSPHandler extends Handler  {
+        public LSPHandler(Looper looper) {
+            super(looper);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             Log.i(TAG, "LSPHandler "+msg);

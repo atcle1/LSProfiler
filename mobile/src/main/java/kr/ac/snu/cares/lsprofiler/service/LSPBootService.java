@@ -19,7 +19,7 @@ public class LSPBootService extends Service {
 
         su.prepare();
         su.execSu("su 0 setenforce 0");
-        su.execSu("/data/local/sprofiler 3 "+ LSPReporter.COLLECT_PATH +" "+ "test.klog");
+        su.execSu("/data/local/sprofiler 3 "+ LSPReporter.COLLECT_MOBILE_PATH +" "+ "test.klog");
         su.execSu("dumpsys batterystats --enable full-wake-history");
         su.execSu("dumpsys batterystats --disable no-auto-reset");
         su.stopSu(5000);

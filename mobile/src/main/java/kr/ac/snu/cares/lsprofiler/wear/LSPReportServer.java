@@ -5,14 +5,17 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Calendar;
 import java.util.UUID;
 
 import kr.ac.snu.cares.lsprofiler.LSPReporter;
-import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 
 /**
  * Created by summer on 15. 5. 8.
@@ -22,7 +25,7 @@ public class LSPReportServer extends Thread {
     BluetoothAdapter mBluetoothAdapter = null;
 
     //private int buffersize = 4;
-    private int buffersize = 1024 * 4;
+    private final int buffersize = 1024 * 8;
     private byte[] buffer = new byte[buffersize];
     private byte[] filesizeBuffer = new byte[8];
 
@@ -36,70 +39,71 @@ public class LSPReportServer extends Thread {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
-    public int receiveFileWithId(InputStream in, String dirPath) {
+    public int receiveFileWithId(DataInputStream din, String dirPath) {
         //get the filesizeBuffer
         int id = -1;
+
         try {
             // receive file name length
-            id = in.read();
+            id = din.readInt();
             if (id == 0)
                 return 0;
+            Log.i(TAG, "receive file id : "+id);
 
-            int fileNameLen = in.read();
-            if (fileNameLen <= 0) {
-                Log.i(TAG, "receiveFileName len <= 0 " + fileNameLen);
-                return -1;
-            }
-
-            // receive file name
-            bytesReceived = 0;
-            while(bytesReceived < fileNameLen) {
-                int readCnt = in.read(buffer, (int)bytesReceived, (int)(fileNameLen - bytesReceived));
-                if (readCnt > 0)
-                    bytesReceived += readCnt;
-                else {
-                    // error
-                    Log.i(TAG, "receiveFiles name error read return "  + readCnt);
-                    return -1;
-                }
-            }
-            String fileName = new String(buffer, 0, fileNameLen);
+            String fileName = din.readUTF();
             Log.i(TAG, "receive file name : " + fileName);
 
-            // receive file size
-            in.read(filesizeBuffer, 0, 8);
-            ByteBuffer BB = ByteBuffer.wrap(filesizeBuffer);
-            FileSize = BB.getLong();
+            FileSize = din.readLong();
+
+            File f = new File(dirPath + "/" + fileName);
+            if (f.exists()) {
+                f = new File(dirPath + "/" + fileName + ".2");
+                if (f.exists())
+                    f.delete();
+            }
 
             // receive file data
-            FileOutputStream fileOutputStream = new FileOutputStream(dirPath + "/" + fileName);
-            Log.i(TAG, "****************" + "Received FileSize" + FileSize + "****************");
+            FileOutputStream fileOutputStream = new FileOutputStream(f);
+            BufferedOutputStream bfos = new BufferedOutputStream(fileOutputStream, 1024 * 48);
+            Log.i(TAG, "****************" + "Received FileSize " + FileSize + "****************");
+            Calendar startCal = Calendar.getInstance();
             bytesReceived = 0;
+            int prev_mLen = 0;
             while (bytesReceived < FileSize) {
-                mLen = in.read(buffer);
+                //mLen = in.read(buffer);
+                mLen = din.read(buffer, 0, buffer.length < (int)(FileSize - bytesReceived) ?
+                                            buffer.length : (int)(FileSize - bytesReceived));
                 if (mLen > 0) {
                     bytesReceived += mLen;
-                    Log.i("read from bt", "size: " + mLen);
-                    fileOutputStream.write(buffer, 0, mLen);
-                    Log.i("writeFile", "end");
+                    if (prev_mLen != mLen) {
+                        Log.i(TAG, "din.read " + mLen);
+                        prev_mLen = mLen;
+                    }
+                    //Log.i(TAG, "total received " + mLen + " / " + bytesReceived + " / " + FileSize);
+                    bfos.write(buffer, 0, mLen);
+                    //fileOutputStream.write(buffer, 0, mLen);
                 } else {
                     System.out.println("Received -1, EOF");
                     break;
                 }
             }
-
+            bfos.close();
             fileOutputStream.close();
+            Calendar endCal = Calendar.getInstance();
+            Long elasped = endCal.getTimeInMillis() - startCal.getTimeInMillis() + 1;
+            Log.i(TAG, "elasped time "+( elasped/ 1000.0) +" " + FileSize/1024.0/(elasped/1000.0) + " KB/s");
+            Log.i(TAG, "receive file end name : " + fileName);
         }catch (Exception ex) {
             ex.printStackTrace();
         }
         return id;
     }
 
-    public void receiveFiles(InputStream in, String path) {
+    public void receiveFiles(DataInputStream din, String path) {
         try {
             int id, receivedCnt = 0;
             while (true) {
-                id = receiveFileWithId(in, path);
+                id = receiveFileWithId(din, path);
                 if (id > 0) {
                     Log.i(TAG, "file received " + id);
                     receivedCnt++;
@@ -123,7 +127,7 @@ public class LSPReportServer extends Thread {
         BluetoothSocket socket = null;
 
         try {
-            File f = new File(LSPReporter.COLLECT_PATH);
+            File f = new File(LSPReporter.COLLECT_WEAR_PATH);
             if (!f.exists()) {
                 f.mkdirs();
                 if (!f.exists()) {
@@ -133,10 +137,10 @@ public class LSPReportServer extends Thread {
             }
 
             serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("JustService", UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-            socket = serverSocket.accept();
+            socket = serverSocket.accept(20 * 1000);       // Timeout 20s
             InputStream in = socket.getInputStream();
 
-            receiveFiles(in, "/sdcard/WLSP");
+            receiveFiles(new DataInputStream(new BufferedInputStream(in)), LSPReporter.COLLECT_WEAR_PATH);
 
             serverSocket.close();
             socket.close();

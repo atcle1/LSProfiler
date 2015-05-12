@@ -16,6 +16,8 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+import java.util.List;
+
 import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
 
 /**
@@ -44,6 +46,37 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
+    }
+
+    public static boolean wearLspConnected = false;
+    public boolean isWearConnected() {
+        connect();
+        wearLspConnected = false;
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                List<Node> connectedNodes =
+                        Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await().getNodes();
+                for (Node node : connectedNodes) {
+                    Log.i(TAG, node.getId() + " " + node.getDisplayName());
+                    if (node.getDisplayName().contains("G Watch R")) {
+                        wearLspConnected = true;
+                        break;
+                    }
+
+                }
+            }
+        };
+        try {
+            Thread t = new Thread(runnable);
+            t.start();
+            t.join(3000);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+
+        return wearLspConnected;
     }
 
     public void disconnect() {

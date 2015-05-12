@@ -7,9 +7,11 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
@@ -23,7 +25,9 @@ import kr.ac.snu.cares.lsprofiler.wear.LSPReportServer;
 public class LSPReporter {
     public LSPApplication app;
     public static final String TAG = LSPReporter.class.getSimpleName();
-    public static final String COLLECT_PATH = "/sdcard/LSP/";
+    public static final String COLLECT_MOBILE_PATH = "/sdcard/LSP/";
+    public static final String COLLECT_WEAR_PATH = "/sdcard/LSPW/";
+
     public static final String BACKUP_BASE_PATH = "/sdcard/LSP_backup/";
     private LogDbHandler dbHandler;
     private PowerManager pm;
@@ -41,11 +45,12 @@ public class LSPReporter {
 
     public void requestReportToDaemon(ReportItem item) {
         Log.i(TAG, "requestReportToDaemon");
-        //DaemonStarter.startForReport(COLLECT_PATH, item.reportDateString + ".klog");
+        //DaemonStarter.startForReport(COLLECT_MOBILE_PATH, item.reportDateString + ".klog");
         Su su = new Su();
         su.prepare();
-        su.execSu("/data/local/sprofiler 3 "+COLLECT_PATH +" "+ item.reportDateString + ".klog");
-        su.stopSu(1000);
+        su.execSu("/data/local/sprofiler 3 "+ COLLECT_MOBILE_PATH +" "+ item.reportDateString + ".klog");
+        su.execSu("/data/local/sprofiler 7");
+        su.stopSu(3000);    // 30s limit
     }
 
     public boolean isKlogEnabled() {
@@ -87,12 +92,12 @@ public class LSPReporter {
     }
     public void collectPhoneReport(ReportItem item) {
         // mkdir
-        File baseDir = new File(COLLECT_PATH);
+        File baseDir = new File(COLLECT_MOBILE_PATH);
         if(!baseDir.exists())
             baseDir.mkdirs();
 
         // copy db
-        dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".db");
+        dbHandler.backupDB(COLLECT_MOBILE_PATH + item.reportDateString + ".db");
         // reset db
         dbHandler.resetDB();
 
@@ -100,12 +105,12 @@ public class LSPReporter {
         if (isKlogEnabled()) {
             requestReportToDaemon(item);
 
-            waitForKlogFinish(COLLECT_PATH + item.reportDateString + ".klog.finish");
+            waitForKlogFinish(COLLECT_MOBILE_PATH + item.reportDateString + ".klog.finish");
 
             //listing log files...
             try {
                 for (int i = 0; i < 3; i++) {
-                    File klogFile = new File(COLLECT_PATH + item.reportDateString + ".klog");
+                    File klogFile = new File(COLLECT_MOBILE_PATH + item.reportDateString + ".klog");
                     if (!klogFile.exists()) {
                         Log.i(TAG, "klog not founded, wait");
                         Thread.sleep(500, 0);
@@ -124,7 +129,7 @@ public class LSPReporter {
     public void sendReport(ReportItem item) {
         SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
         sendMailAsyncTask.title = "LSP report from " + app.deviceID;
-        sendMailAsyncTask.message = "deviceID";
+        sendMailAsyncTask.message = "writting... " + Calendar.getInstance().getTime();
 
         // get file path
         //sendMailAsyncTask.files = new String []{backupDbPath};
@@ -134,7 +139,7 @@ public class LSPReporter {
         }
 
         sendMailAsyncTask.wl = this.sendWl;
-        Log.i(TAG, "send " + item.fileList.size() + " items.");
+        Log.i(TAG, "sendReport() start " + item.fileList.size() + " items.");
         sendMailAsyncTask.reportItem = item;
         sendMailAsyncTask.execute();
     }
@@ -147,7 +152,7 @@ public class LSPReporter {
         MyConsoleExe exe = new MyConsoleExe();
         StringBuilder result = new StringBuilder();
 
-        // exe.exec("cp -r "+COLLECT_PATH+"* "+item.backupDir, result, false);
+        // exe.exec("cp -r "+COLLECT_MOBILE_PATH+"* "+item.backupDir, result, false);
         Log.i(TAG, "backupReport() : " + result);
     }
 
@@ -165,26 +170,37 @@ public class LSPReporter {
             return false;
 
         reportServer.start();
+        try {
+            int i = 0;
+            while (reportServer.isAlive() == false && i++ < 100) {
+                Thread.sleep(100);
+            }
+            Thread.sleep(100);
+        }catch(Exception ex) {
+            ex.printStackTrace();
+        }
         Log.i(TAG, "send report message " + NetworkUtil.getBluetoothAddress());
         //connection.sendMessage("/LSP/CONTROL", "STOP");
         connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
 
-        try {
-            int i;
-            for (i = 0; i < 300; i++) {
-                reportServer.join(1000);
-                Log.i(TAG, "reportServer.join "+(i+1));
-            }
-            if (i == 300) {
-                Log.e(TAG, "reportServer join timeout, interrupt()");
-                reportServer.interrupt();
+        if (true) {
+            try {
+                int i;
+                Log.i(TAG, "reportServr join start...");
+                for (i = 0; i < 500; i++) {
+                    reportServer.join(1000);
+                    //Log.i(TAG, "reportServer.join " + (i + 1));
+                }
+                if (i == 500) {
+                    Log.e(TAG, "reportServer join timeout, interrupt()");
+                    reportServer.interrupt();
+                    return false;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
                 return false;
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return false;
         }
-
         return true;
     }
 
@@ -198,58 +214,93 @@ public class LSPReporter {
 
 
     public void doReport() {
-        Log.i(TAG, "doReport()");
+        Log.i(TAG, "doReport() start");
         try {
-            reportWl.acquire(1000 * 500);
-            app.pauseLogging();
+            reportWl.acquire(1000 * 600);
+            boolean bCollectWear = false;
             ReportItem item = new ReportItem();
+            LSPApplication app = LSPApplication.getInstance();
+            WearCollectThread wearCollectThread = null;
+            try {
+                if (LSPApplication.getInstance().wearLoggingEnabled) {
 
-            // collect reports from wear...
-            WearCollectThread wearCollectThread = new WearCollectThread();
-            wearCollectThread.start();
-            Log.i(TAG, "wearCollectThread run() called");
+                    if (!app.getLSPConnection().isWearConnected()) {
+                        app.getLSPConnection().connect();
+                        Thread.sleep(100);
+                    }
+                    if (app.getLSPConnection().isWearConnected()) {
+                        bCollectWear = true;
+                    } else {
+                        LSPLog.onTextMsgForce("wearlogging is enabled, but isn't connected!");
+                        Log.i(TAG, "wearlogging is enabled, but isn't connected!");
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                bCollectWear = false;
+            }
+
+            // collect reports from wear using thread...
+            if (bCollectWear) {
+                wearCollectThread = new WearCollectThread();
+                wearCollectThread.start();
+                Log.i(TAG, "wearCollectThread run() called");
+            }
 
             // collect mobile logs....
-            collectPhoneReport(item);
-            Log.i(TAG, "collectphoneReport() ended");
-
-            // join for wearColl
-            int i;
-            for (i = 0; i < 100; i++)
-                wearCollectThread.join(1000);
-                Log.i(TAG, "wear collect finished "+ i);
-            if (i == 100) {
-                Log.e(TAG, "wearCollectThread isn't finished!, interrupt!");
-                wearCollectThread.interrupt();
+            if (false) {
+                collectPhoneReport(item);
+                Log.i(TAG, "collectphoneReport() ended");
             }
 
+            // join for wearCollect thread
+            if (bCollectWear) {
+                    int i;
+                    for (i = 0; i < 500; i++)
+                        wearCollectThread.join(1000);
+                    Log.i(TAG, "wear collect finished " + i);
+                    if (i == 100) {
+                        Log.e(TAG, "wearCollectThread isn't finished!, interrupt!");
+                        wearCollectThread.interrupt();
+                        LSPLog.onTextMsgForce("wearCollectThread not finished within 500s, interrupt()");
+                    }
+            }
             // listing files...
-            File collectDir = new File(COLLECT_PATH);
-            File[] logFileArray = collectDir.listFiles();
+            File collectMobileDir = new File(COLLECT_MOBILE_PATH);
+            File[] logFileArray = collectMobileDir.listFiles();
+            File collectWearDir;
+            File[] logFileArray2 = null;
+            if (bCollectWear) {
+                collectWearDir = new File(COLLECT_WEAR_PATH);
+                logFileArray2 = collectWearDir.listFiles();
+            }
 
-            if (logFileArray == null)
+            if (logFileArray == null && logFileArray2 == null)
                 return;
 
-            item.fileList.addAll(Arrays.asList(logFileArray));
+                if (logFileArray != null)
+                    item.fileList.addAll(Arrays.asList(logFileArray));
+                if (logFileArray2 != null)
+                    item.fileList.addAll(Arrays.asList(logFileArray2));
 
-            if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
-                // not wifi
-                Log.i(TAG, "doReport() but not connected WIFI");
-                LSPLog.onTextMsg("try report, NOT WIFI");
-                app.getAlarmManager().clearAlarm();
-                app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
+                if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
+                    // not wifi
+                    Log.i(TAG, "doReport() but not connected WIFI");
+                    LSPLog.onTextMsg("try report, NOT WIFI");
+                    app.getAlarmManager().clearAlarm();
+                    app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
 
-            } else {
-                // send report via email
-                sendReport(item);
-            }
+                } else {
+                    // send report via email
+                    sendReport(item);
+                }
         }catch (Exception ex) {
             ex.printStackTrace();
         }
 
         // backup report
         // backReport(item);
-        app.resumeLogging();
+        Log.i(TAG, "doReport() end");
         reportWl.release();
     }
 
@@ -257,6 +308,7 @@ public class LSPReporter {
         public String title = "";
         public String message = "";
         public String []files = null;
+        public String []send_files = null;
         public PowerManager.WakeLock wl;
         public ReportItem reportItem = null;
 
@@ -264,29 +316,57 @@ public class LSPReporter {
         protected Void doInBackground(Void... params) {
             wl.acquire();
             try {
-                int result = Mail.sendReport(title, message, files);
+                if (files == null || files.length == 0) {
+                    wl.release();
+                    Log.e(TAG, "SendMailAsyncTask no files!");
+                    return null;
+                }
+                send_files = new String[files.length];
+                for (int i = 0; i < files.length; i++) {
+                    String filePath = files[i];
+                    File f = new File(filePath);
+                    if (!f.exists() || f.length() > 25 * 1024 * 1024) { // fileSize > 25MB
+                        files[i] = "";  //skip file.
+                    } else {
+                        send_files[i] = files[i];
+                    }
+                }
+
+                int result = Mail.sendReport(title, message, send_files);
+                //int result = -1;
+
                 if (result != 0) {
+                    LSPLog.onTextMsgForce("send mail failed! "+Calendar.getInstance().getTime() + " " + reportItem.reportDate);
                     Log.i(TAG, "send mail failed!");
                 }
 
-                // make backup dir
-                File backupDir = new File(reportItem.backupDir);
-                if(!backupDir.exists())
-                    backupDir.mkdirs();
+                backupReports(reportItem);
 
-                // move
-                for (int i = 0; i < reportItem.fileList.size(); i++) {
-                    File origFile = reportItem.fileList.get(i);
-                    File destFile = new File(reportItem.backupDir + origFile.getName());
-                    origFile.renameTo(destFile);
-                    Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
-                }
             }catch(Exception ex) {
                 ex.printStackTrace();
             }
             wl.release();
             return null;
         }
+    }
 
+    void backupReports(ReportItem reportItem) {
+        try {
+
+            // make backup dir
+            File backupDir = new File(reportItem.backupDir);
+            if(!backupDir.exists())
+                backupDir.mkdirs();
+
+            // move
+            for (int i = 0; i < reportItem.fileList.size(); i++) {
+                File origFile = reportItem.fileList.get(i);
+                File destFile = new File(reportItem.backupDir + origFile.getName());
+                origFile.renameTo(destFile);
+                Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

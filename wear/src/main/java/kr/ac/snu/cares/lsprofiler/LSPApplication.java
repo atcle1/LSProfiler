@@ -129,15 +129,15 @@ public class LSPApplication extends Application {
             //locationTracker.startTrace();
             //LSPNotificationService.startSelf(this);
         }catch (Exception ex) {
-            ex.printStackTrace();;
+            ex.printStackTrace();
             LSPLog.onTextMsg(ex.getLocalizedMessage());
         }
     }
 
-    public void pauseLogging() {
+    public void pauseLogging(String msg) {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsg("pauseLogging() "+ Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsg("pauseLogging() "+msg+ " "+ Calendar.getInstance().getTime().toString());
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -152,7 +152,7 @@ public class LSPApplication extends Application {
     public void stopLogging() {
         LSPLog.onTextMsg("stopLogging()");
         if (state == State.resumed)
-            pauseLogging();
+            pauseLogging("stopLogging() called");
 
         if (state != State.paused) {
             Log.i(TAG, "stopLogging() : not paused");
@@ -167,10 +167,11 @@ public class LSPApplication extends Application {
     }
 
     public void doWearReport(String mac) {
+        Log.i(TAG, "doWearReport, pauseLogging and start service");
         Intent startServiceIntent = new Intent(this, WSLPReportService.class);
         startServiceIntent.putExtra("serverMac", mac);
         startServiceIntent.putExtra("resumeWhenFinished", true);
-        pauseLogging();
+        pauseLogging("doWearReport called");
         startService(startServiceIntent);
     }
 

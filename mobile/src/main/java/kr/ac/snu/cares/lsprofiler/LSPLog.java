@@ -97,8 +97,6 @@ public class LSPLog {
             prev_chargePlug = chargePlug;
             logDbHandler.writeLog("BAT : "+batteryPct+" "+statusStr+" "+plugStr + " " + temperature);
         }
-
-
     }
     public static void onTeleponyStateChagned(double a){
         if(!bWriteLog) return;
@@ -117,7 +115,7 @@ public class LSPLog {
         logDbHandler.writeLog("FAP : "+packageName);
     }
     public static void onNotificationPosted(StatusBarNotification sbn) {
-        String title = "null", text = "null", bigtext="null";
+        String title = "", text = "", bigtext="";
         String packName = sbn.getPackageName();
         //if (sbn.getNotification().tickerText != null)
         //    ticker = sbn.getNotification().tickerText.toString();
@@ -143,7 +141,7 @@ public class LSPLog {
         //Log.i("Text", "tag "+sbn.getTag());
         Log.i("TAG", "NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
         if(!bWriteLog) return;
-        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
+        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title+"|"+text+"|"+bigtext);
 
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {

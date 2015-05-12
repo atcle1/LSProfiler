@@ -89,7 +89,9 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
                 String mac = null;
                 if (splits.length == 2) {
                     mac = splits[1];
+                    Toast.makeText(this, "REPORT", Toast.LENGTH_SHORT).show();
                     LSPApplication.getInstance().doWearReport(mac);
+
                 } else
                     return;
             }
@@ -100,14 +102,14 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
                 Wearable.MessageApi.sendMessage(mGoogleApiClient,
                         messageEvent.getSourceNodeId(), "/LSP/WINFO/STATUS", state.getBytes())
                         .setResultCallback(resultCallback);
-            } else if (msg.equals("MAC")) {
+            } /* else if (msg.equals("MAC")) {
                 String mac = Util.getBluetoothAddress();
                 Log.i(TAG,"send mac "+mac);
                 if (mac == null) return;
                 Wearable.MessageApi.sendMessage(mGoogleApiClient,
                         messageEvent.getSourceNodeId(), "/LSP/WINFO/MAC", mac.getBytes())
                         .setResultCallback(resultCallback);
-            }
+            } */
 
         }
 

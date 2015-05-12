@@ -126,4 +126,24 @@ public class LSPReporter {
             return;
         item.fileList.addAll(Arrays.asList(logFileArray));
     }
+
+    public void backupReports(ReportItem reportItem) {
+        try {
+
+            // make backup dir
+            File backupDir = new File(reportItem.backupDir);
+            if(!backupDir.exists())
+                backupDir.mkdirs();
+
+            // move
+            for (int i = 0; i < reportItem.fileList.size(); i++) {
+                File origFile = reportItem.fileList.get(i);
+                File destFile = new File(reportItem.backupDir + origFile.getName());
+                origFile.renameTo(destFile);
+                Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }
