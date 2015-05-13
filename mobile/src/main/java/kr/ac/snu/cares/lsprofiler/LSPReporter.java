@@ -11,7 +11,6 @@ import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
-import kr.ac.snu.cares.lsprofiler.resolvers.CallLogItem;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
@@ -32,7 +31,7 @@ public class LSPReporter {
     private LogDbHandler dbHandler;
     private PowerManager pm;
     private PowerManager.WakeLock sendWl;
-    private PowerManager.WakeLock reportWl;
+
 
     public LSPReporter(LSPApplication app)
     {
@@ -40,7 +39,6 @@ public class LSPReporter {
         dbHandler = app.getDbHandler();
         pm = (PowerManager) app.getSystemService(Context.POWER_SERVICE);
         sendWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "send report");
-        reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "do report");
     }
 
     public void requestReportToDaemon(ReportItem item) {
@@ -49,7 +47,7 @@ public class LSPReporter {
         Su su = new Su();
         su.prepare();
         su.execSu("/data/local/sprofiler 3 "+ COLLECT_MOBILE_PATH +" "+ item.reportDateString + ".klog");
-        su.execSu("/data/local/sprofiler 7");
+        su.execSu("/data/local/sprofiler 7");   // clear logs
         su.stopSu(3000);    // 30s limit
     }
 
@@ -126,7 +124,7 @@ public class LSPReporter {
 
     }
 
-    public void sendReport(ReportItem item) {
+    public void sendReportByAsyncTask(ReportItem item) {
         SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
         sendMailAsyncTask.title = "LSP report from " + app.deviceID;
         sendMailAsyncTask.message = "writting... " + Calendar.getInstance().getTime();
@@ -139,7 +137,7 @@ public class LSPReporter {
         }
 
         sendMailAsyncTask.wl = this.sendWl;
-        Log.i(TAG, "sendReport() start " + item.fileList.size() + " items.");
+        Log.i(TAG, "sendReportByAsyncTask() start " + item.fileList.size() + " items.");
         sendMailAsyncTask.reportItem = item;
         sendMailAsyncTask.execute();
     }
@@ -216,10 +214,11 @@ public class LSPReporter {
     public void doReport() {
         Log.i(TAG, "doReport() start");
         try {
-            reportWl.acquire(1000 * 600);
+
             boolean bCollectWear = false;
             ReportItem item = new ReportItem();
             LSPApplication app = LSPApplication.getInstance();
+
             WearCollectThread wearCollectThread = null;
             try {
                 if (LSPApplication.getInstance().wearLoggingEnabled) {
@@ -248,7 +247,7 @@ public class LSPReporter {
             }
 
             // collect mobile logs....
-            if (false) {
+            if (true) {
                 collectPhoneReport(item);
                 Log.i(TAG, "collectphoneReport() ended");
             }
@@ -265,11 +264,13 @@ public class LSPReporter {
                         LSPLog.onTextMsgForce("wearCollectThread not finished within 500s, interrupt()");
                     }
             }
-            // listing files...
+
+            // listing log files...
             File collectMobileDir = new File(COLLECT_MOBILE_PATH);
             File[] logFileArray = collectMobileDir.listFiles();
             File collectWearDir;
             File[] logFileArray2 = null;
+
             if (bCollectWear) {
                 collectWearDir = new File(COLLECT_WEAR_PATH);
                 logFileArray2 = collectWearDir.listFiles();
@@ -292,7 +293,7 @@ public class LSPReporter {
 
                 } else {
                     // send report via email
-                    sendReport(item);
+                    sendReportByAsyncTask(item);
                 }
         }catch (Exception ex) {
             ex.printStackTrace();
@@ -301,7 +302,6 @@ public class LSPReporter {
         // backup report
         // backReport(item);
         Log.i(TAG, "doReport() end");
-        reportWl.release();
     }
 
     private class SendMailAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -314,8 +314,8 @@ public class LSPReporter {
 
         @Override
         protected Void doInBackground(Void... params) {
-            wl.acquire();
             try {
+                wl.acquire();
                 if (files == null || files.length == 0) {
                     wl.release();
                     Log.e(TAG, "SendMailAsyncTask no files!");
@@ -341,11 +341,12 @@ public class LSPReporter {
                 }
 
                 backupReports(reportItem);
-
+                LSPLog.onTextMsgForce("backupReports end");
             }catch(Exception ex) {
                 ex.printStackTrace();
+            } finally {
+                wl.release();
             }
-            wl.release();
             return null;
         }
     }

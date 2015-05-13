@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -53,7 +55,8 @@ public class LSPApplication extends Application {
     private LSPConnection connection;
 
     private Mail mail;
-
+    private PowerManager pm;
+    private PowerManager.WakeLock reportWl;
 
     public String deviceID;
 
@@ -75,6 +78,9 @@ public class LSPApplication extends Application {
         receiverManager = new ReceiverManager(context);
         locationTracker = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
+
+        pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "do report");
 
         deviceID = prefMgr.getDeviceID();
         if (deviceID.equals("")) {
@@ -203,12 +209,14 @@ public class LSPApplication extends Application {
         }
     }
     public void doReport() {
+        reportWl.acquire(1000 * 600);
         showToast("doReport()");
         //LSPReportWorkThread lspReportWorkThread = new LSPReportWorkThread();
         //lspReportWorkThread.start();
         pauseLogging("called doReport");
-        reporter.doReport();
+        reporter.doReport();    // send mail is processed by asynctask after doReport with own WL.
         app.resumeLogging();
+        reportWl.release();
     }
 
     public void doKLogBackup() {
@@ -251,6 +259,9 @@ public class LSPApplication extends Application {
         }
     }
     public void showToast(String msg) {
-        handler.post(new ToastMsgThread(msg));
+        if (((Looper.myLooper() != null) && (Looper.myLooper() == Looper.getMainLooper())))
+            Toast.makeText(LSPApplication.getInstance(), msg, Toast.LENGTH_SHORT).show();
+        else
+            handler.post(new ToastMsgThread(msg));
     }
 }
