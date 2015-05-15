@@ -9,6 +9,8 @@ import android.util.Log;
 
 import java.util.Calendar;
 
+import kr.ac.snu.cares.lsprofiler.receivers.AlarmReceiver;
+
 /**
  * Created by summer on 4/17/15.
  */

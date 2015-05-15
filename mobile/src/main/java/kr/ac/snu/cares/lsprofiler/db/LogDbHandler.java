@@ -39,8 +39,10 @@ public class LogDbHandler {
     }
 
     private void prepareStatement() {
-        String sql = "INSERT INTO logdb(i_datetime, t_log) " +
-                "VALUES (strftime('%s', 'now', 'localtime'), ?)";
+        //String sql = "INSERT INTO logdb(i_datetime, t_log) " +
+        //      "VALUES (strftime('%s', 'now', 'localtime'), ?)";
+        String sql = "INSERT INTO logdb(t_datetime, t_log) " +
+              "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
         InsertLogdbStmt = db.compileStatement(sql);
     }
     private void closePrepareStatement() {
@@ -97,9 +99,14 @@ public class LogDbHandler {
 
     public void printLog()
     {
+        /*
         Cursor cursor=db.rawQuery(
                 "SELECT idx, datetime(i_datetime, 'unixepoch', 'localtime'), t_log " +
                 "FROM logdb", null);
+        */
+        Cursor cursor=db.rawQuery(
+                "SELECT idx, t_datetime, t_log " +
+                        "FROM logdb", null);
         if(cursor!=null){
             while(cursor.moveToNext()) {
                 Log.i(TAG, cursor.getInt(0) + " " + cursor.getString(1) + " " + cursor.getString(2));

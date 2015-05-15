@@ -14,9 +14,15 @@ public class LogDbHelper extends SQLiteOpenHelper{
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
+        /*
         String table = "CREATE TABLE logdb("+
                 "idx INTEGER PRIMARY KEY AUTOINCREMENT, "+
                 "i_datetime INTEGER," + // as Unix Time, the number of seconds since 1970-01-01 00:00:00 UTC.
+                "t_log TEXT" + ")";
+                */
+        String table = "CREATE TABLE logdb("+
+                "idx INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                "t_datetime TEXT," + // %Y-%m-%d %H:%M:%f
                 "t_log TEXT" + ")";
         db.execSQL(table);
         this.db = db;

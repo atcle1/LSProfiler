@@ -1,4 +1,4 @@
-package kr.ac.snu.cares.lsprofiler;
+package kr.ac.snu.cares.lsprofiler.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 
+import kr.ac.snu.cares.lsprofiler.LSPAlarmManager;
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 
 /**
@@ -24,7 +26,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             Intent startServiceIntent = new Intent(context, LSPService.class);
             startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
             context.startService(startServiceIntent);
-            LSPLog.onTextMsgForce("AlarmReceiver() bRunning false");
+            LSPLog.onTextMsgForce("AlarmReceiver() bRunning false start service");
         } else {
             Log.i(TAG, "onReceive() service already started.");
             Handler handler = LSPService.getHandler();
