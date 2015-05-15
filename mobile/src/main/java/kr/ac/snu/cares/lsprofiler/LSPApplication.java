@@ -80,7 +80,7 @@ public class LSPApplication extends Application {
         alarmManager = LSPAlarmManager.getInstance(context);
 
         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
-        reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "do report");
+        reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "doReport");
 
         deviceID = prefMgr.getDeviceID();
         if (deviceID.equals("")) {
@@ -201,32 +201,33 @@ public class LSPApplication extends Application {
         stopService(new Intent(this, LSPService.class));
     }
 
-    class LSPReportWorkThread extends Thread {
-        @Override
-        public void run() {
-            super.run();
-            reporter.doReport();
-        }
-    }
     public void doReport() {
         reportWl.acquire(1000 * 600);
         showToast("doReport()");
-        //LSPReportWorkThread lspReportWorkThread = new LSPReportWorkThread();
-        //lspReportWorkThread.start();
         pauseLogging("called doReport");
+        LSPLog.onTextMsgForce("doReport() reporter.doReport() call");
         reporter.doReport();    // send mail is processed by asynctask after doReport with own WL.
+        LSPLog.onTextMsgForce("doReport() reporter.doReport() call end");
         app.resumeLogging();
         reportWl.release();
     }
 
     public void doKLogBackup() {
         ReportItem item = new ReportItem();
-        reporter.requestReportToDaemon(item);
+        try {
+            if (reporter.isKlogEnabled()) {
+                reporter.requestReportToDaemon(item);
+                reporter.waitForKlogFinish(item);
+            }
+        }catch(Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
     }
 
     @Override
     public void onTerminate() {
-        LSPLog.onTextMsgForce("APP onTerminate()");
+        LSPLog.onTextMsgForce("ERR APP onTerminate()");
         showToast("onTerminate()");
         super.onTerminate();
         Log.i(TAG, "onTerminate()");
@@ -237,7 +238,7 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
-        LSPLog.onTextMsgForce("APP onLowMemory()");
+        LSPLog.onTextMsgForce("ERR APP onLowMemory()");
         showToast("onLowMemory()");
     }
 

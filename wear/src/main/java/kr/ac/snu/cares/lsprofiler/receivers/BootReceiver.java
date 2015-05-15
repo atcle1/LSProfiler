@@ -8,6 +8,7 @@ import android.util.Log;
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
+import kr.ac.snu.cares.lsprofiler.service.WLSPService;
 
 /**
  * Created by summer on 4/26/15.
@@ -21,20 +22,27 @@ public class BootReceiver extends BroadcastReceiver {
 
         //}
 
-        // power on
-        LSPApplication app = LSPApplication.getInstance();
-        if (app != null) {
 
-            app.startProfilingIfStarted();
-        } else {
-            Log.i(TAG, "app is null");
-        }
-        Log.i(TAG, "BootReceiver - onRecive() before state change");
-        LSPLog.onPowerStateChagned(1);
-        //}
         Log.i(TAG, "BootReceiver - onRecive() before start service");
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
         context.startService(startServiceIntent);
         Log.i(TAG, "BootReceiver - onRecive() end");
+
+        // WLSP service
+        Intent i = new Intent(context, WLSPService.class);
+        context.startService(i);
+
+        // power on
+        LSPApplication app = LSPApplication.getInstance();
+        if (app != null) {
+            app.startProfilingIfStarted();
+        } else {
+            Log.i(TAG, "app is null");
+        }
+
+        Log.i(TAG, "BootReceiver - onRecive() before state change");
+        LSPLog.onPowerStateChagned(1);
+        //}
+
     }
 }

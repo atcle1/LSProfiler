@@ -40,6 +40,7 @@ public class LSPReporter {
         Su su = new Su();
         su.prepare();
         su.execSu("/data/local/sprofiler 3 "+COLLECT_PATH +" "+ item.reportDateString + ".w.klog");
+        su.execSu("/data/local/sprofiler 7");   // clear logs
         su.stopSu(2000);
     }
 
@@ -64,59 +65,49 @@ public class LSPReporter {
 
     }
 
-    public void waitForKlogFinish(ReportItem item) {
-        try {
-            // klog should be finished within 2s.
+    public void waitForKlogFinish(ReportItem item) throws Exception {
+        // klog should be finished within 20s.
+        File finishFile = new File(COLLECT_PATH + item.reportDateString + ".klog.finish");
+        for (int i = 0; i < 20; i++) {
+            if (finishFile.exists()) {
+                Log.i(TAG, "KLSP finished detected! " + i);
+                finishFile.delete();
+                break;
+            }
             Thread.sleep(1000);
-            File finishFile = new File(COLLECT_PATH + item.reportDateString + ".klog.finish");
-            for (int i = 0; i < 10; i++) {
-                if (finishFile.exists()) {
-                    Log.i(TAG, "KLSP finished detected! " + i);
-                    finishFile.delete();
-                    break;
-                }
-                Thread.sleep(1000);
+        }
+    }
+
+    public void collectReport(ReportItem item) {
+        try {
+            // mkdir
+            File baseDir = new File(COLLECT_PATH);
+            if(!baseDir.exists())
+                baseDir.mkdirs();
+
+            // copy db
+            boolean backupDbSuccess = dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".w.db");
+            // reset db
+            if (backupDbSuccess)
+                dbHandler.resetDB();
+            else {
+                LSPLog.onTextMsgForce("backup db failed");
+                Log.i(TAG, "backup db failed");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
-    }
-    public void collectReport(ReportItem item) {
-        // mkdir
-        File baseDir = new File(COLLECT_PATH);
-        if(!baseDir.exists())
-            baseDir.mkdirs();
-
-        // copy db
-        boolean backupDbSuccess = dbHandler.backupDB(COLLECT_PATH + item.reportDateString + ".w.db");
-        // reset db
-        if (backupDbSuccess)
-            dbHandler.resetDB();
-        else {
-            LSPLog.onTextMsgForce("backup db failed");
-            Log.i(TAG, "backup db failed");
+            LSPLog.onException(ex);
         }
 
-        //clientHandler.requestCollectLog();
-        if (isKlogEnabled()) {
-            requestReportToDaemon(item);
-
-            waitForKlogFinish(item);
-
-            //listing log files...
-            try {
-                for (int i = 0; i < 3; i++) {
-                    File klogFile = new File(COLLECT_PATH + item.reportDateString + ".klog");
-                    if (!klogFile.exists()) {
-                        Log.i(TAG, "klog not founded, wait");
-                        Thread.sleep(500, 0);
-                    } else
-                        Log.i(TAG, "klog exists " + klogFile.getAbsolutePath());
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
+        try {
+            if (isKlogEnabled()) {
+                requestReportToDaemon(item);
+                waitForKlogFinish(item);
+                //listing log files...
             }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
         }
 
         File collectDir = new File(COLLECT_PATH);

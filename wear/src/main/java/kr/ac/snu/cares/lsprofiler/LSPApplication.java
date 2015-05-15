@@ -121,7 +121,7 @@ public class LSPApplication extends Application {
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsg("resumeLogging() "+ Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsg("resumeLogging() " + Calendar.getInstance().getTime().toString());
         state = State.resumed;
         try {
             lspLog.resumeLogging();
@@ -177,12 +177,20 @@ public class LSPApplication extends Application {
 
     public void doKLogBackup() {
         ReportItem item = new ReportItem();
-        reporter.requestReportToDaemon(item);
+        try {
+            if (reporter.isKlogEnabled()) {
+                reporter.requestReportToDaemon(item);
+                reporter.waitForKlogFinish(item);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
     }
 
     @Override
     public void onTerminate() {
-        LSPLog.onTextMsgForce("APP onTerminate()");
+        LSPLog.onTextMsgForce("ERR APP onTerminate()");
         showToast("onTerminate()");
         super.onTerminate();
         Log.i(TAG, "onTerminate()");
@@ -193,7 +201,7 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
-        LSPLog.onTextMsgForce("APP onLowMemory()");
+        LSPLog.onTextMsgForce("ERR APP onLowMemory()");
         showToast("onLowMemory()");
     }
 

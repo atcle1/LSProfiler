@@ -114,5 +114,16 @@ public class LSPLog {
                 ex.printStackTrace();
             }
         }
+        Log.i(TAG, msg);
+    }
+
+    public static void onException(Exception ex) {
+        if (logDbHandler != null) {
+            try {
+                logDbHandler.writeLog("ERR  " + ex.getMessage());
+            }catch (Exception ex2) {
+                ex2.printStackTrace();
+            }
+        }
     }
 }

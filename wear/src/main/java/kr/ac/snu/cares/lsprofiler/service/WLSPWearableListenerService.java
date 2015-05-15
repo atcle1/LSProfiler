@@ -79,7 +79,6 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
         Log.i(TAG, "MsgReceived : " + path + " / " + msg + " by "+messageEvent.getSourceNodeId());
 
         if (path.equals("/LSP/CONTROL")) {
-            // 텍스트뷰에 적용 될 문자열을 지정한다.
             if (msg.equals("START")) {
                 LSPApplication.getInstance().startProfiling();
             } else if (msg.equals("STOP")) {

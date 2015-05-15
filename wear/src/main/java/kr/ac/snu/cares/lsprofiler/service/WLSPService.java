@@ -15,7 +15,8 @@ public class WLSPService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
+        //return super.onStartCommand(intent, flags, startId);
+        return Service.START_STICKY;
     }
 
     @Override

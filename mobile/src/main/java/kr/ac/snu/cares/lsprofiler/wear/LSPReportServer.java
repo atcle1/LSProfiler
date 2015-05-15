@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.Calendar;
 import java.util.UUID;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.LSPReporter;
 
 /**
@@ -146,6 +147,7 @@ public class LSPReportServer extends Thread {
             socket.close();
         } catch (Exception e) {
             Log.i(TAG, "EXCEPTION::" + e.getMessage());
+            LSPLog.onTextMsgForce("ERR "+TAG + " run() "+e.getMessage());
         }
         Log.i(TAG, "server end");
     }

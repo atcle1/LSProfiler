@@ -26,12 +26,12 @@ public class LSPReporter {
     public static final String TAG = LSPReporter.class.getSimpleName();
     public static final String COLLECT_MOBILE_PATH = "/sdcard/LSP/";
     public static final String COLLECT_WEAR_PATH = "/sdcard/LSPW/";
-
     public static final String BACKUP_BASE_PATH = "/sdcard/LSP_backup/";
+    public static final int COLLECT_WATCH_REPORT_TIME_LIMIT_S = 500;
+
     private LogDbHandler dbHandler;
     private PowerManager pm;
     private PowerManager.WakeLock sendWl;
-
 
     public LSPReporter(LSPApplication app)
     {
@@ -72,56 +72,49 @@ public class LSPReporter {
 
     }
 
-    public void waitForKlogFinish(String filePath) {
-        try {
-            // klog should be finished within 2s.
-            Thread.sleep(1000);
-            File finishFile = new File(filePath);
-            for (int i = 0; i < 10; i++) {
-                if (finishFile.exists()) {
-                    Log.i(TAG, "KLSP finished detected! " + i);
-                    finishFile.delete();
-                    break;
-                }
-                Thread.sleep(1000);
+    public void waitForKlogFinish(ReportItem item) throws Exception{
+        // klog should be finished within 20s.
+        File finishFile = new File(COLLECT_MOBILE_PATH + item.reportDateString + ".klog.finish");
+        for (int i = 0; i < 20; i++) {
+            if (finishFile.exists()) {
+                Log.i(TAG, "KLSP finished detected! " + i);
+                //finishFile.delete();
+                break;
             }
-        } catch (Exception ex) {
+            Thread.sleep(1000);
         }
     }
+
     public void collectPhoneReport(ReportItem item) {
-        // mkdir
-        File baseDir = new File(COLLECT_MOBILE_PATH);
-        if(!baseDir.exists())
-            baseDir.mkdirs();
+        try {
+            // mkdir
+            File baseDir = new File(COLLECT_MOBILE_PATH);
+            if (!baseDir.exists())
+                baseDir.mkdirs();
 
-        // copy db
-        dbHandler.backupDB(COLLECT_MOBILE_PATH + item.reportDateString + ".db");
-        // reset db
-        dbHandler.resetDB();
-
-        //clientHandler.requestCollectLog();
-        if (isKlogEnabled()) {
-            requestReportToDaemon(item);
-
-            waitForKlogFinish(COLLECT_MOBILE_PATH + item.reportDateString + ".klog.finish");
-
-            //listing log files...
-            try {
-                for (int i = 0; i < 3; i++) {
-                    File klogFile = new File(COLLECT_MOBILE_PATH + item.reportDateString + ".klog");
-                    if (!klogFile.exists()) {
-                        Log.i(TAG, "klog not founded, wait");
-                        Thread.sleep(500, 0);
-                    } else
-                        Log.i(TAG, "klog exists " + klogFile.getAbsolutePath());
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            // copy db
+            boolean backupDbSuccess = dbHandler.backupDB(COLLECT_MOBILE_PATH + item.reportDateString + ".db");
+            // reset db
+            if (backupDbSuccess)
+                dbHandler.resetDB();
+            else {
+                LSPLog.onTextMsgForce(TAG + "backupdb failed");
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
         }
 
-
+        try {
+            if (isKlogEnabled()) {
+                //listing log files...
+                requestReportToDaemon(item);
+                waitForKlogFinish(item);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
     }
 
     public void sendReportByAsyncTask(ReportItem item) {
@@ -154,7 +147,7 @@ public class LSPReporter {
         Log.i(TAG, "backupReport() : " + result);
     }
 
-    public boolean collectWatchReport() {
+    public boolean collectWatchReport(int timeLimits) {
         LSPReportServer reportServer = new LSPReportServer();
 
         LSPConnection connection = app.getLSPConnection();
@@ -173,19 +166,20 @@ public class LSPReporter {
             while (reportServer.isAlive() == false && i++ < 100) {
                 Thread.sleep(100);
             }
-            Thread.sleep(100);
+            Log.i(TAG, "send report message " + NetworkUtil.getBluetoothAddress());
+            //connection.sendMessage("/LSP/CONTROL", "STOP");
+            connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
         }catch(Exception ex) {
             ex.printStackTrace();
+            LSPLog.onException(ex);
+            return false;
         }
-        Log.i(TAG, "send report message " + NetworkUtil.getBluetoothAddress());
-        //connection.sendMessage("/LSP/CONTROL", "STOP");
-        connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
 
         if (true) {
             try {
                 int i;
                 Log.i(TAG, "reportServr join start...");
-                for (i = 0; i < 500; i++) {
+                for (i = 0; i < timeLimits; i++) {
                     reportServer.join(1000);
                     //Log.i(TAG, "reportServer.join " + (i + 1));
                 }
@@ -194,8 +188,9 @@ public class LSPReporter {
                     reportServer.interrupt();
                     return false;
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+                LSPLog.onException(ex);
                 return false;
             }
         }
@@ -206,7 +201,7 @@ public class LSPReporter {
         @Override
         public void run() {
             super.run();
-            collectWatchReport();
+            collectWatchReport(COLLECT_WATCH_REPORT_TIME_LIMIT_S);
         }
     }
 
@@ -258,10 +253,9 @@ public class LSPReporter {
                     for (i = 0; i < 500; i++)
                         wearCollectThread.join(1000);
                     Log.i(TAG, "wear collect finished " + i);
-                    if (i == 100) {
-                        Log.e(TAG, "wearCollectThread isn't finished!, interrupt!");
+                    if (i >= 500) {
                         wearCollectThread.interrupt();
-                        LSPLog.onTextMsgForce("wearCollectThread not finished within 500s, interrupt()");
+                        LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within 500s, interrupt()");
                     }
             }
 

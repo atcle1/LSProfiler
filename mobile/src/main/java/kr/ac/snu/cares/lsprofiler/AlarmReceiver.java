@@ -24,11 +24,17 @@ public class AlarmReceiver extends BroadcastReceiver {
             Intent startServiceIntent = new Intent(context, LSPService.class);
             startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
             context.startService(startServiceIntent);
+            LSPLog.onTextMsgForce("AlarmReceiver() bRunning false");
         } else {
             Log.i(TAG, "onReceive() service already started.");
             Handler handler = LSPService.getHandler();
-            if (handler != null)
+            if (handler != null) {
                 handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
+                LSPLog.onTextMsgForce("AlarmReceiver() bRunning sendMessage");
+            } else {
+                LSPLog.onTextMsgForce("AlarmReceiver() bRunning bug handler is null");
+            }
+
         }
 
         // set next first alarm

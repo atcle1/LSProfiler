@@ -20,6 +20,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
+
 /**
  * Created by summer on 3/31/15.
  */
@@ -140,8 +142,10 @@ public class Mail {
         } catch (Exception ex) {
             Log.i("EMAIL", "Email sent exception");
             ex.printStackTrace();
+            LSPLog.onTextMsgForce(TAG + " sendReport() ex "+ex.getMessage());
             return -1;
         }
+        LSPLog.onTextMsgForce(TAG + " sendReport() success");
         return 0;
     }
 }

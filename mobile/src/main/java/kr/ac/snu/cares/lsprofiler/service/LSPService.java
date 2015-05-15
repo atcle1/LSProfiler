@@ -44,7 +44,7 @@ public class LSPService extends Service {
         //Toast.makeText(this, TAG + " onCreate()", Toast.LENGTH_SHORT).show();
         application = (LSPApplication)getApplication();
 
-        HandlerThread thread = new HandlerThread("Thread name", android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        HandlerThread thread = new HandlerThread("LSPService handler", android.os.Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         Looper looper = thread.getLooper();
         lspHandler = new LSPHandler(looper);

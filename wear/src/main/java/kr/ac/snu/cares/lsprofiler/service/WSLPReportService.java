@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.LSPReporter;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 
@@ -232,17 +233,21 @@ public class WSLPReportService extends Service {
                 case 0:
                     break;
                 case REQUEST_DOREPORT:
-                    wakeLock.acquire(1000 * 300);
-
-                    if (status == 0 && serverMac != null && !serverMac.equals("")) {
-                        status = 1;
-                        doReport();
-                        if (msg.arg1 == 1)
-                            lspApplication.resumeLogging();
-                        status = 0;
+                    try {
+                        wakeLock.acquire(1000 * 300);
+                        if (status == 0 && serverMac != null && !serverMac.equals("")) {
+                            status = 1;
+                            doReport();
+                            if (msg.arg1 == 1)
+                                lspApplication.resumeLogging();
+                            status = 0;
+                        }
+                    }catch (Exception ex) {
+                        LSPLog.onTextMsgForce("ERR WSLREPorterService "+ex.getMessage());
+                    } finally {
+                        if (wakeLock != null)
+                            wakeLock.release();
                     }
-
-                    wakeLock.release();
                     stopSelf();
 
                     //application.doReport();
