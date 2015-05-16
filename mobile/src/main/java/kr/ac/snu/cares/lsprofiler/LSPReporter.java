@@ -222,11 +222,12 @@ public class LSPReporter {
                         app.getLSPConnection().connect();
                         Thread.sleep(100);
                     }
-                    if (app.getLSPConnection().isWearConnected()) {
+                    if (app.getLSPConnection().sendPing(10000)) {
                         bCollectWear = true;
                     } else {
-                        LSPLog.onTextMsgForce("wearlogging is enabled, but isn't connected!");
+                        LSPLog.onTextMsgForce("wearlogging is enabled, but ping failed, skip log");
                         Log.i(TAG, "wearlogging is enabled, but isn't connected!");
+                        bCollectWear = false;
                     }
                 }
             } catch (Exception ex) {

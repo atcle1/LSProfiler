@@ -1,6 +1,7 @@
 package kr.ac.snu.cares.lsprofiler.service;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -12,6 +13,7 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,6 +21,7 @@ import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.MainActivity;
 import kr.ac.snu.cares.lsprofiler.R;
+import kr.ac.snu.cares.lsprofiler.receivers.RestartServiceReceiver;
 
 public class LSPService extends Service {
     public static final String ACTION_ALARM = "kr.ac.snu.cares.lsprofiler.LSPService.ALARM";
@@ -48,6 +51,7 @@ public class LSPService extends Service {
         thread.start();
         Looper looper = thread.getLooper();
         lspHandler = new LSPHandler(looper);
+        unregisterRestartAlarm();
 
     }
     private static final int NOTIFICATION_ID = 1;
@@ -86,8 +90,31 @@ public class LSPService extends Service {
     public static Handler getHandler() {
         return lspHandler;
     }
+
+    public void registerRestartAlarm() {
+        Intent intent = new Intent(LSPService.this, RestartServiceReceiver.class);
+        intent.setAction("ACTION.RESTART.PersistentService");
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
+        long firstTime = SystemClock.elapsedRealtime();
+        firstTime = 10 * 1000l;
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, firstTime, 10*1000, sender);
+    }
+
+    public void unregisterRestartAlarm() {
+        Intent intent = new Intent(LSPService.this, RestartServiceReceiver.class);
+        intent.setAction("ACTION.RESTART.PersistentService");
+        PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent, 0);
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        am.cancel(sender);
+    }
+
     @Override
     public void onDestroy() {
+        LSPLog.onTextMsg("ERR LSPService onDestroy()");
+        if (application.state.equals(LSPApplication.State.resumed)) {
+            registerRestartAlarm();
+        }
         lspHandler = null;
         try {
             Toast.makeText(getApplicationContext(), TAG + " onDestroy", Toast.LENGTH_SHORT).show();
@@ -95,7 +122,7 @@ public class LSPService extends Service {
             ex.printStackTrace();
         }
         Log.i(TAG, "onDestroy()");
-        LSPLog.onTextMsg("LSPService onDestroy()");
+        super.onDestroy();
     }
 
     private class LSPHandler extends Handler  {

@@ -110,6 +110,12 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
                         .setResultCallback(resultCallback);
             } */
 
+        } else if (path.equals("/LSP/WPING")) {
+            if (msg.equals("PING")) {
+                Wearable.MessageApi.sendMessage(mGoogleApiClient,
+                        messageEvent.getSourceNodeId(), "/LSP/WPONG", "PONG".getBytes())
+                        .setResultCallback(resultCallback);
+            }
         }
 
     }

@@ -15,6 +15,9 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -257,4 +260,5 @@ public class WSLPReportService extends Service {
             }
         }
     }
+
 }

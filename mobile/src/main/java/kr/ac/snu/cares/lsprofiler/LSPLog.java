@@ -8,6 +8,9 @@ import android.service.notification.StatusBarNotification;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.Util;
 
@@ -188,10 +191,19 @@ public class LSPLog {
         }
     }
 
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
+
     public static void onException(Exception ex) {
         if (logDbHandler != null) {
             try {
-                logDbHandler.writeLog("ERR  " + ex.getMessage());
+                String message = getStackTrace(ex);
+                logDbHandler.writeLog("EXP  " + ex.getLocalizedMessage()+"\n" + message);
+
             }catch (Exception ex2) {
                 ex2.printStackTrace();
             }

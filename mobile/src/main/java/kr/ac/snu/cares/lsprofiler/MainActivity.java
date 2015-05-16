@@ -175,9 +175,15 @@ public class MainActivity extends ActionBarActivity {
 */
 
 
-                connection.connect();
+                //connection.connect();
                 //connection.sendMessage("/LSP", "LSP test message");
-                connection.sendMessage("/LSP/CONTROL", "REPORT " + NetworkUtil.getBluetoothAddress());
+                //connection.sendMessage("/LSP/CONTROL", "REPORT " + NetworkUtil.getBluetoothAddress());
+
+                if (connection.sendPing(10000)) {
+                    Toast.makeText(getApplicationContext(), "PONG", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "No PONG!!!", Toast.LENGTH_SHORT).show();
+                }
             } else if (v.getId() == R.id.bTBackupLog) {
                 Boolean bRunning = LSPService.isServiceRunning(getApplicationContext());
                 // if service is not started...

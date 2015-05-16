@@ -82,17 +82,22 @@
         </receiver>
 
         <receiver
-            android:name=".receivers.ReceiverManager"
-            android:enabled="true"
-            android:exported="false" >
-        </receiver>
-
-        <receiver
             android:name=".receivers.AlarmReceiver"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
                 <action android:name=".AlarmReceiver" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receivers.RestartServiceReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:process=":remote"
+            android:label="RestartService">
+            <intent-filter>
+                <action android:name="ACTION.RESTART.PersistentService" />
             </intent-filter>
         </receiver>
 
