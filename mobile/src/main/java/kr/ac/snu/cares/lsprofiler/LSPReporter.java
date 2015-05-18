@@ -41,14 +41,22 @@ public class LSPReporter {
         sendWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "send report");
     }
 
-    public void requestReportToDaemon(ReportItem item) {
+    public Su requestReportToDaemon(ReportItem item) {
         Log.i(TAG, "requestReportToDaemon");
         //DaemonStarter.startForReport(COLLECT_MOBILE_PATH, item.reportDateString + ".klog");
         Su su = new Su();
         su.prepare();
-        su.execSu("/data/local/sprofiler 3 "+ COLLECT_MOBILE_PATH +" "+ item.reportDateString + ".klog");
-        su.execSu("/data/local/sprofiler 7");   // clear logs
-        su.stopSu(3000);    // 30s limit
+        su.execSu("/data/local/sprofiler 3 " + COLLECT_MOBILE_PATH + " " + item.reportDateString + ".klog");
+        //su.execSu("/data/local/sprofiler 7");   // clear logs
+        //su.stopSu(3000);    // 30s limit
+        return su;
+    }
+
+    public void clearKernelLog() {
+        Su su = new Su();
+        //su.prepare();
+        //su.execSu("/data/local/sprofiler 7");   // clear logs
+        Su.executeOnce("/data/local/sprofiler 7", 30000);
     }
 
     public boolean isKlogEnabled() {
@@ -72,17 +80,18 @@ public class LSPReporter {
 
     }
 
-    public void waitForKlogFinish(ReportItem item) throws Exception{
+    public boolean waitForKlogFinish(ReportItem item) throws Exception{
         // klog should be finished within 20s.
         File finishFile = new File(COLLECT_MOBILE_PATH + item.reportDateString + ".klog.finish");
         for (int i = 0; i < 20; i++) {
             if (finishFile.exists()) {
                 Log.i(TAG, "KLSP finished detected! " + i);
                 //finishFile.delete();
-                break;
+                return true;
             }
             Thread.sleep(1000);
         }
+        return false;
     }
 
     public void collectPhoneReport(ReportItem item) {
@@ -105,11 +114,18 @@ public class LSPReporter {
             LSPLog.onException(ex);
         }
 
+        Su su = null;
+        boolean success = false;
         try {
             if (isKlogEnabled()) {
                 //listing log files...
-                requestReportToDaemon(item);
-                waitForKlogFinish(item);
+                su = requestReportToDaemon(item);
+                success = waitForKlogFinish(item);
+                if (success) {
+                    su.stopSu();
+                    clearKernelLog();
+                }
+
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -183,7 +199,7 @@ public class LSPReporter {
                     reportServer.join(1000);
                     //Log.i(TAG, "reportServer.join " + (i + 1));
                 }
-                if (i == 500) {
+                if (i == timeLimits) {
                     Log.e(TAG, "reportServer join timeout, interrupt()");
                     reportServer.interrupt();
                     return false;

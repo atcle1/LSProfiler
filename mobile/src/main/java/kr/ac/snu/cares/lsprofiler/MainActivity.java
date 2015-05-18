@@ -19,7 +19,6 @@ import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
-import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
@@ -37,21 +36,22 @@ public class MainActivity extends ActionBarActivity {
 
 
     private DaemonClient clientHandler;
-    HandlerThread daemonClientThread;
-    LSPApplication lspApplication;
+    private HandlerThread daemonClientThread;
+    private LSPApplication lspApplication;
 
+    private LSPConnection connection;
 
     private void setButton(int id, View.OnClickListener listener)
     {
         Button button = (Button)findViewById(id);
         button.setOnClickListener(listener);
     }
-    LSPConnection connection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        onServiceBtClickListener serviceBtClickListener = new onServiceBtClickListener();
+        onBtClickListener btClickListener = new onBtClickListener();
 
         txtStatus = (TextView)findViewById(R.id.txtStatus);
 
@@ -62,15 +62,15 @@ public class MainActivity extends ActionBarActivity {
         btCallLog = (Button)findViewById(R.id.bTCallLog);
         lspApplication = (LSPApplication)getApplication();
 
-        btStartStresser.setOnClickListener(serviceBtClickListener);
-        btStopStresser.setOnClickListener(serviceBtClickListener);
-        btReadLog.setOnClickListener(serviceBtClickListener);
-        btSendMail.setOnClickListener(serviceBtClickListener);
-        btCallLog.setOnClickListener(serviceBtClickListener);
+        btStartStresser.setOnClickListener(btClickListener);
+        btStopStresser.setOnClickListener(btClickListener);
+        btReadLog.setOnClickListener(btClickListener);
+        btSendMail.setOnClickListener(btClickListener);
+        btCallLog.setOnClickListener(btClickListener);
 
-        setButton(R.id.bTBackupLog, serviceBtClickListener);
-        setButton(R.id.bTStatus, serviceBtClickListener);
-        setButton(R.id.bTRoot, serviceBtClickListener);
+        setButton(R.id.bTBackupLog, btClickListener);
+        setButton(R.id.bTStatus, btClickListener);
+        setButton(R.id.bTRoot, btClickListener);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -118,7 +118,7 @@ public class MainActivity extends ActionBarActivity {
         updateStatus();
     }
 
-    class onServiceBtClickListener implements View.OnClickListener
+    class onBtClickListener implements View.OnClickListener
     {
         Su su;
         @Override
@@ -179,6 +179,8 @@ public class MainActivity extends ActionBarActivity {
                 //connection.sendMessage("/LSP", "LSP test message");
                 //connection.sendMessage("/LSP/CONTROL", "REPORT " + NetworkUtil.getBluetoothAddress());
 
+                //lspApplication.getReporter().clearKernelLog();
+
                 if (connection.sendPing(10000)) {
                     Toast.makeText(getApplicationContext(), "PONG", Toast.LENGTH_SHORT).show();
                 } else {
@@ -200,7 +202,6 @@ public class MainActivity extends ActionBarActivity {
                 }
                 Log.i(TAG,"onClick btBackupLog end");
             } else if (v.getId() == R.id.bTStatus) {
-                connection.disconnect();
                 updateStatus();
             } else if (v.getId() == R.id.bTRoot) {
                 boolean isRooted = Su.isRooted();

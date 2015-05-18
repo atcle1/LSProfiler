@@ -9,6 +9,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
+
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 
 /**
  * Created by summer on 4/24/15.
@@ -31,13 +34,58 @@ public class Su {
         runtime = Runtime.getRuntime();
     }
 
-    public int executeOnce(String cmd, int timeout) {
+    private static class Worker extends Thread {
+        private final Process process;
+        private Integer exit;
+        private Worker(Process process) {
+            this.process = process;
+        }
+        public void run() {
+            try {
+                exit = process.waitFor();
+            } catch (InterruptedException ignore) {
+                return;
+            }
+        }
+    }
+
+    public static int executeCommandLine(final String commandLine,
+                                         final long timeout)
+            throws IOException, InterruptedException, TimeoutException
+    {
+        Runtime runtime = null;
+        Process process = null;
+        Worker worker = null;
         try {
-            su = Runtime.getRuntime().exec("su -c \"" + cmd+"\"");
+            runtime = Runtime.getRuntime();
+            process = runtime.exec(commandLine);
+            worker = new Worker(process);
+            worker.start();
 
-            su.waitFor();
+            worker.join(timeout);
+            if (worker.exit != null)
+                return worker.exit;
+            else {
+                worker.interrupt();
+            }
+        } catch(Exception ex) {
+            try {
+                if (worker != null)
+                    worker.interrupt();
+            }catch (Exception ex2) {
+                ex.printStackTrace();
+            }
+        } finally {
+            process.destroy();
+        }
+        return -1;
+    }
 
+    public static int executeOnce(String cmd, int timeout) {
+        try {
+            executeCommandLine("su -c " + cmd, timeout);
         } catch (Exception e) {
+            LSPLog.onException(e);
             e.printStackTrace();
         }
 
@@ -62,7 +110,6 @@ public class Su {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 
@@ -97,54 +144,54 @@ public class Su {
             e.printStackTrace();
         }
     }
-/*
-    class ReaderThread extends Thread {
-        private Handler handler;
-        private InputStream inputStream;
-        private InputStreamReader inputStreamReader;
-        private BufferedReader reader;
-        private StringBuffer buffer;
-        public Boolean bRun = false;
-        public ReaderThread(Handler handler, InputStream inputStream) {
-            this.handler = handler;
-            inputStreamReader = new InputStreamReader(inputStream);
-            reader = new BufferedReader(inputStreamReader);
-            buffer = new StringBuffer();
-        }
+    /*
+        class ReaderThread extends Thread {
+            private Handler handler;
+            private InputStream inputStream;
+            private InputStreamReader inputStreamReader;
+            private BufferedReader reader;
+            private StringBuffer buffer;
+            public Boolean bRun = false;
+            public ReaderThread(Handler handler, InputStream inputStream) {
+                this.handler = handler;
+                inputStreamReader = new InputStreamReader(inputStream);
+                reader = new BufferedReader(inputStreamReader);
+                buffer = new StringBuffer();
+            }
 
-        public void run() {
-            String line;
-            bRun = true;
-            while (bRun) {
-                try {
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line + "\n");
-                        //System.out.println(line);
-                        Log.i("LSP", "reader.readLine() "+ line);
-                        reply(line);
+            public void run() {
+                String line;
+                bRun = true;
+                while (bRun) {
+                    try {
+                        while ((line = reader.readLine()) != null) {
+                            buffer.append(line + "\n");
+                            //System.out.println(line);
+                            Log.i("LSP", "reader.readLine() "+ line);
+                            reply(line);
+                        }
+
+                        Log.i(TAG, "readLine() next");
+                        bRun = false;
+                    } catch (IOException io) {
+                        System.out.println("brun "+ bRun);
+                    }catch (Exception e) {
+                        e.printStackTrace();
                     }
 
-                    Log.i(TAG, "readLine() next");
-                    bRun = false;
-                } catch (IOException io) {
-                    System.out.println("brun "+ bRun);
-                }catch (Exception e) {
-                    e.printStackTrace();
                 }
-
+                Log.i(TAG, "run()end");
             }
-            Log.i(TAG, "run()end");
-        }
 
-        private void reply(String line) {
-            if (handler == null) return;
-            Message msg = handler.obtainMessage();
-            msg.what = 0;
-            msg.obj = line;
-            handler.sendMessage(msg);
+            private void reply(String line) {
+                if (handler == null) return;
+                Message msg = handler.obtainMessage();
+                msg.what = 0;
+                msg.obj = line;
+                handler.sendMessage(msg);
+            }
         }
-    }
-    */
+        */
     public static boolean isRooted() {
         Process process;
         try {

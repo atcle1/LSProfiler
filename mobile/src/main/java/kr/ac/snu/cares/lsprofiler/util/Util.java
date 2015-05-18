@@ -2,6 +2,8 @@ package kr.ac.snu.cares.lsprofiler.util;
 
 import android.bluetooth.BluetoothAdapter;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.MessageDigest;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,4 +47,10 @@ public class Util {
         return sb.toString();
     }
 
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
 }

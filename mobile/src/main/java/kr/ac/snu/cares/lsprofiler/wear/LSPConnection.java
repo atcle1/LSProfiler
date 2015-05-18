@@ -85,7 +85,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
     }
 
     public static boolean pingResult = false;
-    synchronized public boolean sendPing(int timeoutMills) {
+    synchronized public boolean sendPing(final int timeoutMills) {
         int sleepMill = 0;
         try {
             pingResult = false;
@@ -94,7 +94,8 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                 public void run() {
                     try {
                         Log.i(TAG, "ping - getConnectedNodes()");
-                        NodeApi.GetConnectedNodesResult connectedResult = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await();
+                        connect();
+                        NodeApi.GetConnectedNodesResult connectedResult = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await(timeoutMills, TimeUnit.MILLISECONDS);
                         if (connectedResult == null) {
                             Log.i(TAG, "getConnectedNode return null");
                             pingResult = false;
@@ -118,7 +119,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                         }
                         Log.i(TAG, "ping - sendMessage()");
                         MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(mGoogleApiClient,
-                                watchNode.getId(), path, "PING".getBytes()).await();
+                                watchNode.getId(), path, "PING".getBytes()).await(timeoutMills, TimeUnit.MILLISECONDS);
                         if (result.getStatus().isSuccess()) {
                             Log.i(TAG, "send ping success");
                             pingResult = true;

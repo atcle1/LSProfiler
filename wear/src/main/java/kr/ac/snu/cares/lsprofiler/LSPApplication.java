@@ -87,6 +87,14 @@ public class LSPApplication extends Application {
         prefMgr.setLoggingState("stop");
         stopLogging();
     }
+
+    public void startKernelLog() {
+        Su su = new Su();
+        //su.prepare();
+        //su.execSu("/data/local/sprofiler 7");   // clear logs
+        Su.executeOnce("/data/local/sprofiler 1", 30000);
+    }
+
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
         if (savedState.equals("start")) {
@@ -116,7 +124,7 @@ public class LSPApplication extends Application {
 
         resumeLogging();
         LSPLog.onTextMsg("startLogging()");
-
+        startKernelLog();
     }
     public void resumeLogging() {
         showToast("resumeLogging()");
@@ -211,7 +219,12 @@ public class LSPApplication extends Application {
         Log.i(TAG, "onConfigureationChanged()");
     }
 
+    static Toast toast;
     public void showToast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        if (toast != null) {
+            toast.setText(msg);
+        } else
+            toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
+        toast.show();
     }
 }

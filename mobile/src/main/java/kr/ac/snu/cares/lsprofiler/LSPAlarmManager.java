@@ -27,7 +27,7 @@ public class LSPAlarmManager {
     public static int start_hour = 4;
     public static int start_minute = 0;
     //public static int repeat_interver = 1000 * 60 * 60 * 24; // 1 day
-    public static int repeat_interver = 1000 * 60 * 60 * 2;
+    public static int repeat_interver = 1000 * 60 * 30;
 
     public static Calendar getNextAlarm() {
         Calendar cal = Calendar.getInstance();
@@ -49,7 +49,7 @@ public class LSPAlarmManager {
 
     public void setTestTime() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis() + 1000 * 60 * 60 * 3);
+        calendar.setTimeInMillis(System.currentTimeMillis() + 1000 * 60 * 60 * 1);
         start_hour = calendar.get(Calendar.HOUR_OF_DAY);
         start_minute = calendar.get(Calendar.MINUTE);
     }

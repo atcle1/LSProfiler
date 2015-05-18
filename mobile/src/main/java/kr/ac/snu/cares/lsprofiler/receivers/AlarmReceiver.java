@@ -36,7 +36,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             } else {
                 LSPLog.onTextMsgForce("AlarmReceiver() bRunning bug handler is null");
             }
-
         }
 
         // set next first alarm

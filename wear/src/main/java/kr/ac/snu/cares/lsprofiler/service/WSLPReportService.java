@@ -152,14 +152,10 @@ public class WSLPReportService extends Service {
 
             dos.flush();
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+
         } catch (Exception e) {
             e.printStackTrace();
+            LSPLog.onException(e);
             return false;
         }
 
@@ -203,6 +199,7 @@ public class WSLPReportService extends Service {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            LSPLog.onException(ex);
         } finally {
             if (bBackup)
                 reporter.backupReports(item);
@@ -219,6 +216,7 @@ public class WSLPReportService extends Service {
             btClientSocket.connect();
         }catch (Exception ex) {
             ex.printStackTrace();
+            LSPLog.onException(ex);
             return false;
         }
         return true;
@@ -247,11 +245,13 @@ public class WSLPReportService extends Service {
                         }
                     }catch (Exception ex) {
                         LSPLog.onTextMsgForce("ERR WSLREPorterService "+ex.getMessage());
+                        LSPLog.onException(ex);
                     } finally {
+                        stopSelf();
                         if (wakeLock != null)
                             wakeLock.release();
                     }
-                    stopSelf();
+
 
                     //application.doReport();
                     break;

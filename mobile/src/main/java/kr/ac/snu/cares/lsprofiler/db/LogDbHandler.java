@@ -14,6 +14,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
+
 /**
  * Created by summer on 3/28/15.
  */
@@ -76,9 +78,23 @@ public class LogDbHandler {
     {
         if (msg == null)
             return -1;
-        InsertLogdbStmt.bindString(1, msg);
-        InsertLogdbStmt.execute();
-        InsertLogdbStmt.clearBindings();
+        try {
+            if (InsertLogdbStmt == null) {
+                FileLogWritter.writeString("if (InsertLogdbStmt == null) {");
+                open();
+            }
+            InsertLogdbStmt.bindString(1, msg);
+            InsertLogdbStmt.execute();
+            InsertLogdbStmt.clearBindings();
+        } catch (Exception ex) {
+            try {
+                ex.printStackTrace();
+                FileLogWritter.writeString(ex.getLocalizedMessage());
+                open();
+            }catch (Exception ex2){
+                FileLogWritter.writeString(ex2.getLocalizedMessage());
+            }
+        }
         return 0;
     }
 

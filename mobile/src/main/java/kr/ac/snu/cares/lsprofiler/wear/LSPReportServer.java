@@ -138,7 +138,7 @@ public class LSPReportServer extends Thread {
             }
 
             serverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("JustService", UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
-            socket = serverSocket.accept(20 * 1000);       // Timeout 20s
+            socket = serverSocket.accept();
             InputStream in = socket.getInputStream();
 
             receiveFiles(new DataInputStream(new BufferedInputStream(in)), LSPReporter.COLLECT_WEAR_PATH);
@@ -147,7 +147,8 @@ public class LSPReportServer extends Thread {
             socket.close();
         } catch (Exception e) {
             Log.i(TAG, "EXCEPTION::" + e.getMessage());
-            LSPLog.onTextMsgForce("ERR "+TAG + " run() "+e.getMessage());
+            e.printStackTrace();
+            LSPLog.onException(e);
         }
         Log.i(TAG, "server end");
     }

@@ -23,6 +23,7 @@ import kr.ac.snu.cares.lsprofiler.util.DeviceID;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
+import kr.ac.snu.cares.lsprofiler.util.WatchDog;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 
 /**
@@ -67,6 +68,8 @@ public class LSPApplication extends Application {
     public LSPConnection getLSPConnection() {return connection; }
     private Handler handler;
 
+    private WatchDog watchDog;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -102,6 +105,9 @@ public class LSPApplication extends Application {
         app = this;
 
         handler = new Handler();
+
+        watchDog = new WatchDog();
+
     }
 
     public LogDbHandler getDbHandler() {
@@ -124,6 +130,15 @@ public class LSPApplication extends Application {
         connection.sendMessage("/LSP/CONTROL", "STOP");
         stopLogging();
     }
+
+    public void startKernelLog() {
+        Su su = new Su();
+        //su.prepare();
+        //su.execSu("/data/local/sprofiler 7");   // clear logs
+        Su.executeOnce("/data/local/sprofiler 1", 30000);
+    }
+
+
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
         if (savedState.equals("start")) {
@@ -151,6 +166,7 @@ public class LSPApplication extends Application {
         alarmManager.setFirstAlarm();
 
         resumeLogging();
+        startKernelLog();
     }
 
     public void resumeLogging() {
@@ -199,6 +215,10 @@ public class LSPApplication extends Application {
 
         alarmManager.clearAlarm();
         stopService(new Intent(this, LSPService.class));
+    }
+
+    public LSPReporter getReporter() {
+        return reporter;
     }
 
     public void doReport() {

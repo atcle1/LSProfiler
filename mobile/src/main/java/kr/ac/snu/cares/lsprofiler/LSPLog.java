@@ -8,10 +8,8 @@ import android.service.notification.StatusBarNotification;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.Util;
 
 /**
@@ -19,7 +17,7 @@ import kr.ac.snu.cares.lsprofiler.util.Util;
  */
 public class LSPLog {
     public static final String TAG = LSPLog.class.getSimpleName();
-    private Context context;
+    private static Context context;
     private static boolean bWriteLog = false;
     private static LogDbHandler logDbHandler;
 
@@ -119,11 +117,12 @@ public class LSPLog {
     }
     public static void onNotificationPosted(StatusBarNotification sbn) {
         String title = "", text = "", bigtext="";
-        String packName = sbn.getPackageName();
-        //if (sbn.getNotification().tickerText != null)
-        //    ticker = sbn.getNotification().tickerText.toString();
-        Bundle extras = sbn.getNotification().extras;
-        if (extras != null) {
+        try {
+            String packName = sbn.getPackageName();
+            //if (sbn.getNotification().tickerText != null)
+            //    ticker = sbn.getNotification().tickerText.toString();
+            Bundle extras = sbn.getNotification().extras;
+            if (extras != null) {
             /*
             for (String key : extras.keySet()) {
                 Object value = extras.get(key);
@@ -132,19 +131,29 @@ public class LSPLog {
                         value.toString(), value.getClass().getName()));
             }
             */
-            title = extras.getString("android.title");
-            CharSequence textSequence = extras.getCharSequence("android.text");
-            if (textSequence != null)
-                text = textSequence.toString();
-            if (extras.containsKey("android.bigText"))
-                bigtext = extras.getCharSequence("android.bigText").toString();
-        }
+                title = extras.getString("android.title");
+                CharSequence textSequence = extras.getCharSequence("android.text");
+                if (textSequence != null)
+                    text = textSequence.toString();
+                if (extras.containsKey("android.bigText"))
+                    bigtext = extras.getCharSequence("android.bigText").toString();
+            }
 
-        //Log.i("id", "" + sbn.getId());
-        //Log.i("Text", "tag "+sbn.getTag());
-        Log.i("TAG", "NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title.length()+"|"+text.length()+"|"+bigtext.length());
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("NOP : "+sbn.getPackageName()+"|"+sbn.getId()+"|"+title+"|"+text+"|"+bigtext);
+            //Log.i("id", "" + sbn.getId());
+            //Log.i("Text", "tag "+sbn.getTag());
+            if (title == null)
+                title = "";
+            if (text == null)
+                text = "";
+            if (bigtext == null)
+                bigtext = "";
+            Log.i("TAG", "NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + title + "|" + text + "|" + bigtext+"|");
+            if (!bWriteLog) return;
+            logDbHandler.writeLog("NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + title + "|" + text + "|" + bigtext+"|");
+        } catch (Exception ex){
+            ex.printStackTrace();
+            onException(ex);
+        }
 
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {
@@ -182,31 +191,60 @@ public class LSPLog {
     }
 
     public static void onTextMsgForce(String msg){
-        if (logDbHandler != null) {
+        if ( checkDbHandler()) {
             try {
                 logDbHandler.writeLog("TFC : " + msg);
+                FileLogWritter.writeString("TFC : " + msg);
             }catch (Exception ex) {
+                onException(ex);
                 ex.printStackTrace();
             }
         }
     }
 
-    public static String getStackTrace(final Throwable throwable) {
-        final StringWriter sw = new StringWriter();
-        final PrintWriter pw = new PrintWriter(sw, true);
-        throwable.printStackTrace(pw);
-        return sw.getBuffer().toString();
+    public static boolean checkDbHandler() {
+        if (logDbHandler != null)
+            return true;
+        try {
+            onException(new Exception("checkDbHandler() dbHandler is null"));
+            if (logDbHandler == null)
+                logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }catch (Exception ex) {
+            onException(ex);
+        }
+        if (logDbHandler != null)
+            return true;
+        return false;
     }
 
+
+
     public static void onException(Exception ex) {
+        String message = null;
+        String logMsg = null;
+        if (logDbHandler == null) {
+            logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }
         if (logDbHandler != null) {
             try {
-                String message = getStackTrace(ex);
-                logDbHandler.writeLog("EXP  " + ex.getLocalizedMessage()+"\n" + message);
+                message = Util.getStackTrace(ex);
+                logMsg = "EXP  " + Log.getStackTraceString(ex) + "\n" + message;
+
+                logDbHandler.writeLog(logMsg);
 
             }catch (Exception ex2) {
                 ex2.printStackTrace();
             }
         }
+        try {
+            FileLogWritter.writeString(logMsg);
+        } catch (Exception ex3) {
+            ex3.printStackTrace();
+        }
+    }
+
+    public static void onWatchDog() {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("WATCHDOG ALIVE");
     }
 }
