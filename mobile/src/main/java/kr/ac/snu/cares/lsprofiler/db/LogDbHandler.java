@@ -74,7 +74,7 @@ public class LogDbHandler {
         return id;
     }
 
-    public int writeLog(String msg)
+    synchronized public int writeLog(String msg)
     {
         if (msg == null)
             return -1;

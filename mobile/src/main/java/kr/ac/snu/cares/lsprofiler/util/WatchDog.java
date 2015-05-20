@@ -14,7 +14,7 @@ public class WatchDog extends Thread {
         Log.i(TAG, "run()");
         while (true) {
             try {
-                LSPLog.onWatchDog();
+                //LSPLog.onWatchDog();
                 Thread.sleep(60 * 1000);
             } catch (Exception ex) {
                 FileLogWritter.writeString("watchdog exception");
