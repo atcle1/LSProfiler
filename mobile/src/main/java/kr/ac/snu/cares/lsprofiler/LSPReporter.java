@@ -11,6 +11,7 @@ import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
@@ -197,11 +198,16 @@ public class LSPReporter {
                 Log.i(TAG, "reportServr join start...");
                 for (i = 0; i < timeLimits; i++) {
                     reportServer.join(1000);
+                    if (!reportServer.isAlive()) {
+                        FileLogWritter.writeString("reportServer join within "+timeLimits +" s");
+                        break;
+                    }
                     //Log.i(TAG, "reportServer.join " + (i + 1));
                 }
                 if (i == timeLimits) {
                     Log.e(TAG, "reportServer join timeout, interrupt()");
                     reportServer.interrupt();
+                    FileLogWritter.writeString("reportServer join failed in " + timeLimits + " s, interrupt()");
                     return false;
                 }
             } catch (InterruptedException ex) {
@@ -267,8 +273,12 @@ public class LSPReporter {
             // join for wearCollect thread
             if (bCollectWear) {
                     int i;
-                    for (i = 0; i < 500; i++)
+                    for (i = 0; i < 500; i++) {
                         wearCollectThread.join(1000);
+                        if (!wearCollectThread.isAlive()){
+                            break;
+                        }
+                    }
                     Log.i(TAG, "wear collect finished " + i);
                     if (i >= 500) {
                         wearCollectThread.interrupt();
@@ -336,7 +346,7 @@ public class LSPReporter {
                 for (int i = 0; i < files.length; i++) {
                     String filePath = files[i];
                     File f = new File(filePath);
-                    if (!f.exists() || f.length() > 25 * 1024 * 1024) { // fileSize > 25MB
+                    if (!f.exists() || f.length() > 24 * 1024 * 1024) { // fileSize > 24MB
                         files[i] = "";  //skip file.
                     } else {
                         send_files[i] = files[i];

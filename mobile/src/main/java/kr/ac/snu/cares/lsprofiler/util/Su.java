@@ -70,12 +70,15 @@ public class Su {
                 worker.interrupt();
             }
         } catch(Exception ex) {
+            FileLogWritter.WriteException(ex);
             try {
                 if (worker != null)
                     worker.interrupt();
             }catch (Exception ex2) {
                 ex.printStackTrace();
+                FileLogWritter.WriteException(ex2);
             }
+
         } finally {
             process.destroy();
         }
