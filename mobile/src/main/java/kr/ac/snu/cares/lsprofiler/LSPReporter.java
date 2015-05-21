@@ -185,7 +185,12 @@ public class LSPReporter {
             }
             Log.i(TAG, "send report message " + NetworkUtil.getBluetoothAddress());
             //connection.sendMessage("/LSP/CONTROL", "STOP");
-            connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
+            //connection.sendMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress());
+            boolean result = connection.sendBlockingMessage("/LSP/CONTROL", "REPORT "+NetworkUtil.getBluetoothAddress(), 10 * 1000);
+            if (result == false) {
+                throw new Exception("send report message failed within 10s");
+            }
+
         }catch(Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
@@ -202,7 +207,7 @@ public class LSPReporter {
                         FileLogWritter.writeString("reportServer join within "+timeLimits +" s");
                         break;
                     }
-                    //Log.i(TAG, "reportServer.join " + (i + 1));
+                    Log.i(TAG, "reportServer.join " + (i + 1));
                 }
                 if (i == timeLimits) {
                     Log.e(TAG, "reportServer join timeout, interrupt()");
@@ -244,7 +249,7 @@ public class LSPReporter {
                         app.getLSPConnection().connect();
                         Thread.sleep(100);
                     }
-                    if (app.getLSPConnection().sendPing(10000)) {
+                    if (app.getLSPConnection().sendPing(10 * 1000)) {
                         bCollectWear = true;
                     } else {
                         LSPLog.onTextMsgForce("wearlogging is enabled, but ping failed, skip log");

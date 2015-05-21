@@ -24,13 +24,14 @@ import java.util.concurrent.TimeUnit;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
  * Created by summer on 15. 5. 6.
  */
 public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener
-         {
+{
     public static final String TAG = LSPConnection.class.getSimpleName();
     private Context context;
     private GoogleApiClient mGoogleApiClient; // 구글 플레이 서비스 API 객체
@@ -141,6 +142,80 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         return pingResult;
     }
 
+    public static boolean blockingResult = false;
+    class BlockingMessageWorker extends Thread {
+        public boolean sendResult;
+        public String message;
+        public String path;
+        public int timeoutMills;
+        public long start, end;
+        public BlockingMessageWorker(String path, String message, int timeoutMills)
+        {
+            this.path = path;
+            this.message = message;
+            this.timeoutMills = timeoutMills;
+            sendResult = false;
+        }
+        @Override
+        public void run() {
+            try{
+                start = System.currentTimeMillis();
+                Log.i(TAG, "blocking message - getConnectedNodes()");
+                connect();
+                NodeApi.GetConnectedNodesResult connectedResult = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await(timeoutMills, TimeUnit.MILLISECONDS);
+                if (connectedResult == null) {
+                    Log.i(TAG, "blocking message - getConnectedNode return null");
+                    sendResult = false;
+                    return;
+                }
+                end = System.currentTimeMillis();
+                Log.i(TAG, "GetConnectedNodes() finished in " + (end-start) +" ms");
+                start=end;
+
+                java.util.List<com.google.android.gms.wearable.Node> pingList = connectedResult.getNodes();
+                Node watchNode = null;
+                for (Node node : pingList) {
+                    if (node.getDisplayName().contains("G Watch R")) {
+                        watchNode = node;
+                        break;
+                    }
+                }
+                if (watchNode == null) {
+                    FileLogWritter.writeString("blocking message " + message + " / watchNode is null");
+                    sendResult = false;
+                    return;
+                } else {
+                    Log.i(TAG, "watch node found");
+                }
+                Log.i(TAG, "ping - send blocking message()");
+                MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(mGoogleApiClient,
+                        watchNode.getId(), path, message.getBytes()).await(timeoutMills, TimeUnit.MILLISECONDS);
+                if (result.getStatus().isSuccess()) {
+                    end = System.currentTimeMillis();
+                    Log.i(TAG, "sendMessage success finished in " + (end-start) +" ms");
+                    sendResult = true;
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                LSPLog.onException(ex);
+            }
+        }
+    }
+
+    synchronized public boolean sendBlockingMessage(String path, String message, final int timeoutMills) {
+        int sleepMill = 0;
+        BlockingMessageWorker worker = new BlockingMessageWorker(path, message, timeoutMills);
+        try {
+            worker.start();
+            worker.join(timeoutMills);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
+        return worker.sendResult;
+    }
+
+
     public void disconnect() {
         mGoogleApiClient.disconnect();
     }
@@ -206,7 +281,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         }
         @Override
         public void onResult(NodeApi.GetConnectedNodesResult
-                                             getConnectedNodesResult) {
+                                     getConnectedNodesResult) {
             nodeList = getConnectedNodesResult.getNodes();
             for (final Node node : nodeList) {
                 Log.i(TAG, "node name " + node.getDisplayName() + " " + node.getId());
