@@ -29,6 +29,7 @@ public class LSPApplication extends Application {
     public State state = State.stopped;
     private Su su;
     PowerManager pm;
+    private PowerManager.WakeLock toastWl;
 
     private LSPReporter reporter;
 
@@ -62,7 +63,7 @@ public class LSPApplication extends Application {
 
         reporter = new LSPReporter(this);
         pm =  (PowerManager) getSystemService( Context.POWER_SERVICE );
-
+        toastWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "toast wl");
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
         daemonClientThread.start();
@@ -226,5 +227,6 @@ public class LSPApplication extends Application {
         } else
             toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
         toast.show();
+        toastWl.acquire(2500);
     }
 }

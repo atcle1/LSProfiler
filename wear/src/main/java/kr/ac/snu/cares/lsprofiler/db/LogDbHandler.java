@@ -14,6 +14,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
+
 /**
  * Created by summer on 3/28/15.
  */
@@ -42,7 +44,7 @@ public class LogDbHandler {
         //String sql = "INSERT INTO logdb(i_datetime, t_log) " +
         //      "VALUES (strftime('%s', 'now', 'localtime'), ?)";
         String sql = "INSERT INTO logdb(t_datetime, t_log) " +
-                "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
+              "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
         InsertLogdbStmt = db.compileStatement(sql);
     }
     private void closePrepareStatement() {
@@ -72,13 +74,27 @@ public class LogDbHandler {
         return id;
     }
 
-    public int writeLog(String msg)
+    synchronized public int writeLog(String msg)
     {
         if (msg == null)
             return -1;
-        InsertLogdbStmt.bindString(1, msg);
-        InsertLogdbStmt.execute();
-        InsertLogdbStmt.clearBindings();
+        try {
+            if (InsertLogdbStmt == null) {
+                FileLogWritter.writeString("if (InsertLogdbStmt == null) {");
+                open();
+            }
+            InsertLogdbStmt.bindString(1, msg);
+            InsertLogdbStmt.execute();
+            InsertLogdbStmt.clearBindings();
+        } catch (Exception ex) {
+            try {
+                ex.printStackTrace();
+                FileLogWritter.writeString(ex.getLocalizedMessage());
+                open();
+            }catch (Exception ex2){
+                FileLogWritter.writeString(ex2.getLocalizedMessage());
+            }
+        }
         return 0;
     }
 
@@ -155,8 +171,9 @@ public class LogDbHandler {
                 return false;
             }
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FileLogWritter.WriteException(ex);
         }
         return false;
     }

@@ -38,6 +38,4 @@ public class LogDbHelper extends SQLiteOpenHelper{
         db.execSQL("DROP TABLE IF EXISTS logdb");
         onCreate(db);
     }
-
-
 }

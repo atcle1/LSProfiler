@@ -32,6 +32,7 @@ import java.util.UUID;
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.LSPReporter;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 
 /**
@@ -153,9 +154,10 @@ public class WSLPReportService extends Service {
             dos.flush();
 
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            LSPLog.onException(e);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+            FileLogWritter.WriteException(ex);
             return false;
         }
 
@@ -200,6 +202,7 @@ public class WSLPReportService extends Service {
         } catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
+            FileLogWritter.WriteException(ex);
         } finally {
             if (bBackup)
                 reporter.backupReports(item);
@@ -217,6 +220,7 @@ public class WSLPReportService extends Service {
         }catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
+            FileLogWritter.WriteException(ex);
             return false;
         }
         return true;

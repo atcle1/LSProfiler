@@ -16,17 +16,10 @@ import kr.ac.snu.cares.lsprofiler.service.WLSPService;
 public class BootReceiver extends BroadcastReceiver {
     public static final String TAG = BroadcastReceiver.class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
-        //    if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
         Log.i(TAG, "BootReceiver - onRecive()");
 
-
-        //}
-
-
-        Log.i(TAG, "BootReceiver - onRecive() before start service");
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
         context.startService(startServiceIntent);
-        Log.i(TAG, "BootReceiver - onRecive() end");
 
         // WLSP service
         Intent i = new Intent(context, WLSPService.class);
@@ -37,12 +30,10 @@ public class BootReceiver extends BroadcastReceiver {
         if (app != null) {
             app.startProfilingIfStarted();
         } else {
-            Log.i(TAG, "app is null");
+            Log.e(TAG, "app is null");
         }
 
         Log.i(TAG, "BootReceiver - onRecive() before state change");
         LSPLog.onPowerStateChagned(1);
-        //}
-
     }
 }

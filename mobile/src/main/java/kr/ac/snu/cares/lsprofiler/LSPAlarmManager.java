@@ -53,7 +53,7 @@ public class LSPAlarmManager {
     }
 
     private AlarmTime getNearestAlarm() {
-        long current = System.currentTimeMillis() + 10 * 1000;
+        long current = System.currentTimeMillis();
         long minTerm = 24 * 60 * 60 * 1000;
         AlarmTime nextAlarmTime = null;
         if (alarmList == null || alarmList.size() == 0) {
@@ -63,7 +63,7 @@ public class LSPAlarmManager {
         for (int i = 0; i <  alarmList.size(); i++) {
             AlarmTime alarmTime = alarmList.get(i);
             long leftTime = alarmTime.getCallendar().getTimeInMillis() - current;
-            if (leftTime < minTerm) {
+            if (leftTime < minTerm && leftTime > 60 * 1000) {
                 minTerm = leftTime;
                 nextAlarmTime = alarmTime;
             }
