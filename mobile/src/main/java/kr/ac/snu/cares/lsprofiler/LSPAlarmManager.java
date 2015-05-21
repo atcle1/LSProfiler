@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.receivers.AlarmReceiver;
+import kr.ac.snu.cares.lsprofiler.util.AlarmTime;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
  * Created by summer on 4/17/15.
@@ -18,20 +21,24 @@ public class LSPAlarmManager {
     public static final String TAG = LSPAlarmManager.class.getSimpleName();
     private static AlarmManager alarmManager;
     private Context context;
-    private static long nextAlarmTime;
+
     private static PendingIntent alarmPendingIntent;
     private BroadcastReceiver alarmReceiver = new AlarmReceiver();
     private static LSPAlarmManager instance;
 
+    public static ArrayList<AlarmTime> alarmList = new ArrayList<>();
+    public static AlarmTime nextAlarmTime;
+    public static Calendar nextAlarmCal;
+    private static long nextAlarmTimeMillis;
 
-    public static int start_hour = 4;
-    public static int start_minute = 0;
+    //public static AlarmTime nextAlarmTimeMillis;
+    //public static int start_hour = 4;
+    //public static int start_minute = 0;
     //public static int repeat_interver = 1000 * 60 * 60 * 24; // 1 day
-    public static int repeat_interver = 1000 * 60 * 30;
 
     public static Calendar getNextAlarm() {
         Calendar cal = Calendar.getInstance();
-        cal.setTimeInMillis(LSPAlarmManager.nextAlarmTime);
+        cal.setTimeInMillis(LSPAlarmManager.nextAlarmTimeMillis);
         return cal;
     }
 
@@ -39,6 +46,29 @@ public class LSPAlarmManager {
     private LSPAlarmManager(Context context) {
         this.context = context;
         this.alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        for (int i = 0; i < 24; ) {
+            alarmList.add(new AlarmTime(i, 0));
+            i++;
+        }
+    }
+
+    private AlarmTime getNearestAlarm() {
+        long current = System.currentTimeMillis() + 10 * 1000;
+        long minTerm = 24 * 60 * 60 * 1000;
+        AlarmTime nextAlarmTime = null;
+        if (alarmList == null || alarmList.size() == 0) {
+            FileLogWritter.writeString("alarm list is null!!!");
+            return new AlarmTime(0, 0);
+        }
+        for (int i = 0; i <  alarmList.size(); i++) {
+            AlarmTime alarmTime = alarmList.get(i);
+            long leftTime = alarmTime.getCallendar().getTimeInMillis() - current;
+            if (leftTime < minTerm) {
+                minTerm = leftTime;
+                nextAlarmTime = alarmTime;
+            }
+        }
+        return nextAlarmTime;
     }
 
     public static LSPAlarmManager getInstance(Context context) {
@@ -47,69 +77,36 @@ public class LSPAlarmManager {
         return instance;
     }
 
-    public void setTestTime() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis() + 1000 * 60 * 60 * 1);
-        start_hour = calendar.get(Calendar.HOUR_OF_DAY);
-        start_minute = calendar.get(Calendar.MINUTE);
-    }
-
     public void setFirstAlarm() {
-        setTestTime();   // for test...
-        Calendar calendar = Calendar.getInstance();
-        //calendar.setTimeInMillis(System.currentTimeMillis()); //test code...
-        Log.i(TAG, "start_hour "+start_hour + " minute "+start_minute);
-        calendar.set(Calendar.HOUR_OF_DAY, start_hour);
-        calendar.set(Calendar.MINUTE, start_minute);
-        calendar.set(Calendar.SECOND, 0);
-        if (System.currentTimeMillis() > calendar.getTimeInMillis()) {
-            calendar.add(Calendar.DAY_OF_YEAR, 1);
-        }
-        LSPAlarmManager.nextAlarmTime = calendar.getTimeInMillis();
+        nextAlarmTime = getNearestAlarm();
+        nextAlarmCal = nextAlarmTime.getCallendar();
+        nextAlarmTimeMillis = nextAlarmCal.getTimeInMillis();
 
         // LSPService intent
-        //Intent intent = new Intent(context, LSPService.class);
-        //intent.putExtra("requestCode", LSPService.ALARM_REQUEST);
-        //alarmIntent = PendingIntent.getService(context, LSPService.ALARM_REQUEST, intent, 0);
         Intent intent = new Intent(context, AlarmReceiver.class);
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTime, alarmPendingIntent);
-        Log.i(TAG, "set first alarm " + calendar.getTime());
+        clearAlarm();
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTimeMillis, alarmPendingIntent);
+        Log.i(TAG, "set first alarm " + nextAlarmCal.getTime());
     }
 
     public void clearAlarm() {
+        Intent intent = new Intent(context, AlarmReceiver.class);
+        alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmPendingIntent != null) {
             alarmManager.cancel(alarmPendingIntent);
             Log.i(TAG, "clearAlarm()");
         }
     }
 
-    public void setNextAlarmAfter() {
-        setNextAlarmAfter(LSPAlarmManager.repeat_interver);
-    }
-
     public void setNextAlarmAfter(int millis) {
         // setTestTime();
         Calendar calendar = Calendar.getInstance();
-        LSPAlarmManager.nextAlarmTime = calendar.getTimeInMillis() + millis;
+        LSPAlarmManager.nextAlarmTimeMillis = calendar.getTimeInMillis() + millis;
 
         Intent intent = new Intent(context, AlarmReceiver.class);
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTime, alarmPendingIntent);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTimeMillis, alarmPendingIntent);
         Log.i(TAG, "setNextAlarmAfter alarm " + calendar.getTime());
-    }
-
-    /* deprecated... */
-    public static void setNextAlarm(Context context) {
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        LSPAlarmManager.nextAlarmTime = LSPAlarmManager.nextAlarmTime + LSPAlarmManager.repeat_interver;
-        Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-        alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextAlarmTime, alarmPendingIntent);
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(LSPAlarmManager.nextAlarmTime);
-        Log.i(TAG, "set next alarm " + calendar.getTime());
     }
 }

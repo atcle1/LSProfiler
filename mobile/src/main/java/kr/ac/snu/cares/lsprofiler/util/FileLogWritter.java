@@ -1,5 +1,7 @@
 package kr.ac.snu.cares.lsprofiler.util;
 
+import android.util.Log;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,6 +12,7 @@ import java.util.Date;
  * Created by summer on 15. 5. 18.
  */
 public class FileLogWritter {
+    public static final String TAG = FileLogWritter.class.getSimpleName();
     public static final String LOG_PATH = "/sdcard/LSP/";
     public static final String LOG_FILE_NAME = "filelog.txt";
     private static File logfile;
@@ -17,6 +20,7 @@ public class FileLogWritter {
 
     public static void writeString(String msg) {
         try {
+            Log.e(TAG, "FileLogWritter : " + msg);
             logfile = new File(LOG_PATH + LOG_FILE_NAME);
             if (logfile == null) {
                 return;

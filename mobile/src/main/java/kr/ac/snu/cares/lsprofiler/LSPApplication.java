@@ -146,6 +146,7 @@ public class LSPApplication extends Application {
             startProfiling();
         } else {
             Log.i(TAG, "startProfilingIfStarted() not start");
+            alarmManager.clearAlarm();
         }
     }
 
@@ -202,6 +203,7 @@ public class LSPApplication extends Application {
 
     public void stopLogging() {
         LSPLog.onTextMsg("stopLogging()");
+        alarmManager.clearAlarm();
         if (state == State.resumed)
             pauseLogging("called stopLogging");
 
@@ -213,7 +215,7 @@ public class LSPApplication extends Application {
         state = State.stopped;
         prefMgr.setAppState(State.stopped.name());
 
-        alarmManager.clearAlarm();
+
         stopService(new Intent(this, LSPService.class));
     }
 

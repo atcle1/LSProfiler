@@ -66,7 +66,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                 List<Node> connectedNodes =
                         Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await().getNodes();
                 for (Node node : connectedNodes) {
-                    Log.i(TAG, node.getId() + " " + node.getDisplayName());
+                    Log.i(TAG, "isWearConnected() " + node.getId() + " " + node.getDisplayName());
                     if (node.getDisplayName().contains("G Watch R")) {
                         wearLspConnected = true;
                         break;
