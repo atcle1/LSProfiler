@@ -202,6 +202,18 @@ public class LSPLog {
         }
     }
 
+    public static void onPackageAdded(String packageName) {
+        logDbHandler.writeLog("PAD : " + packageName);
+    }
+
+    public static void onPackageRemoved(String packageName) {
+        logDbHandler.writeLog("PRM : " + packageName);
+    }
+
+    public static void onPackageReplaced(String packageName) {
+        logDbHandler.writeLog("PRP : " + packageName);
+    }
+
     public static boolean checkDbHandler() {
         if (logDbHandler != null)
             return true;

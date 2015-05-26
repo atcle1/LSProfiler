@@ -30,6 +30,7 @@ public class BootReceiver extends BroadcastReceiver {
         if (app != null) {
             app.startProfilingIfStarted();
         } else {
+            // naver occure
             Log.e(TAG, "app is null");
         }
 
