@@ -49,6 +49,7 @@ public class LocationTracer implements LocationListener {
     }
 
     public void startTrace() {
+        LSPLog.onTextMsgForce(TAG + " startTrace()");
         locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
         if (locationManager == null) {
             Log.e(TAG, "getSystemService(location_service) return null");
@@ -59,11 +60,12 @@ public class LocationTracer implements LocationListener {
         }
 
         //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-        context.registerReceiver(gpsAlarmReceiver, new IntentFilter(GPSAlarmIntentStr));
 
-                Intent intent = new Intent(GPSAlarmIntentStr);
+        // set gps inexact repeating alarm
+        context.registerReceiver(gpsAlarmReceiver, new IntentFilter(GPSAlarmIntentStr));
+        Intent intent = new Intent(GPSAlarmIntentStr);
         pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,  AlarmManager.INTERVAL_HALF_HOUR, AlarmManager.INTERVAL_HALF_HOUR, pendingIntent);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0, AlarmManager.INTERVAL_HOUR, pendingIntent);
         //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),1000 * 20, pendingIntent);
     }
 
@@ -74,11 +76,15 @@ public class LocationTracer implements LocationListener {
         }
         checkState();
         //locationManager.requestLocationUpdates(provider, 0, 0, this);
-        if (isGPSEnabled)
+        if (isGPSEnabled) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-        if (isNetworkEnabled)
+            LSPLog.onTextMsgForce("request gps location update");
+        }
+        if (isNetworkEnabled) {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
-        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 20, this);
+            LSPLog.onTextMsgForce("request network location update");
+        }
+        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 60, this);
         Log.i(TAG, "requestUpdate()");
     }
 
@@ -90,6 +96,7 @@ public class LocationTracer implements LocationListener {
         // 현재 네트워크 상태 값 알아오기
         isNetworkEnabled = locationManager.isProviderEnabled(
                 LocationManager.NETWORK_PROVIDER);
+        Log.i(TAG, "checkState() GPS "+isGPSEnabled + " NET " + isNetworkEnabled);
     }
 
     public void showSettingsAlert(){
@@ -124,7 +131,7 @@ public class LocationTracer implements LocationListener {
     public void onLocationChanged(Location location) {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        LSPLog.onLocationUpdate(location.getProvider(), latitude, longitude);
+        LSPLog.onLocationUpdate(location);
         Log.i(TAG, "onLocationUpdate() "+location.getProvider()+" "+latitude + " "  + longitude);
         locationManager.removeUpdates(this);
     }
@@ -146,21 +153,18 @@ public class LocationTracer implements LocationListener {
 
     private BroadcastReceiver gpsAlarmReceiver = new GPSAlarmReceiver();
     public static final String GPSAlarmIntentStr = GPSAlarmReceiver.class.getName()+".ALARM";
-    private class GPSAlarmReceiver extends android.content.BroadcastReceiver{
 
+    private class GPSAlarmReceiver extends android.content.BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "GPS AlarmReceiver onReceive()");
             Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             Location location2 = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location != null) {
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                LSPLog.onKnownLocation("NET", latitude, longitude);
-            } else if (location2 != null) {
-                double latitude = location2.getLatitude();
-                double longitude = location2.getLongitude();
-                LSPLog.onKnownLocation("GPS", latitude, longitude);
+                LSPLog.onKnownLocation(location);
+            }
+            if (location2 != null) {
+                LSPLog.onKnownLocation(location);
             }
 
             requestUpdate();

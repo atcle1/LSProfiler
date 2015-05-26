@@ -2,11 +2,14 @@ package kr.ac.snu.cares.lsprofiler;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
+import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
@@ -39,14 +42,16 @@ public class LSPLog {
     }
 
     /* logging methods */
-    public static void onLocationUpdate(String provider, double lat, double lon) {
+    public static void onLocationUpdate(Location loc) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("LOC : "+provider+" " +lat+" "+lon);
+        Date fixed = new Date(loc.getTime());
+        logDbHandler.writeLog("LOC UPDATE : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
     }
 
-    public static void onKnownLocation(String provider, double lat, double lon) {
+    public static void onKnownLocation(Location loc) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("ULC : " + provider + " "+lat+" "+lon);
+        Date fixed = new Date(loc.getTime());
+        logDbHandler.writeLog("LOC KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
     }
 
     private static int prev_status = -1;
@@ -195,6 +200,7 @@ public class LSPLog {
             try {
                 logDbHandler.writeLog("TFC : " + msg);
                 FileLogWritter.writeString("TFC : " + msg);
+                Log.e(TAG, "TF " + msg);
             }catch (Exception ex) {
                 onException(ex);
                 ex.printStackTrace();

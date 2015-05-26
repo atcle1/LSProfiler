@@ -11,6 +11,8 @@ import android.util.Log;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
+
 /**
  * TimeoutableLocationListner is implementation of LocationListener.
  * If onLocationChanged isn't called within XX mili seconds, automatically remove listener.
@@ -46,6 +48,7 @@ public class TimeoutableLocationListener {
     private void stopLocationUpdateAndTimer() {
         locaMan.removeUpdates(locationListener);
         Log.i(TAG, "stopLocationUpdateAndTimer()");
+        LSPLog.onTextMsgForce("location listener timeout, remove updates");
 
         timerTimeout.cancel();
         timerTimeout.purge();
