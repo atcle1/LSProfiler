@@ -11,6 +11,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
@@ -43,6 +45,8 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         // 구글 플레이 서비스 객체를 시계 설정으로 초기화
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Wearable.API)
+                .addApi(LocationServices.API)
+                .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
@@ -54,6 +58,11 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
+    }
+
+    public GoogleApiClient getmGoogleApiClient()
+    {
+        return mGoogleApiClient;
     }
 
     public static boolean wearLspConnected = false;

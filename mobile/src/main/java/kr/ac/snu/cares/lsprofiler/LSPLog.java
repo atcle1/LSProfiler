@@ -220,6 +220,11 @@ public class LSPLog {
         logDbHandler.writeLog("PRP : " + packageName);
     }
 
+    public static void onFitnessUniqueEvent(String msg){
+        if(!bWriteLog) return;
+        logDbHandler.writeLog2("FIT : " + msg);
+    }
+
     public static boolean checkDbHandler() {
         if (logDbHandler != null)
             return true;
@@ -265,4 +270,6 @@ public class LSPLog {
         if(!bWriteLog) return;
         logDbHandler.writeLog("WATCHDOG ALIVE");
     }
+
+
 }

@@ -17,6 +17,7 @@ import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.LocationTracer;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
+import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
@@ -52,6 +53,8 @@ public class LSPApplication extends Application {
     private LocationTracer locationTracker;
     private LSPNotificationService notificationService;
     private LSPAlarmManager alarmManager;
+
+    private FitnessResolver fitnessResolver;
 
     private LSPConnection connection;
 
@@ -93,6 +96,8 @@ public class LSPApplication extends Application {
 
         reporter = new LSPReporter(this);
 
+        fitnessResolver = new FitnessResolver(this, null);
+
         connection = new LSPConnection(this);
         connection.connect();
 
@@ -114,6 +119,7 @@ public class LSPApplication extends Application {
         return dbHandler;
     }
     public static LSPApplication getInstance() { return LSPApplication.app; }
+    public FitnessResolver getFitnessResolver() {return fitnessResolver; }
 
     public void startProfiling() {
         Log.i(TAG, "startProfiling()");

@@ -28,6 +28,7 @@ public class LogDbHandler {
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
 
     private SQLiteStatement InsertLogdbStmt;
+    private SQLiteStatement InsertLogdbStmt2;
 
     @Override
     public void finalize() {
@@ -43,13 +44,28 @@ public class LogDbHandler {
     private void prepareStatement() {
         //String sql = "INSERT INTO logdb(i_datetime, t_log) " +
         //      "VALUES (strftime('%s', 'now', 'localtime'), ?)";
-        String sql = "INSERT INTO logdb(t_datetime, t_log) " +
-              "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
-        InsertLogdbStmt = db.compileStatement(sql);
+        try {
+            String sql = "INSERT INTO logdb(t_datetime, t_log) " +
+                    "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
+            InsertLogdbStmt = db.compileStatement(sql);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        try {
+            String sql2 = "INSERT INTO logdb2(t_log) " +
+                    "VALUES (?)";
+            InsertLogdbStmt2 = db.compileStatement(sql2);
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     private void closePrepareStatement() {
-        if (InsertLogdbStmt != null)
+        if (InsertLogdbStmt != null) {
             InsertLogdbStmt.close();
+        }
+        if (InsertLogdbStmt2 != null) {
+            InsertLogdbStmt2.close();
+        }
     }
 
     public void close() {
@@ -86,6 +102,30 @@ public class LogDbHandler {
             InsertLogdbStmt.bindString(1, msg);
             InsertLogdbStmt.execute();
             InsertLogdbStmt.clearBindings();
+        } catch (Exception ex) {
+            try {
+                ex.printStackTrace();
+                FileLogWritter.writeString(ex.getLocalizedMessage());
+                open();
+            }catch (Exception ex2){
+                FileLogWritter.writeString(ex2.getLocalizedMessage());
+            }
+        }
+        return 0;
+    }
+
+    synchronized public int writeLog2(String msg)
+    {
+        if (msg == null)
+            return -1;
+        try {
+            if (InsertLogdbStmt2 == null) {
+                FileLogWritter.writeString("if (InsertLogdbStmt == null) {");
+                open();
+            }
+            InsertLogdbStmt2.bindString(1, msg);
+            InsertLogdbStmt2.execute();
+            InsertLogdbStmt2.clearBindings();
         } catch (Exception ex) {
             try {
                 ex.printStackTrace();

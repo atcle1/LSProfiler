@@ -11,6 +11,7 @@ import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
@@ -164,6 +165,18 @@ public class LSPReporter {
         Log.i(TAG, "backupReport() : " + result);
     }
 
+    public boolean collectFitnessReport(int timeLimits) {
+        FitnessResolver fitnessResolver = app.getFitnessResolver();
+        fitnessResolver.connect(timeLimits);
+        if (fitnessResolver.isConnected()) {
+            fitnessResolver.doLog();
+        } else {
+            LSPLog.onTextMsgForce("FIT : CONNECT FAILED");
+            return false;
+        }
+        return true;
+    }
+
     public boolean collectWatchReport(int timeLimits) {
         LSPReportServer reportServer = new LSPReportServer();
 
@@ -232,11 +245,25 @@ public class LSPReporter {
         }
     }
 
+    class FitnessCollectThread extends Thread {
+        public int timeoutMilis = 10 * 1000;
+        @Override
+        public void run() {
+            super.run();
+            //FitnessResolver fitnessResolver =
+            try {
+                collectFitnessReport(timeoutMilis);
+            } catch (Exception ex) {
+                LSPLog.onException(ex);
+            }
+        }
+    }
+
 
     public void doReport() {
         Log.i(TAG, "doReport() start");
         try {
-
+            // first, check wear connecting
             boolean bCollectWear = false;
             ReportItem item = new ReportItem();
             LSPApplication app = LSPApplication.getInstance();
@@ -269,11 +296,17 @@ public class LSPReporter {
                 Log.i(TAG, "wearCollectThread run() called");
             }
 
+            // fitness data collect thread
+            FitnessCollectThread fitnessCollectThread = new FitnessCollectThread();
+            fitnessCollectThread.start();
+
             // collect mobile logs....
             if (true) {
                 collectPhoneReport(item);
                 Log.i(TAG, "collectphoneReport() ended");
             }
+
+            // now, all logging work started..., wait for finishing...
 
             // join for wearCollect thread
             if (bCollectWear) {
@@ -291,7 +324,23 @@ public class LSPReporter {
                     }
             }
 
-            // listing log files...
+            // join for fitness thread
+            {
+                int timelimit = 20;
+                int i;
+                for (i = 0; i < timelimit; i++) {
+                    fitnessCollectThread.join(1000);
+                    if (!fitnessCollectThread.isAlive()) {
+                        break;
+                    }
+                }
+                if (i >= timelimit) {
+                    fitnessCollectThread.interrupt();
+                    LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within " + timelimit+"s, interrupt()");
+                }
+            }
+
+            // listing all log files...
             File collectMobileDir = new File(COLLECT_MOBILE_PATH);
             File[] logFileArray = collectMobileDir.listFiles();
             File collectWearDir;
@@ -318,7 +367,7 @@ public class LSPReporter {
                     app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
 
                 } else {
-                    // send report via email
+                    // Finally, send report via email
                     sendReportByAsyncTask(item);
                 }
         }catch (Exception ex) {

@@ -1,6 +1,7 @@
 package kr.ac.snu.cares.lsprofiler;
 
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,9 +16,41 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.Scopes;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataSource;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Session;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.request.SessionReadRequest;
+import com.google.android.gms.fitness.result.DataReadResult;
+import com.google.android.gms.fitness.result.SessionReadResult;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.wearable.Wearable;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
@@ -79,6 +112,8 @@ public class MainActivity extends ActionBarActivity {
         clientHandler.init(this);
         */
         connection = new LSPConnection(getApplicationContext());
+
+        //buildFitnessClient();
     }
 
 
@@ -116,6 +151,13 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         updateStatus();
+        lspApplication.getFitnessResolver().setMainActivity(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        lspApplication.getFitnessResolver().setMainActivity(null);
     }
 
     class onBtClickListener implements View.OnClickListener
@@ -186,20 +228,38 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     Toast.makeText(getApplicationContext(), "No PONG!!!", Toast.LENGTH_SHORT).show();
                 }
-            } else if (v.getId() == R.id.bTBackupLog) {
-                Boolean bRunning = LSPService.isServiceRunning(getApplicationContext());
-                // if service is not started...
-                if (bRunning == false) {
-                    Log.i(TAG, "onReceive() service isn't started, starting it...");
-                    Intent startServiceIntent = new Intent(getApplicationContext(), LSPService.class);
-                    startServiceIntent.putExtra("requestCode", LSPService.ALARM_REQUEST);
-                    getApplicationContext().startService(startServiceIntent);
-                } else {
-                    Log.i(TAG, "onReceive() service already started.");
-                    Handler handler = LSPService.getHandler();
-                    if (handler != null && !handler.hasMessages(LSPService.ALARM_REQUEST))
-                        handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
-                }
+
+                Calendar cal = Calendar.getInstance();
+                Date now = new Date();
+                cal.setTime(now);
+                long endTime = cal.getTimeInMillis();
+                cal.add(Calendar.WEEK_OF_YEAR, -1);
+                long startTime = cal.getTimeInMillis();
+
+
+
+                AsyncTask.execute(new Runnable() {
+
+                    public void run() {
+                        try {
+                            FitnessResolver fitnessResolver = new FitnessResolver(getApplicationContext(), MainActivity.this);
+                            fitnessResolver.connect();
+                            Log.i(TAG, "connect() end");
+                            fitnessResolver.doLog();
+                            Log.i(TAG, "test() end");
+
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+
+                        }
+
+                    }
+
+                });
+
+
+
                 Log.i(TAG,"onClick btBackupLog end");
             } else if (v.getId() == R.id.bTStatus) {
                 updateStatus();
@@ -209,4 +269,6 @@ public class MainActivity extends ActionBarActivity {
             }
         }
     }
+
+
 }
