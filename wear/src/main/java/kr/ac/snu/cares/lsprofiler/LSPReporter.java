@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
+import kr.ac.snu.cares.lsprofiler.resolvers.DumpsysResolver;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 
@@ -79,6 +80,13 @@ public class LSPReporter {
     }
 
     public void collectReport(ReportItem item) {
+        DumpsysResolver dumpsysResolver = new DumpsysResolver();
+        try {
+            dumpsysResolver.doWriteDumpAsync(COLLECT_PATH + item.reportDateString + ".dump.w.txt");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
         try {
             // mkdir
             File baseDir = new File(COLLECT_PATH);
@@ -110,6 +118,17 @@ public class LSPReporter {
             LSPLog.onException(ex);
         }
 
+
+        try {
+            dumpsysResolver.joinDumpAsync(1000 * 20);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
+
+
+        // all logging finished.
+        // listing log files
         File collectDir = new File(COLLECT_PATH);
         File[] logFileArray = collectDir.listFiles();
 

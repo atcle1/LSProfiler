@@ -86,14 +86,13 @@ public class Su {
         return -1;
     }
 
-    public static int executeOnce(String cmd, int timeout) {
+    public static int executeSuOnce(String cmd, int timeout) {
         try {
             executeCommandLine("su -c " + cmd, timeout);
         } catch (Exception e) {
             LSPLog.onException(e);
             e.printStackTrace();
         }
-
         return 0;
     }
 

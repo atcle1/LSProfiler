@@ -24,9 +24,7 @@ import kr.ac.snu.cares.lsprofiler.LSPLog;
 public class LocationTracer implements LocationListener {
     public static final String TAG = LocationTracer.class.getSimpleName();
     private AlarmManager alarmManager;
-    private static final long GPS_ALARM_INTERVAL = 1000 * 60 * 30;  // 30min
-    //private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1000;  // 10 m
-    //private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 60; // 1 hour
+    private static final int LOCATION_LISTENER_TIMEOUT = 1000 * 30; // 30s
     private Context context;
     private LocationManager locationManager;
     private Criteria criteria = new Criteria();
@@ -65,7 +63,7 @@ public class LocationTracer implements LocationListener {
         context.registerReceiver(gpsAlarmReceiver, new IntentFilter(GPSAlarmIntentStr));
         Intent intent = new Intent(GPSAlarmIntentStr);
         pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0, AlarmManager.INTERVAL_HOUR, pendingIntent);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, pendingIntent);
         //alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(),1000 * 20, pendingIntent);
     }
 
@@ -84,7 +82,7 @@ public class LocationTracer implements LocationListener {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
             LSPLog.onTextMsgForce("request network location update");
         }
-        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, 1000 * 60, this);
+        timeoutableLocationListener = new TimeoutableLocationListener(locationManager, LOCATION_LISTENER_TIMEOUT, this);
         Log.i(TAG, "requestUpdate()");
     }
 
@@ -166,10 +164,7 @@ public class LocationTracer implements LocationListener {
             if (location2 != null) {
                 LSPLog.onKnownLocation(location);
             }
-
             requestUpdate();
         }
     }
-
-
 }

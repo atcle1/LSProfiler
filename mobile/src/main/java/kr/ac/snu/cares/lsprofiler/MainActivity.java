@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.DumpsysResolver;
 import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.Su;
@@ -114,6 +115,7 @@ public class MainActivity extends ActionBarActivity {
         connection = new LSPConnection(getApplicationContext());
 
         //buildFitnessClient();
+        Log.i(TAG, "onCreate() end");
     }
 
 
@@ -150,8 +152,10 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Log.i(TAG, "onResume()");
         updateStatus();
         lspApplication.getFitnessResolver().setMainActivity(this);
+        Log.i(TAG, "onResume() end");
     }
 
     @Override
@@ -229,34 +233,10 @@ public class MainActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), "No PONG!!!", Toast.LENGTH_SHORT).show();
                 }
 
-                Calendar cal = Calendar.getInstance();
-                Date now = new Date();
-                cal.setTime(now);
-                long endTime = cal.getTimeInMillis();
-                cal.add(Calendar.WEEK_OF_YEAR, -1);
-                long startTime = cal.getTimeInMillis();
+                DumpsysResolver dumpsysResolver = new DumpsysResolver();
+                dumpsysResolver.doWriteDumpAsync("");
+                dumpsysResolver.joinDumpAsync(1000 * 10);
 
-
-
-                AsyncTask.execute(new Runnable() {
-
-                    public void run() {
-                        try {
-                            FitnessResolver fitnessResolver = new FitnessResolver(getApplicationContext(), MainActivity.this);
-                            fitnessResolver.connect();
-                            Log.i(TAG, "connect() end");
-                            fitnessResolver.doLog();
-                            Log.i(TAG, "test() end");
-
-                        } catch (Exception e) {
-
-                            e.printStackTrace();
-
-                        }
-
-                    }
-
-                });
 
 
 

@@ -11,6 +11,7 @@ import java.util.Calendar;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.resolvers.DumpsysResolver;
 import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
@@ -58,7 +59,7 @@ public class LSPReporter {
         Su su = new Su();
         //su.prepare();
         //su.execSu("/data/local/sprofiler 7");   // clear logs
-        Su.executeOnce("/data/local/sprofiler 7", 30000);
+        Su.executeSuOnce("/data/local/sprofiler 7", 30000);
     }
 
     public boolean isKlogEnabled() {
@@ -300,6 +301,10 @@ public class LSPReporter {
             FitnessCollectThread fitnessCollectThread = new FitnessCollectThread();
             fitnessCollectThread.start();
 
+            // dumpsys
+            DumpsysResolver dumpsysResolver = new DumpsysResolver();
+            dumpsysResolver.doWriteDumpAsync(COLLECT_MOBILE_PATH + item.reportDateString + ".dump.txt");
+
             // collect mobile logs....
             if (true) {
                 collectPhoneReport(item);
@@ -339,6 +344,9 @@ public class LSPReporter {
                     LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within " + timelimit+"s, interrupt()");
                 }
             }
+
+            // join for dumpsys
+            dumpsysResolver.joinDumpAsync(1000 * 20);
 
             // listing all log files...
             File collectMobileDir = new File(COLLECT_MOBILE_PATH);

@@ -93,7 +93,7 @@ public class LSPApplication extends Application {
         Su su = new Su();
         //su.prepare();
         //su.execSu("/data/local/sprofiler 7");   // clear logs
-        Su.executeOnce("/data/local/sprofiler 1", 30000);
+        Su.executeSuOnce("/data/local/sprofiler 1", 30000);
     }
 
     public void startProfilingIfStarted() {

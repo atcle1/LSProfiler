@@ -21,7 +21,6 @@ import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
-import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.util.WatchDog;
@@ -73,6 +72,8 @@ public class LSPApplication extends Application {
 
     private WatchDog watchDog;
 
+    private boolean bRoot = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -111,8 +112,9 @@ public class LSPApplication extends Application {
 
         handler = new Handler();
 
-        watchDog = new WatchDog();
-
+        // watchDog = new WatchDog();
+        bRoot = Su.isRooted();
+        Log.i(TAG, "onCreate() end");
     }
 
     public LogDbHandler getDbHandler() {
@@ -120,6 +122,7 @@ public class LSPApplication extends Application {
     }
     public static LSPApplication getInstance() { return LSPApplication.app; }
     public FitnessResolver getFitnessResolver() {return fitnessResolver; }
+    public boolean isRoot() { return bRoot; }
 
     public void startProfiling() {
         Log.i(TAG, "startProfiling()");
@@ -141,7 +144,7 @@ public class LSPApplication extends Application {
         Su su = new Su();
         //su.prepare();
         //su.execSu("/data/local/sprofiler 7");   // clear logs
-        Su.executeOnce("/data/local/sprofiler 1", 30000);
+        Su.executeSuOnce("/data/local/sprofiler 1", 30000);
     }
 
 
