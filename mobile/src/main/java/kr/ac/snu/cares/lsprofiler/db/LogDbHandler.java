@@ -3,6 +3,7 @@ package kr.ac.snu.cares.lsprofiler.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
@@ -126,13 +127,15 @@ public class LogDbHandler {
             InsertLogdbStmt2.bindString(1, msg);
             InsertLogdbStmt2.execute();
             InsertLogdbStmt2.clearBindings();
+        }catch (SQLiteConstraintException ex2){
+
         } catch (Exception ex) {
             try {
                 ex.printStackTrace();
                 FileLogWritter.writeString(ex.getLocalizedMessage());
                 open();
-            }catch (Exception ex2){
-                FileLogWritter.writeString(ex2.getLocalizedMessage());
+            }catch (Exception ex3){
+                FileLogWritter.writeString(ex3.getLocalizedMessage());
             }
         }
         return 0;

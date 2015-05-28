@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneStateListener;
@@ -27,6 +28,7 @@ public class ReceiverManager extends BroadcastReceiver {
 
     public ReceiverManager(Context context) {
         this.context = context;
+        phoneStateListener = new MyPhoneStateListener();
     }
 
     public void registerReceivers() {
@@ -44,9 +46,20 @@ public class ReceiverManager extends BroadcastReceiver {
 
         context.registerReceiver(this, filter);
 
-        phoneStateListener = new MyPhoneStateListener();
-        telephonyManager = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
-        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        if (phoneStateListener == null) {
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    phoneStateListener = new MyPhoneStateListener();
+                    telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+                    telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+                }
+            });
+
+        } else {
+            telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+            telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
         isRegisteredReceivers = true;
         Log.i(TAG, "registerReceivers()");
     }

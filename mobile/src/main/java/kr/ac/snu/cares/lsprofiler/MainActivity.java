@@ -199,54 +199,45 @@ public class MainActivity extends ActionBarActivity {
                 });
             } else if (v.getId() == R.id.bTCallLog) {
                 /*
-                CallLogResolver callLogResolver = new CallLogResolver(getContentResolver());
-                SmsLogResolver smsLogResolver = new SmsLogResolver(getContentResolver());
-
-                ArrayList<CallLogItem> smsList = smsLogResolver.getSmsLog(Util.getTodayTimestamp());
-                ArrayList<CallLogItem> callList = callLogResolver.queryCallLog(Util.getTodayTimestamp());
-                ArrayList<CallLogItem> mergeList = CallLogMerger.merge(callList, smsList);
-
-                Log.i(TAG, "callList total : "+ callList.size());
-                for (CallLogItem i : callList) {
-                    Log.i(TAG, i.summary());
-                }
-                Log.i(TAG, "smsList total : "+ smsList.size());
-                for (CallLogItem i : smsList) {
-                    Log.i(TAG, i.summary());
-                }
-                Log.i(TAG, "mergeList total : "+ mergeList.size());
-                for (CallLogItem i : mergeList) {
-                    Log.i(TAG, i.summary());
-                }
-*/
-
-
-                //connection.connect();
-                //connection.sendMessage("/LSP", "LSP test message");
-                //connection.sendMessage("/LSP/CONTROL", "REPORT " + NetworkUtil.getBluetoothAddress());
-
-                //lspApplication.getReporter().clearKernelLog();
-
                 if (connection.sendPing(10000)) {
                     Toast.makeText(getApplicationContext(), "PONG", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getApplicationContext(), "No PONG!!!", Toast.LENGTH_SHORT).show();
                 }
-
+                */
+                /*
                 DumpsysResolver dumpsysResolver = new DumpsysResolver();
                 dumpsysResolver.doWriteDumpAsync("");
                 dumpsysResolver.joinDumpAsync(1000 * 10);
+                */
+                // dumpsys
+                AsyncTask.execute(new Runnable() {
+                    public void run() {
+                        lspApplication.getReporter().collectFitnessReport(1000 * 30);
+                    }
+                });
 
 
 
-
-                Log.i(TAG,"onClick btBackupLog end");
+                Log.i(TAG, "onClick btBackupLog end");
             } else if (v.getId() == R.id.bTStatus) {
                 updateStatus();
             } else if (v.getId() == R.id.bTRoot) {
                 boolean isRooted = Su.isRooted();
                 Toast.makeText(getApplicationContext(), "Rooted : "+isRooted, Toast.LENGTH_SHORT).show();
+            } else if (v.getId() == R.id.bTBackupLog) {
+                ReportThread reportThread = new ReportThread();
+                reportThread.start();
+
+
             }
+        }
+    }
+
+    private class ReportThread extends Thread {
+        @Override
+        public void run() {
+            lspApplication.doReport();
         }
     }
 

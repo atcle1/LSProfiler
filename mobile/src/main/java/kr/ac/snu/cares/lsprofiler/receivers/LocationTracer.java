@@ -44,11 +44,12 @@ public class LocationTracer implements LocationListener {
         criteria.setSpeedRequired(false);
         criteria.setVerticalAccuracy(Criteria.NO_REQUIREMENT);
         alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
     }
 
     public void startTrace() {
         LSPLog.onTextMsgForce(TAG + " startTrace()");
-        locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+
         if (locationManager == null) {
             Log.e(TAG, "getSystemService(location_service) return null");
         }

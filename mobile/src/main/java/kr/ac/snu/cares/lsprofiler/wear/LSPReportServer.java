@@ -66,7 +66,7 @@ public class LSPReportServer extends Thread {
             // receive file data
             FileOutputStream fileOutputStream = new FileOutputStream(f);
             BufferedOutputStream bfos = new BufferedOutputStream(fileOutputStream, 1024 * 48);
-            Log.i(TAG, "****************" + "Received FileSize " + FileSize + "****************");
+            //Log.i(TAG, "****************" + "Received FileSize " + FileSize + "****************");
             Calendar startCal = Calendar.getInstance();
             bytesReceived = 0;
             int prev_mLen = 0;
@@ -77,14 +77,14 @@ public class LSPReportServer extends Thread {
                 if (mLen > 0) {
                     bytesReceived += mLen;
                     if (prev_mLen != mLen) {
-                        Log.i(TAG, "din.read " + mLen);
+                        //Log.i(TAG, "din.read " + mLen);
                         prev_mLen = mLen;
                     }
                     //Log.i(TAG, "total received " + mLen + " / " + bytesReceived + " / " + FileSize);
                     bfos.write(buffer, 0, mLen);
                     //fileOutputStream.write(buffer, 0, mLen);
                 } else {
-                    System.out.println("Received -1, EOF");
+                    //System.out.println("Received -1, EOF");
                     break;
                 }
             }

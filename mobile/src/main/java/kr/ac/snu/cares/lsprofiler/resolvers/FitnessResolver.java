@@ -67,9 +67,29 @@ public class FitnessResolver {
         return mClient.isConnected();
     }
 
+    private class FitnessConnectThread extends Thread {
+        public int timeoutMilis = 1000 * 20;
+        @Override
+        public void run() {
+            mClient.blockingConnect(timeoutMilis, TimeUnit.MILLISECONDS);
+        }
+    }
+
     public boolean connect(int timeoutMilis) {
-        buildFitnessClient();
-        mClient.blockingConnect(timeoutMilis, TimeUnit.MILLISECONDS);
+        Log.i(TAG, "connect() call " + timeoutMilis);
+        try {
+            buildFitnessClient();
+            FitnessConnectThread fitnessConnectThread = new FitnessConnectThread();
+            fitnessConnectThread.timeoutMilis = timeoutMilis;
+            fitnessConnectThread.start();
+            fitnessConnectThread.join(timeoutMilis);
+        }catch (Exception ex) {
+            LSPLog.onException(ex);
+            ex.printStackTrace();
+            return false;
+        }
+
+        Log.i(TAG, "blockingConnect() call end");
         return true;
     }
 

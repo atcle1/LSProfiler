@@ -19,10 +19,6 @@ public class DumpsysResolver {
     public static void doWriteDump(String fileName, int timeMilis) {
         try {
             File f = new File(dumpscripPath);
-            if (!f.exists()) {
-                FileLogWritter.writeString("dumpscript isn't found, skip");
-                return;
-            }
             if (Su.isRooted()) {
                 Su.executeSuOnce(dumpscripPath + fileName, 1000 * 100);
             } else {
