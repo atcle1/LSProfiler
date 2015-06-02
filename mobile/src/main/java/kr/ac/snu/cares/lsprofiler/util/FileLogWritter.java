@@ -26,6 +26,9 @@ public class FileLogWritter {
                 return;
             }
             if (!logfile.exists()) {
+                File dir = new File(LOG_PATH);
+                if (!dir.exists())
+                    dir.mkdirs();
                 logfile.createNewFile();
             }
             FileWriter fw = new FileWriter(logfile, true);

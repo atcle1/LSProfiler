@@ -82,7 +82,7 @@ public class LSPService extends Service {
         }
 
 
-        //showForegroundNotification("Running LSProfiler in foreground");
+        showForegroundNotification("Running LSProfiler in foreground");
         Log.i(TAG, "onStartCommand return");
         return START_STICKY;
     }
@@ -125,6 +125,18 @@ public class LSPService extends Service {
         super.onDestroy();
     }
 
+    @Override
+    public void onLowMemory() {
+        LSPLog.onTextMsgForce("LSPService : onLowMemory()");
+        super.onLowMemory();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        LSPLog.onTextMsgForce("LSPService : onUnbind()");
+        return super.onUnbind(intent);
+    }
+
     private class LSPHandler extends Handler  {
         public LSPHandler(Looper looper) {
             super(looper);
@@ -164,7 +176,7 @@ public class LSPService extends Service {
         Notification notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle(getString(R.string.app_name))
                 .setContentText(contentText)
-                .setSmallIcon(R.drawable.common_signin_btn_icon_light)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setWhen(System.currentTimeMillis())
                 .setContentIntent(contentIntent)
                 .setPriority(Notification.PRIORITY_MIN)

@@ -182,7 +182,6 @@ public class LSPApplication extends Application {
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsgForce("resumeLogging() " + Calendar.getInstance().getTime().toString());
         state = State.resumed;
         try {
             lspLog.resumeLogging();
@@ -198,7 +197,6 @@ public class LSPApplication extends Application {
     public void pauseLogging(String msg) {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsgForce("resumeLogging() " + msg + " " + Calendar.getInstance().getTime().toString());
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -217,7 +215,7 @@ public class LSPApplication extends Application {
             pauseLogging("called stopLogging");
 
         if (state != State.paused) {
-            Log.i(TAG, "stopLogging() : not paused");
+            Log.e(TAG, "stopLogging() : not paused");
             return;
         }
 
@@ -238,8 +236,9 @@ public class LSPApplication extends Application {
         pauseLogging("called doReport");
         LSPLog.onTextMsgForce("doReport() reporter.doReport() call");
         reporter.doReport();    // send mail is processed by asynctask after doReport with own WL.
+                                // resume logging when sendMail end
         LSPLog.onTextMsgForce("doReport() reporter.doReport() call end");
-        app.resumeLogging();
+        //app.resumeLogging();
         reportWl.release();
     }
 
@@ -259,9 +258,7 @@ public class LSPApplication extends Application {
     @Override
     public void onTerminate() {
         LSPLog.onTextMsgForce("ERR APP onTerminate()");
-        showToast("onTerminate()");
         super.onTerminate();
-        Log.i(TAG, "onTerminate()");
         receiverManager.unregisterReceivers();
     }
 

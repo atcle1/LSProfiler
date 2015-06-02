@@ -10,6 +10,7 @@ import java.util.ArrayList;
  * Created by summer on 4/10/15.
  */
 public class SmsLogResolver {
+    // deprecated...
     ContentResolver resolver;
 
     public SmsLogResolver(ContentResolver rv){

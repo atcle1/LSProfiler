@@ -24,7 +24,7 @@ import kr.ac.snu.cares.lsprofiler.LSPLog;
 public class LocationTracer implements LocationListener {
     public static final String TAG = LocationTracer.class.getSimpleName();
     private AlarmManager alarmManager;
-    private static final int LOCATION_LISTENER_TIMEOUT = 1000 * 30; // 30s
+    private static final int LOCATION_LISTENER_TIMEOUT = 1000 * 20; // 20s
     private Context context;
     private LocationManager locationManager;
     private Criteria criteria = new Criteria();

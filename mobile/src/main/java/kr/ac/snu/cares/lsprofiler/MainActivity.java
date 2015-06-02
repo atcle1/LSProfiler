@@ -176,6 +176,7 @@ public class MainActivity extends ActionBarActivity {
                 //lspApplication.startLogging();
                 Su.isRooted();
                 lspApplication.startProfiling();
+                lspApplication.getFitnessResolver().connect();
                 updateStatus();
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();
@@ -186,6 +187,7 @@ public class MainActivity extends ActionBarActivity {
             } else if (v.getId() == R.id.bTReadLog) {
                 LogDbHandler logDbHandler = ((LSPApplication) getApplication()).getDbHandler();
                 logDbHandler.printLog();
+                logDbHandler.printLog2();
                 Log.i(TAG, "onClick() - btReadLog()");
 
             } else if (v.getId() == R.id.bTSendMail) {
@@ -210,14 +212,14 @@ public class MainActivity extends ActionBarActivity {
                 dumpsysResolver.doWriteDumpAsync("");
                 dumpsysResolver.joinDumpAsync(1000 * 10);
                 */
-                // dumpsys
+                // dumpsy
+/*
                 AsyncTask.execute(new Runnable() {
                     public void run() {
                         lspApplication.getReporter().collectFitnessReport(1000 * 30);
                     }
                 });
-
-
+*/
 
                 Log.i(TAG, "onClick btBackupLog end");
             } else if (v.getId() == R.id.bTStatus) {

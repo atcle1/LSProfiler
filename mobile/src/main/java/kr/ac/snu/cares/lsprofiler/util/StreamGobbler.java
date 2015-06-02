@@ -68,7 +68,7 @@ public class StreamGobbler extends Thread {
             // read already closed
             e.printStackTrace();
         }
-        Log.i(TAG, "stream run() end");
+        //Log.i(TAG, "stream run() end");
     }
 
     private void reply(String line) {

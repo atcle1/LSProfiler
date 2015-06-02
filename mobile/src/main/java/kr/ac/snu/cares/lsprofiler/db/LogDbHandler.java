@@ -177,6 +177,27 @@ public class LogDbHandler {
         cursor.close();
     }
 
+    public void printLog2()
+    {
+        /*
+        Cursor cursor=db.rawQuery(
+                "SELECT idx, datetime(i_datetime, 'unixepoch', 'localtime'), t_log " +
+                "FROM logdb", null);
+        */
+        Cursor cursor=db.rawQuery(
+                "SELECT idx, t_log " +
+                        "FROM logdb2", null);
+        if(cursor!=null){
+            while(cursor.moveToNext()) {
+                Log.i(TAG, cursor.getInt(0) + " " + cursor.getString(1));
+            }
+
+        } else {
+            Log.i(TAG, "printLog() null");
+        }
+        cursor.close();
+    }
+
     public boolean backupDB(String backupFilePath){
         Log.i(TAG, "backupDB()");
         ReadableByteChannel readableByteChannel;

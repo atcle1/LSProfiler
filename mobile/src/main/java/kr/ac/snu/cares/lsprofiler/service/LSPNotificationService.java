@@ -1,5 +1,6 @@
 package kr.ac.snu.cares.lsprofiler.service;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -54,19 +55,22 @@ public class LSPNotificationService extends NotificationListenerService{
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        //Log.i(TAG, "onNotificationPosted()");
+        Log.i(TAG, "onNotificationPosted()");
         LSPLog.onNotificationPosted(sbn);
-
+        NotificationManager mgr=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mgr.cancel(sbn.getTag(), sbn.getId());
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-        //Log.i(TAG, "onNotificationRemoved()");
+        Log.i(TAG, "onNotificationRemoved()");
         LSPLog.onNotificationRemoved(sbn);
+
     }
 
     @Override
     public void onNotificationRankingUpdate(RankingMap rankingMap) {
-        //Log.i(TAG, "onNotificationRankingUpdate()");
+        Log.i(TAG, "onNotificationRankingUpdate()");
+
     }
 }

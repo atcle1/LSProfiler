@@ -129,7 +129,6 @@ public class LSPReporter {
                     su.stopSu();
                     clearKernelLog();
                 }
-
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -137,7 +136,7 @@ public class LSPReporter {
         }
     }
 
-    public void sendReportByAsyncTask(ReportItem item) {
+    public AsyncTask sendReportByAsyncTask(ReportItem item) {
         SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
         sendMailAsyncTask.title = "LSP report from " + app.deviceID;
         sendMailAsyncTask.message = "writting... " + Calendar.getInstance().getTime();
@@ -153,6 +152,7 @@ public class LSPReporter {
         Log.i(TAG, "sendReportByAsyncTask() start " + item.fileList.size() + " items.");
         sendMailAsyncTask.reportItem = item;
         sendMailAsyncTask.execute();
+        return sendMailAsyncTask;
     }
 
     public void backReport(ReportItem item) {
@@ -271,25 +271,26 @@ public class LSPReporter {
         }
     }
 
-
+    final static boolean fitnessEnabled = false;
     public void doReport() {
         Log.i(TAG, "doReport() start");
+        FitnessCollectThread fitnessCollectThread;
         try {
             // first, check wear connecting
             boolean bCollectWear = false;
             ReportItem item = new ReportItem();
             LSPApplication app = LSPApplication.getInstance();
 
+            if (fitnessEnabled) {
+                connectFitnessResolver(1000 * 30);  // blocking...
 
-            connectFitnessResolver(1000 * 30);
-            FitnessCollectThread fitnessCollectThread = new FitnessCollectThread();
-            fitnessCollectThread.start();
-
-
+                fitnessCollectThread = new FitnessCollectThread();
+                fitnessCollectThread.start();
+            }
             WearCollectThread wearCollectThread = null;
             try {
-                if (LSPApplication.getInstance().wearLoggingEnabled) {
-
+                if (app.wearLoggingEnabled) {
+                    // slip short time...
                     if (!app.getLSPConnection().isWearConnected()) {
                         app.getLSPConnection().connect();
                         Thread.sleep(100);
@@ -304,6 +305,7 @@ public class LSPReporter {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
+                LSPLog.onException(ex);
                 bCollectWear = false;
             }
 
@@ -311,10 +313,9 @@ public class LSPReporter {
             if (bCollectWear) {
                 wearCollectThread = new WearCollectThread();
                 wearCollectThread.start();
-                Log.i(TAG, "wearCollectThread run() called");
             }
 
-            // dumpsys
+            // dumpsys start
             DumpsysResolver dumpsysResolver = new DumpsysResolver();
             dumpsysResolver.doWriteDumpAsync(COLLECT_MOBILE_PATH + item.reportDateString + ".dump.txt");
 
@@ -324,44 +325,45 @@ public class LSPReporter {
                 Log.i(TAG, "collectphoneReport() ended");
             }
 
-            // now, all logging work started..., wait for finishing...
-
+            // now, all logging works started..., wait for finishing...
             // join for wearCollect thread
-
             if (bCollectWear) {
-                    int i;
-                    for (i = 0; i < 500; i++) {
-                        wearCollectThread.join(1000);
-                        if (!wearCollectThread.isAlive()){
-                            break;
-                        }
-                    }
-                    Log.i(TAG, "wear collect finished " + i);
-                    if (i >= 500) {
-                        wearCollectThread.interrupt();
-                        LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within 500s, interrupt()");
-                    }
-            }
-
-
-            fitnessCollectThread.join(1000 * 30);
-
-
-            // join for fitness thread
-            {
-                int timelimit = 20;
+                int timelimit = 500;
                 int i;
                 for (i = 0; i < timelimit; i++) {
-                    fitnessCollectThread.join(1000);
-                    if (!fitnessCollectThread.isAlive()) {
+                    wearCollectThread.join(1000);
+                    if (!wearCollectThread.isAlive()){
                         break;
                     }
                 }
+                Log.i(TAG, "wear collect finished " + i);
                 if (i >= timelimit) {
-                    fitnessCollectThread.interrupt();
-                    LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within " + timelimit+"s, interrupt()");
+                    wearCollectThread.interrupt();
+                    LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within 500s, interrupt()");
                 }
             }
+
+            if (fitnessEnabled) {
+                // join for fitness collect thread
+                fitnessCollectThread.join(1000 * 30);
+
+                // join for fitness thread
+                {
+                    int timelimit = 20;
+                    int i;
+                    for (i = 0; i < timelimit; i++) {
+                        fitnessCollectThread.join(1000);
+                        if (!fitnessCollectThread.isAlive()) {
+                            break;
+                        }
+                    }
+                    if (i >= timelimit) {
+                        fitnessCollectThread.interrupt();
+                        LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within " + timelimit + "s, interrupt()");
+                    }
+                }
+            }
+
 
             // join for dumpsys
             dumpsysResolver.joinDumpAsync(1000 * 20);
@@ -419,7 +421,7 @@ public class LSPReporter {
                 wl.acquire();
                 if (files == null || files.length == 0) {
                     wl.release();
-                    Log.e(TAG, "SendMailAsyncTask no files!");
+                    LSPLog.onTextMsgForce("SendMailAsyncTask no files!");
                     return null;
                 }
                 send_files = new String[files.length];
@@ -446,6 +448,7 @@ public class LSPReporter {
             }catch(Exception ex) {
                 ex.printStackTrace();
             } finally {
+                LSPApplication.getInstance().resumeLogging();
                 wl.release();
             }
             return null;
@@ -454,7 +457,6 @@ public class LSPReporter {
 
     void backupReports(ReportItem reportItem) {
         try {
-
             // make backup dir
             File backupDir = new File(reportItem.backupDir);
             if(!backupDir.exists())

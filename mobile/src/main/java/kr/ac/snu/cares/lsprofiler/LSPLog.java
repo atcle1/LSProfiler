@@ -1,11 +1,13 @@
 package kr.ac.snu.cares.lsprofiler;
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
+import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -104,6 +106,7 @@ public class LSPLog {
             logDbHandler.writeLog("BAT : "+batteryPct+" "+statusStr+" "+plugStr + " " + temperature);
         }
     }
+
     public static void onTeleponyStateChagned(double a){
         if(!bWriteLog) return;
         logDbHandler.writeLog("TEL : "+a);
@@ -113,13 +116,10 @@ public class LSPLog {
         logDbHandler.writeLog("SCR : "+onOff);
     }
     public static void onPowerStateChagned(int state) {
-        //if(!bWriteLog) return;
+        if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
     }
-    public static void onForegroundAppChagned(String packageName) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("FAP : "+packageName);
-    }
+
     public static void onNotificationPosted(StatusBarNotification sbn) {
         String title = "", text = "", bigtext="";
         try {
@@ -128,14 +128,14 @@ public class LSPLog {
             //    ticker = sbn.getNotification().tickerText.toString();
             Bundle extras = sbn.getNotification().extras;
             if (extras != null) {
-            /*
+
             for (String key : extras.keySet()) {
                 Object value = extras.get(key);
                 if (value != null)
                     Log.d(TAG, String.format("- %s %s (%s)", key,
                         value.toString(), value.getClass().getName()));
             }
-            */
+
                 title = extras.getString("android.title");
                 CharSequence textSequence = extras.getCharSequence("android.text");
                 if (textSequence != null)
@@ -143,18 +143,27 @@ public class LSPLog {
                 if (extras.containsKey("android.bigText"))
                     bigtext = extras.getCharSequence("android.bigText").toString();
             }
+            Notification no = sbn.getNotification();
+            Notification.Action actions[] = no.actions;
+            if (actions != null) {
+                for (Notification.Action action : actions) {
+                    Log.i(TAG, "action : " + action.title + " " + action.actionIntent.getCreatorPackage());
+                }
+            }
+            Log.i(TAG, "ongoing "+sbn.isOngoing());
 
-            //Log.i("id", "" + sbn.getId());
-            //Log.i("Text", "tag "+sbn.getTag());
+            Log.i("id", "" + sbn.getId());
+            Log.i("Text", "tag "+sbn.getTag());
             if (title == null)
                 title = "";
             if (text == null)
                 text = "";
             if (bigtext == null)
                 bigtext = "";
-            Log.i("TAG", "NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + title + "|" + text + "|" + bigtext+"|");
+            String log = "NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + sbn.isOngoing()+"|"+sbn.isClearable()+"|"+ title + "|" + text + "|" + bigtext+"|";
+            Log.i(TAG, log);
             if (!bWriteLog) return;
-            logDbHandler.writeLog("NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + title + "|" + text + "|" + bigtext+"|");
+            logDbHandler.writeLog(log);
         } catch (Exception ex){
             ex.printStackTrace();
             onException(ex);
@@ -162,14 +171,15 @@ public class LSPLog {
 
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {
-//        Log.i("id", "" + sbn.toString());
-//        Log.i("id", "" + sbn.getId());
-//        Log.i("Text", "tag "+sbn.getTag());
+        Log.i(TAG, "onNotificationRemoved " + sbn.toString());
+        Log.i(TAG, "id " + sbn.getId());
+        Log.i(TAG, "tag "+sbn.getTag());
         if(!bWriteLog) return;
         String packName = sbn.getPackageName();
         Log.i(TAG, "NOR : "+sbn.getPackageName()+"|"+sbn.getId());
         logDbHandler.writeLog("NOR : "+sbn.getPackageName()+"|"+sbn.getId());
     }
+
     public static void onCallStateChanged(int state, String incomingNumber) {
         if(!bWriteLog) return;
         String enc = Util.encryptData(incomingNumber);
@@ -188,6 +198,30 @@ public class LSPLog {
     public static void onTopActivityResuming(String packageName) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("FGA : " + packageName);
+    }
+
+    public static void onSmsReceived(Intent intent) {
+        if(!bWriteLog) return;
+        Bundle bundle = intent.getExtras();
+        if (bundle == null) return;
+
+        Object messages[] = (Object[]) bundle.get("pdus");
+        SmsMessage smsMessage[] = new SmsMessage[messages.length];
+
+        for (int i = 0; i < messages.length; i++) {
+            // PDU 포맷으로 되어 있는 메시지를 복원합니다.
+            smsMessage[i] = SmsMessage.createFromPdu((byte[]) messages[i]);
+        }
+        // SMS 수신 시간 확인
+        Date curDate = new Date(smsMessage[0].getTimestampMillis());
+        //Log.d("문자 수신 시간", curDate.toString());
+        // SMS 발신 번호 확인
+        String origNumber = smsMessage[0].getOriginatingAddress();
+        // SMS 메시지 확인
+        String message = smsMessage[0].getMessageBody().toString();
+        //Log.d("문자 내용", "발신자 : " + origNumber + ", 내용 : " + message);
+
+        logDbHandler.writeLog("SMS : r " + Util.encryptData(origNumber) + " " + Util.encryptData(message));
     }
 
     public static void onTextMsg(String msg){

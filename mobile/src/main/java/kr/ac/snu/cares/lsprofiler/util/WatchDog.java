@@ -8,6 +8,7 @@ import kr.ac.snu.cares.lsprofiler.LSPLog;
  * Created by summer on 15. 5. 18.
  */
 public class WatchDog extends Thread {
+    // deprecated...
     public static final String TAG = WatchDog.class.getSimpleName();
     @Override
     public void run() {
