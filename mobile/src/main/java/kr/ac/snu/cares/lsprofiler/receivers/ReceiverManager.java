@@ -12,6 +12,8 @@ import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
@@ -40,9 +42,13 @@ public class ReceiverManager extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
         //filter.addAction("android.provider.Telephony.SMS_RECEIVED");
         filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
         filter.addAction("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING");
+        filter.addAction("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION");
+        filter.addAction("kr.ac.snu.lsprofiler.intent.action.STATUSBAR");
+        filter.addAction("kr.ac.snu.lsprofiler.intent.action.PANELBAR");
 
         context.registerReceiver(this, filter);
 
@@ -74,6 +80,7 @@ public class ReceiverManager extends BroadcastReceiver {
         }
     }
 
+    SimpleDateFormat timeSDF = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
@@ -87,6 +94,9 @@ public class ReceiverManager extends BroadcastReceiver {
         } else if (action.equals("android.provider.Telephony.SMS_RECEIVED")) {
             // sms received
                 LSPLog.onSmsReceived(intent);
+        } else if (action.equals(Intent.ACTION_USER_PRESENT)){
+            LSPLog.onTextMsg("USP");
+            Log.i(TAG, "ACTION_USER_PRESENT");
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING")) {
             // activity resuming
             Bundle bundle = intent.getExtras();
@@ -94,6 +104,29 @@ public class ReceiverManager extends BroadcastReceiver {
                 String packageName = (String) bundle.getString("packageName");
                 LSPLog.onTopActivityResuming(packageName);
                 Log.i(TAG, "top activity : " + packageName);
+            }
+        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION")) {
+            // notification
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String message = (String) bundle.getString("message");
+                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+                Log.i(TAG, strDT + " NOTIFICATION " + message);
+            }
+        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.STATUSBAR")) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String message = (String) bundle.getString("message");
+
+                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+                Log.i(TAG, strDT + " STATUSBAR " + message);
+            }
+        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.PANELBAR")) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                String message = (String) bundle.getString("message");
+                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+                Log.i(TAG, strDT + " PANELBAR " + message);
             }
         } else {
             Log.i(TAG, action);

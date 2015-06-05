@@ -84,7 +84,7 @@ public class LocationTracer implements LocationListener {
             LSPLog.onTextMsgForce("request network location update");
         }
         timeoutableLocationListener = new TimeoutableLocationListener(locationManager, LOCATION_LISTENER_TIMEOUT, this);
-        Log.i(TAG, "requestUpdate()");
+        //Log.i(TAG, "requestUpdate()");
     }
 
     public void checkState() {
@@ -95,7 +95,7 @@ public class LocationTracer implements LocationListener {
         // 현재 네트워크 상태 값 알아오기
         isNetworkEnabled = locationManager.isProviderEnabled(
                 LocationManager.NETWORK_PROVIDER);
-        Log.i(TAG, "checkState() GPS "+isGPSEnabled + " NET " + isNetworkEnabled);
+        //Log.i(TAG, "checkState() GPS "+isGPSEnabled + " NET " + isNetworkEnabled);
     }
 
     public void showSettingsAlert(){
@@ -131,7 +131,7 @@ public class LocationTracer implements LocationListener {
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
         LSPLog.onLocationUpdate(location);
-        Log.i(TAG, "onLocationUpdate() "+location.getProvider()+" "+latitude + " "  + longitude);
+        //Log.i(TAG, "onLocationUpdate() "+location.getProvider()+" "+latitude + " "  + longitude);
         locationManager.removeUpdates(this);
     }
 
@@ -156,7 +156,7 @@ public class LocationTracer implements LocationListener {
     private class GPSAlarmReceiver extends android.content.BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "GPS AlarmReceiver onReceive()");
+            //Log.i(TAG, "GPS AlarmReceiver onReceive()");
             Location location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             Location location2 = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location != null) {

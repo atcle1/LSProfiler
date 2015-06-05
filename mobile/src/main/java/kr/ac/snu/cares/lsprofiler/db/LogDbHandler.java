@@ -15,6 +15,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
@@ -29,6 +30,7 @@ public class LogDbHandler {
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
 
     private SQLiteStatement InsertLogdbStmt;
+    private SQLiteStatement InsertLogdbStmt_wt;
     private SQLiteStatement InsertLogdbStmt2;
 
     @Override
@@ -49,6 +51,9 @@ public class LogDbHandler {
             String sql = "INSERT INTO logdb(t_datetime, t_log) " +
                     "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
             InsertLogdbStmt = db.compileStatement(sql);
+            sql = "INSERT INTO logdb(t_datetime, t_log) " +
+                    "VALUES (?, ?)";
+            InsertLogdbStmt_wt = db.compileStatement(sql);
         }catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -75,9 +80,14 @@ public class LogDbHandler {
             helper.close();
     }
     public void open() {
-        helper = new LogDbHelper(context);
-        db = helper.getWritableDatabase();
-        prepareStatement();
+        try {
+            helper = new LogDbHelper(context);
+            db = helper.getWritableDatabase();
+            prepareStatement();
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
     }
 
     public long insert(int a, String b) {
@@ -104,13 +114,28 @@ public class LogDbHandler {
             InsertLogdbStmt.execute();
             InsertLogdbStmt.clearBindings();
         } catch (Exception ex) {
-            try {
-                ex.printStackTrace();
-                FileLogWritter.writeString(ex.getLocalizedMessage());
+            ex.printStackTrace();
+            FileLogWritter.writeString(ex.getLocalizedMessage());
+        }
+        return 0;
+    }
+
+    synchronized public int writeLog(long timestamp, String msg)
+    {
+        if (msg == null)
+            return -1;
+        try {
+            if (InsertLogdbStmt == null) {
+                FileLogWritter.writeString("if (InsertLogdbStmt == null) {");
                 open();
-            }catch (Exception ex2){
-                FileLogWritter.writeString(ex2.getLocalizedMessage());
             }
+            InsertLogdbStmt_wt.bindLong(1, timestamp);
+            InsertLogdbStmt_wt.bindString(2, msg);
+            InsertLogdbStmt_wt.execute();
+            InsertLogdbStmt_wt.clearBindings();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FileLogWritter.writeString(ex.getLocalizedMessage());
         }
         return 0;
     }
@@ -130,13 +155,8 @@ public class LogDbHandler {
         }catch (SQLiteConstraintException ex2){
 
         } catch (Exception ex) {
-            try {
-                ex.printStackTrace();
-                FileLogWritter.writeString(ex.getLocalizedMessage());
-                open();
-            }catch (Exception ex3){
-                FileLogWritter.writeString(ex3.getLocalizedMessage());
-            }
+            ex.printStackTrace();
+            FileLogWritter.writeString(ex.getLocalizedMessage());
         }
         return 0;
     }

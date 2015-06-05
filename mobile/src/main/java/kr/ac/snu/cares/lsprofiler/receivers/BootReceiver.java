@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.service.LSPBootService;
@@ -18,12 +21,12 @@ public class BootReceiver extends BroadcastReceiver {
     public static final String TAG = BroadcastReceiver.class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
     //    if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-        Log.i("LP", "BootReceiver - onRecive()");
-        Intent i = new Intent(context, LSPService.class);
-        context.startService(i);
+        Log.i("LP", "BootReceiver - onRecive() " + Calendar.getInstance().getTime() + " " + System.currentTimeMillis() + " " + new Date());
+        //Intent i = new Intent(context, LSPService.class);
+        //context.startService(i);
 
-        String stdout;
-        MyConsoleExe exe = new MyConsoleExe();
+        //String stdout;
+        //MyConsoleExe exe = new MyConsoleExe();
         //stdout = exe.exec("su 0 setenforce 0", false);
         /*
         String arr[] = new String[1];

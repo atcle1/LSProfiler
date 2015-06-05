@@ -112,6 +112,7 @@ public class LSPService extends Service {
     @Override
     public void onDestroy() {
         LSPLog.onTextMsg("ERR LSPService onDestroy()");
+        stopForeground(true);
         if (application.state.equals(LSPApplication.State.resumed)) {
             registerRestartAlarm();
         }

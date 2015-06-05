@@ -196,8 +196,10 @@ public class Su {
         }
     }
     */
+    private static boolean bRooted = false;
     public static boolean isRooted() {
         Process process;
+        if (bRooted == true) return true;
         try {
             process = Runtime.getRuntime().exec("su -c id");
             InputStream inputStream = process.getInputStream();
@@ -206,6 +208,7 @@ public class Su {
             String output = bfr.readLine();
             if (output.contains("uid=0")) {
                 Log.i(TAG, "rooted " + output);
+                bRooted = true;
                 return true;
             }
             process.destroy();

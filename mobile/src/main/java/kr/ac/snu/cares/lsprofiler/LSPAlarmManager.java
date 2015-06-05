@@ -29,7 +29,7 @@ public class LSPAlarmManager {
     public static ArrayList<AlarmTime> alarmList = new ArrayList<>();
     public static AlarmTime nextAlarmTime;
     public static Calendar nextAlarmCal;
-    private static long nextAlarmTimeMillis;
+    public static long nextAlarmTimeMillis;
 
     //public static AlarmTime nextAlarmTimeMillis;
     //public static int start_hour = 4;
