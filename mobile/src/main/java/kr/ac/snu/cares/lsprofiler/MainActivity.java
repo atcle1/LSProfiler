@@ -1,5 +1,9 @@
 package kr.ac.snu.cares.lsprofiler;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.AsyncTask;
@@ -7,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -163,10 +168,11 @@ public class MainActivity extends ActionBarActivity {
         super.onPause();
         lspApplication.getFitnessResolver().setMainActivity(null);
     }
-
+    static boolean pop = false;
     class onBtClickListener implements View.OnClickListener
     {
         Su su;
+
         @Override
         public void onClick(View v) {
             if (v.getId() == R.id.bTStartService) {
@@ -222,6 +228,14 @@ public class MainActivity extends ActionBarActivity {
 */
 
                 Log.i(TAG, "onClick btBackupLog end");
+
+                if (pop) {
+                    notificationRemove();
+                    pop = false;
+                } else {
+                    notificationPop();
+                    pop = true;
+                }
             } else if (v.getId() == R.id.bTStatus) {
                 updateStatus();
             } else if (v.getId() == R.id.bTRoot) {
@@ -241,6 +255,31 @@ public class MainActivity extends ActionBarActivity {
         public void run() {
             lspApplication.doReport();
         }
+    }
+
+    private void notificationPop() {
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder mBuilder = new Notification.Builder(this);
+        mBuilder.setTicker("Notification.Builder");
+        mBuilder.setWhen(System.currentTimeMillis());
+        mBuilder.setSmallIcon(R.drawable.common_signin_btn_icon_dark);
+        mBuilder.setNumber(10);
+        mBuilder.setContentTitle("Notification.Builder Title");
+        mBuilder.setContentText("Notification.Builder Massage");
+        mBuilder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE);
+        mBuilder.setContentIntent(pendingIntent);
+        mBuilder.setAutoCancel(true);
+
+        mBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
+
+        nm.notify(111, mBuilder.build());
+    }
+
+    private void notificationRemove() {
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm.cancel(111);
     }
 
 

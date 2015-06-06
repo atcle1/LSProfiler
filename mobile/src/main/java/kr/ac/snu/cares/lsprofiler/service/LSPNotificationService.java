@@ -57,15 +57,12 @@ public class LSPNotificationService extends NotificationListenerService{
     public void onNotificationPosted(StatusBarNotification sbn) {
         Log.i(TAG, "onNotificationPosted()");
         LSPLog.onNotificationPosted(sbn);
-        NotificationManager mgr=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        mgr.cancel(sbn.getTag(), sbn.getId());
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
         Log.i(TAG, "onNotificationRemoved()");
-        LSPLog.onNotificationRemoved(sbn);
-
+        //LSPLog.onNotificationRemoved(sbn);
     }
 
     @Override

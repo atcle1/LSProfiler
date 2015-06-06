@@ -11,6 +11,7 @@ import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
@@ -122,19 +123,20 @@ public class LSPLog {
 
     public static void onNotificationPosted(StatusBarNotification sbn) {
         String title = "", text = "", bigtext="";
+        String log = "";
         try {
             String packName = sbn.getPackageName();
             //if (sbn.getNotification().tickerText != null)
             //    ticker = sbn.getNotification().tickerText.toString();
             Bundle extras = sbn.getNotification().extras;
             if (extras != null) {
-
-            for (String key : extras.keySet()) {
-                Object value = extras.get(key);
-                if (value != null)
-                    Log.d(TAG, String.format("- %s %s (%s)", key,
-                        value.toString(), value.getClass().getName()));
-            }
+                /*
+                for (String key : extras.keySet()) {
+                    Object value = extras.get(key);
+                    if (value != null)
+                        Log.d(TAG, String.format("- %s %s (%s)", key, value.toString(), value.getClass().getName()));
+                }
+                */
 
                 title = extras.getString("android.title");
                 CharSequence textSequence = extras.getCharSequence("android.text");
@@ -145,22 +147,32 @@ public class LSPLog {
             }
             Notification no = sbn.getNotification();
             Notification.Action actions[] = no.actions;
-            if (actions != null) {
-                for (Notification.Action action : actions) {
-                    Log.i(TAG, "action : " + action.title + " " + action.actionIntent.getCreatorPackage());
-                }
-            }
-            Log.i(TAG, "ongoing "+sbn.isOngoing());
 
-            Log.i("id", "" + sbn.getId());
-            Log.i("Text", "tag "+sbn.getTag());
             if (title == null)
                 title = "";
             if (text == null)
                 text = "";
             if (bigtext == null)
                 bigtext = "";
-            String log = "NOP : " + sbn.getPackageName() + "|" + sbn.getId() + "|" + sbn.isOngoing()+"|"+sbn.isClearable()+"|"+ title + "|" + text + "|" + bigtext+"|";
+
+            if (!title.equals(""))
+                title = Util.encryptData(title);
+            if (!text.equals(""))
+                text = Util.encryptData(text);
+            if (!bigtext.equals(""))
+                bigtext = Util.encryptData(bigtext);
+
+            log = "NOP : " + sbn.getKey() +  " " + sbn.isOngoing()+"|"+sbn.isClearable()+"|"+ title + "|" + text + "|" + bigtext+"|";
+
+            try {
+                if (actions != null) {
+                    for (int i = 0; i < actions.length; i++)
+                        log+="\naction : " + actions[i].title + " " + actions[i].actionIntent.getCreatorPackage();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
             Log.i(TAG, log);
             if (!bWriteLog) return;
             logDbHandler.writeLog(log);
@@ -172,8 +184,6 @@ public class LSPLog {
     }
     public static void onNotificationRemoved(StatusBarNotification sbn) {
         Log.i(TAG, "onNotificationRemoved " + sbn.toString());
-        Log.i(TAG, "id " + sbn.getId());
-        Log.i(TAG, "tag "+sbn.getTag());
         if(!bWriteLog) return;
         String packName = sbn.getPackageName();
         Log.i(TAG, "NOR : "+sbn.getPackageName()+"|"+sbn.getId());
@@ -195,10 +205,7 @@ public class LSPLog {
                 break;
         }
     }
-    public static void onTopActivityResuming(String packageName) {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("FGA : " + packageName);
-    }
+
 
     public static void onSmsReceived(Intent intent) {
         if(!bWriteLog) return;
@@ -274,8 +281,6 @@ public class LSPLog {
         return false;
     }
 
-
-
     public static void onException(Exception ex) {
         String message = null;
         String logMsg = null;
@@ -305,5 +310,46 @@ public class LSPLog {
         logDbHandler.writeLog("WATCHDOG ALIVE");
     }
 
+    public static void onFTopActivityResuming(Intent intent) {
+        if(!bWriteLog) return;
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            String message = (String) bundle.getString("message");
+            logDbHandler.writeLog(bundle.getLong("time"), "FGA : " + message);
+            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+            Log.i(TAG, strDT + " FGA " + message);
+        }
+    }
 
+    static SimpleDateFormat timeSDF = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
+    public static void onFNotification(Intent intent){
+        if(!bWriteLog) return;
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            String message = (String) bundle.getString("message");
+            logDbHandler.writeLog(bundle.getLong("time"), "FNOR : " + message);
+            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+            Log.i(TAG, strDT + " NOTIFICATION " + message);
+        }
+    }
+    public static void onFPanel(Intent intent){
+        if(!bWriteLog) return;
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            String message = (String) bundle.getString("message");
+            logDbHandler.writeLog(bundle.getLong("time"), "FPAN : " + message);
+            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+            Log.i(TAG, strDT + " PANEL " + message);
+        }
+    }
+    public static void onFStatusbar(Intent intent){
+        if(!bWriteLog) return;
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            String message = (String) bundle.getString("message");
+            logDbHandler.writeLog(bundle.getLong("time"), "FSTB : " + message);
+            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
+            Log.i(TAG, strDT + " STATUSBAR " + message);
+        }
+    }
 }

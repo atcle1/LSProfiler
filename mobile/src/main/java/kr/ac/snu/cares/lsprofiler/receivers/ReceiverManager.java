@@ -8,13 +8,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneStateListener;
-import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 
@@ -97,37 +94,18 @@ public class ReceiverManager extends BroadcastReceiver {
         } else if (action.equals(Intent.ACTION_USER_PRESENT)){
             LSPLog.onTextMsg("USP");
             Log.i(TAG, "ACTION_USER_PRESENT");
-        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING")) {
+        } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.ACTIVITYSTACK")) {
             // activity resuming
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String packageName = (String) bundle.getString("packageName");
-                LSPLog.onTopActivityResuming(packageName);
-                Log.i(TAG, "top activity : " + packageName);
-            }
+            LSPLog.onFTopActivityResuming(intent);
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION")) {
-            // notification
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String message = (String) bundle.getString("message");
-                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-                Log.i(TAG, strDT + " NOTIFICATION " + message);
-            }
+            // notification remove
+            LSPLog.onFNotification(intent);
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.STATUSBAR")) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String message = (String) bundle.getString("message");
-
-                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-                Log.i(TAG, strDT + " STATUSBAR " + message);
-            }
+            // statusbar click
+            LSPLog.onFStatusbar(intent);
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.PANELBAR")) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                String message = (String) bundle.getString("message");
-                String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-                Log.i(TAG, strDT + " PANELBAR " + message);
-            }
+            // panelbar open/close
+            LSPLog.onFPanel(intent);
         } else {
             Log.i(TAG, action);
         }
