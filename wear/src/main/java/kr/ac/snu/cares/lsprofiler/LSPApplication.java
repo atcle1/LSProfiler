@@ -223,6 +223,7 @@ public class LSPApplication extends Application {
     static Toast toast;
     public void showToast(String msg) {
         if (toast != null) {
+            toast.cancel();
             toast.setText(msg);
         } else
             toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
