@@ -68,12 +68,12 @@ public class LSPReporter {
         try {
             if (!f.exists()) {
                 Log.i(TAG, "sprofiler not founded!");
-                LSPLog.onTextMsg("sprofiler not founded!");
+                FileLogWritter.writeString("sprofiler not founded!");
                 return false;
             }
             if (!Su.isRooted()) {
                 Log.i(TAG, "not rooted! but try report!");
-                LSPLog.onTextMsg("not rooted! but try report!");
+                FileLogWritter.writeString("not rooted! but try report!");
                 return true;
             }
         } catch (Exception ex) {
@@ -111,7 +111,7 @@ public class LSPReporter {
             if (backupDbSuccess)
                 dbHandler.resetDB();
             else {
-                LSPLog.onTextMsgForce(TAG + "backupdb failed");
+                FileLogWritter.writeString(TAG + " backupdb failed");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -182,7 +182,7 @@ public class LSPReporter {
             Log.e(TAG, "fitnessResolver.doLog() call end");
         } else {
             Log.e(TAG, "fitnessResolver.isConnected() false");
-            LSPLog.onTextMsgForce("FIT : CONNECT FAILED");
+            FileLogWritter.writeString("FIT : CONNECT FAILED");
             return false;
         }
         return true;
@@ -298,7 +298,7 @@ public class LSPReporter {
                     if (app.getLSPConnection().sendPing(10 * 1000)) {
                         bCollectWear = true;
                     } else {
-                        LSPLog.onTextMsgForce("wearlogging is enabled, but ping failed, skip log");
+                        FileLogWritter.writeString("wearlogging is enabled, but ping failed, skip log");
                         Log.i(TAG, "wearlogging is enabled, but isn't connected!");
                         bCollectWear = false;
                     }
@@ -339,7 +339,7 @@ public class LSPReporter {
                 Log.i(TAG, "wear collect finished " + i);
                 if (i >= timelimit) {
                     wearCollectThread.interrupt();
-                    LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within 500s, interrupt()");
+                    LSPLog.onTextMsg(TAG + " wearCollectThread not finished within 500s, interrupt()");
                 }
             }
 
@@ -359,11 +359,10 @@ public class LSPReporter {
                     }
                     if (i >= timelimit) {
                         fitnessCollectThread.interrupt();
-                        LSPLog.onTextMsgForce(TAG + " wearCollectThread not finished within " + timelimit + "s, interrupt()");
+                        LSPLog.onTextMsgForce(TAG + " fitnessCollectThread not finished within " + timelimit + "s, interrupt()");
                     }
                 }
             }
-
 
             // join for dumpsys
             dumpsysResolver.joinDumpAsync(1000 * 20);
@@ -421,7 +420,7 @@ public class LSPReporter {
                 wl.acquire();
                 if (files == null || files.length == 0) {
                     wl.release();
-                    LSPLog.onTextMsgForce("SendMailAsyncTask no files!");
+                    FileLogWritter.writeString("SendMailAsyncTask no files!");
                     return null;
                 }
                 send_files = new String[files.length];
@@ -439,12 +438,12 @@ public class LSPReporter {
                 //int result = -1;
 
                 if (result != 0) {
-                    LSPLog.onTextMsgForce("send mail failed! "+Calendar.getInstance().getTime() + " " + reportItem.reportDate);
+                    LSPLog.onTextMsg("send mail failed! " + Calendar.getInstance().getTime() + " " + reportItem.reportDate);
                     Log.i(TAG, "send mail failed!");
                 }
 
                 backupReports(reportItem);
-                LSPLog.onTextMsgForce("backupReports end");
+                LSPLog.onTextMsg("backupReports end");
             }catch(Exception ex) {
                 ex.printStackTrace();
             } finally {

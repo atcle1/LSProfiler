@@ -21,6 +21,7 @@ import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 import kr.ac.snu.cares.lsprofiler.util.WatchDog;
@@ -188,9 +189,10 @@ public class LSPApplication extends Application {
             receiverManager.registerReceivers();
             locationTracker.startTrace();
             LSPNotificationService.startSelf(this);
+            LSPLog.onTextMsg("resumeLogging");
         }catch (Exception ex) {
-            ex.printStackTrace();;
-            LSPLog.onTextMsg(ex.getLocalizedMessage());
+            ex.printStackTrace();
+            FileLogWritter.WriteException(ex);
         }
     }
 
@@ -205,11 +207,11 @@ public class LSPApplication extends Application {
         receiverManager.unregisterReceivers();
         locationTracker.stopTrace();
         LSPNotificationService.stopSelf(this);
+        LSPLog.onTextMsg("pauseLogging " + msg);
         lspLog.pauseLogging();
     }
 
     public void stopLogging() {
-        LSPLog.onTextMsg("stopLogging()");
         alarmManager.clearAlarm();
         if (state == State.resumed)
             pauseLogging("called stopLogging");
@@ -234,10 +236,10 @@ public class LSPApplication extends Application {
         reportWl.acquire(1000 * 600);
         showToast("doReport()");
         pauseLogging("called doReport");
-        LSPLog.onTextMsgForce("doReport() reporter.doReport() call");
+        LSPLog.onTextMsgForce("doReport call");
         reporter.doReport();    // send mail is processed by asynctask after doReport with own WL.
                                 // resume logging when sendMail end
-        LSPLog.onTextMsgForce("doReport() reporter.doReport() call end");
+        LSPLog.onTextMsgForce("doReport end");
         //app.resumeLogging();
         reportWl.release();
     }
@@ -257,7 +259,8 @@ public class LSPApplication extends Application {
 
     @Override
     public void onTerminate() {
-        LSPLog.onTextMsgForce("ERR APP onTerminate()");
+        if (state == State.resumed)
+            FileLogWritter.writeString("ERR APP onTerminate() state " + state);
         super.onTerminate();
         receiverManager.unregisterReceivers();
     }
@@ -266,7 +269,8 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
-        LSPLog.onTextMsgForce("ERR APP onLowMemory()");
+        if (state == State.resumed)
+            FileLogWritter.writeString("ERR APP onLowMemory() state " + state);
         showToast("onLowMemory()");
     }
 

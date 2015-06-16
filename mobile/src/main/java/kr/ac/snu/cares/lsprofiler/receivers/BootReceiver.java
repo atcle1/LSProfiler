@@ -25,28 +25,9 @@ public class BootReceiver extends BroadcastReceiver {
         //Intent i = new Intent(context, LSPService.class);
         //context.startService(i);
 
-        //String stdout;
-        //MyConsoleExe exe = new MyConsoleExe();
-        //stdout = exe.exec("su 0 setenforce 0", false);
-        /*
-        String arr[] = new String[1];
-        arr[0] = "su 0 setenforce 0";
-        exe.execSu(arr);
-        */
-        //Log.i(TAG, stdout);
-        /*
-        stdout = exe.exec("dumpsys batterystats --enable full-wake-history", true);
-        Log.i(TAG, stdout);
-        stdout = exe.exec("dumpsys batterystats --disable no-auto-reset", true);
-        Log.i(TAG, stdout);
-        */
-
-
-
         // power on
         LSPApplication app = LSPApplication.getInstance();
         if (app != null) {
-
             app.startProfilingIfStarted();
         } else {
             Log.i(TAG, "app is null");

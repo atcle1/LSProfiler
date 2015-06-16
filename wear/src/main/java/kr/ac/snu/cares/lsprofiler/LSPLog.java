@@ -146,7 +146,7 @@ public class LSPLog {
         if (logDbHandler != null) {
             try {
                 message = Util.getStackTrace(ex);
-                logMsg = "EXP  " + Log.getStackTraceString(ex) + "\n" + message;
+                logMsg = "EXP " + Log.getStackTraceString(ex) + "\n" + message;
 
                 logDbHandler.writeLog(logMsg);
 

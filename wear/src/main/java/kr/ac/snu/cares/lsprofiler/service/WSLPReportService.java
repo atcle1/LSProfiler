@@ -248,15 +248,12 @@ public class WSLPReportService extends Service {
                             status = 0;
                         }
                     }catch (Exception ex) {
-                        LSPLog.onTextMsgForce("ERR WSLREPorterService "+ex.getMessage());
                         LSPLog.onException(ex);
                     } finally {
                         stopSelf();
                         if (wakeLock != null)
                             wakeLock.release();
                     }
-
-
                     //application.doReport();
                     break;
                 default :

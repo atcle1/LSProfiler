@@ -73,7 +73,6 @@ public class MainActivity extends ActionBarActivity {
     private Button btSendMail;
     private Button btCallLog;
 
-
     private DaemonClient clientHandler;
     private HandlerThread daemonClientThread;
     private LSPApplication lspApplication;

@@ -21,6 +21,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
  * Created by summer on 3/31/15.
@@ -142,10 +143,10 @@ public class Mail {
         } catch (Exception ex) {
             Log.i("EMAIL", "Email sent exception");
             ex.printStackTrace();
-            LSPLog.onTextMsgForce(TAG + " sendReport() ex "+ex.getMessage());
+            FileLogWritter.WriteException(ex);
             return -1;
         }
-        LSPLog.onTextMsgForce(TAG + " sendReport() success");
+        LSPLog.onTextMsgForce(TAG + " sendReport success");
         return 0;
     }
 }

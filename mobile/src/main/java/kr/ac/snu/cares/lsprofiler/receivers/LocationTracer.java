@@ -57,7 +57,6 @@ public class LocationTracer implements LocationListener {
         if (!isGPSEnabled && !isNetworkEnabled) {
             showSettingsAlert();
         }
-
         //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 
         // set gps inexact repeating alarm

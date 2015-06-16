@@ -108,14 +108,11 @@ public class LSPLog {
         }
     }
 
-    public static void onTeleponyStateChagned(double a){
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("TEL : "+a);
-    }
     public static void onScreenChagned(int onOff){
         if(!bWriteLog) return;
         logDbHandler.writeLog("SCR : "+onOff);
     }
+
     public static void onPowerStateChagned(int state) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
@@ -156,13 +153,15 @@ public class LSPLog {
                 bigtext = "";
 
             if (!title.equals(""))
-                title = Util.encryptData(title);
+                title = title.length()+"|"+title.hashCode();
             if (!text.equals(""))
-                text = Util.encryptData(text);
+                text = text.length()+"|"+text.hashCode();
             if (!bigtext.equals(""))
-                bigtext = Util.encryptData(bigtext);
+                bigtext = bigtext.length()+"|"+bigtext.hashCode();
 
-            log = "NOP : " + sbn.getKey() +  " " + sbn.isOngoing()+"|"+sbn.isClearable()+"|"+ title + "|" + text + "|" + bigtext+"|";
+            log = "NOP : " + sbn.getKey() +  " onGoing=" + sbn.isOngoing()+" clearable="+sbn.isClearable()+" title="+ title + " text=" + text;
+            if (bigtext.length() > 0)
+                log  += " bigtext=" + bigtext;
 
             try {
                 if (actions != null) {
@@ -186,8 +185,8 @@ public class LSPLog {
         Log.i(TAG, "onNotificationRemoved " + sbn.toString());
         if(!bWriteLog) return;
         String packName = sbn.getPackageName();
-        Log.i(TAG, "NOR : "+sbn.getPackageName()+"|"+sbn.getId());
-        logDbHandler.writeLog("NOR : "+sbn.getPackageName()+"|"+sbn.getId());
+        Log.i(TAG, "NOR : " + sbn.getPackageName() + "|" + sbn.getId());
+        logDbHandler.writeLog("NOR : "+sbn.getKey());
     }
 
     public static void onCallStateChanged(int state, String incomingNumber) {
@@ -205,7 +204,6 @@ public class LSPLog {
                 break;
         }
     }
-
 
     public static void onSmsReceived(Intent intent) {
         if(!bWriteLog) return;
@@ -228,7 +226,7 @@ public class LSPLog {
         String message = smsMessage[0].getMessageBody().toString();
         //Log.d("문자 내용", "발신자 : " + origNumber + ", 내용 : " + message);
 
-        logDbHandler.writeLog("SMS : r " + Util.encryptData(origNumber) + " " + Util.encryptData(message));
+        logDbHandler.writeLog("SMSR : " + Util.encryptData(origNumber) + " " + Util.encryptData(message));
     }
 
     public static void onTextMsg(String msg){
@@ -250,14 +248,17 @@ public class LSPLog {
     }
 
     public static void onPackageAdded(String packageName) {
+        if(!bWriteLog) return;
         logDbHandler.writeLog("PAD : " + packageName);
     }
 
     public static void onPackageRemoved(String packageName) {
+        if(!bWriteLog) return;
         logDbHandler.writeLog("PRM : " + packageName);
     }
 
     public static void onPackageReplaced(String packageName) {
+        if(!bWriteLog) return;
         logDbHandler.writeLog("PRP : " + packageName);
     }
 
@@ -315,7 +316,7 @@ public class LSPLog {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(bundle.getLong("time"), "FGA : " + message);
+            logDbHandler.writeLog(bundle.getLong("time"), "FFGA : " + message);
             String strDT = timeSDF.format(new Date(bundle.getLong("time")));
             Log.i(TAG, strDT + " FGA " + message);
         }
