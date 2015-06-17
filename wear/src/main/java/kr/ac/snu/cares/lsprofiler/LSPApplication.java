@@ -146,7 +146,7 @@ public class LSPApplication extends Application {
     public void pauseLogging(String msg) {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
-        LSPLog.onTextMsg("pauseLogging() "+msg+ " "+ Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsg("pauseLogging() "+msg);
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -210,8 +210,7 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
-        LSPLog.onTextMsgForce("ERR APP onLowMemory()");
-        showToast("onLowMemory()");
+        LSPLog.onTextMsgForce("APP onLowMemory()");
     }
 
     @Override
@@ -222,12 +221,12 @@ public class LSPApplication extends Application {
 
     static Toast toast;
     public void showToast(String msg) {
-        if (toast != null) {
-            toast.cancel();
-            toast.setText(msg);
-        } else
+        try {
             toast = Toast.makeText(this, msg, Toast.LENGTH_SHORT);
-        toast.show();
-        toastWl.acquire(2500);
+            toast.show();
+            toastWl.acquire(2500);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

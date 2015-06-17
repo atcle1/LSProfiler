@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -52,5 +53,10 @@ public class Util {
         final PrintWriter pw = new PrintWriter(sw, true);
         throwable.printStackTrace(pw);
         return sw.getBuffer().toString();
+    }
+
+    static SimpleDateFormat timeSDF = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
+    public static String getTimeStringFromSystemMillis(long timeMillis) {
+        return timeSDF.format(new Date(timeMillis));
     }
 }

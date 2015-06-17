@@ -60,6 +60,13 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         }
     }
 
+    private boolean isWatch(String name) {
+        if (name.contains("G Watch R") || name.contains("Urbane")) {
+            return true;
+        }
+        return false;
+    }
+
     public GoogleApiClient getmGoogleApiClient()
     {
         return mGoogleApiClient;
@@ -76,7 +83,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                         Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await().getNodes();
                 for (Node node : connectedNodes) {
                     Log.i(TAG, "isWearConnected() " + node.getId() + " " + node.getDisplayName());
-                    if (node.getDisplayName().contains("G Watch R")) {
+                    if (isWatch(node.getDisplayName())) {
                         wearLspConnected = true;
                         break;
                     }
@@ -115,17 +122,17 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                         java.util.List<com.google.android.gms.wearable.Node> pingList = connectedResult.getNodes();
                         Node watchNode = null;
                         for (Node node : pingList) {
-                            if (node.getDisplayName().contains("G Watch R")) {
+                            if (isWatch(node.getDisplayName())) {
                                 watchNode = node;
                                 break;
                             }
                         }
                         if (watchNode == null) {
-                            Log.i(TAG, "watchNode is null");
+                            Log.e(TAG, "watchNode is null");
                             pingResult = false;
                             return;
                         } else {
-                            Log.i(TAG, "watch node found");
+                            Log.e(TAG, "watch node found");
                         }
                         Log.i(TAG, "ping - sendMessage()");
                         MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(mGoogleApiClient,
@@ -184,7 +191,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
                 java.util.List<com.google.android.gms.wearable.Node> pingList = connectedResult.getNodes();
                 Node watchNode = null;
                 for (Node node : pingList) {
-                    if (node.getDisplayName().contains("G Watch R")) {
+                    if (isWatch(node.getDisplayName())) {
                         watchNode = node;
                         break;
                     }

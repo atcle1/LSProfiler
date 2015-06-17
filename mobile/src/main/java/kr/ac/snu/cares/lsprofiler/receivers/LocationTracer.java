@@ -16,7 +16,10 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 
+import java.io.File;
+
 import kr.ac.snu.cares.lsprofiler.LSPLog;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
  * Created by summer on 4/15/15.
@@ -48,7 +51,7 @@ public class LocationTracer implements LocationListener {
     }
 
     public void startTrace() {
-        LSPLog.onTextMsgForce(TAG + " startTrace()");
+        FileLogWritter.writeString(TAG + " startTrace()");
 
         if (locationManager == null) {
             Log.e(TAG, "getSystemService(location_service) return null");
@@ -76,7 +79,7 @@ public class LocationTracer implements LocationListener {
         //locationManager.requestLocationUpdates(provider, 0, 0, this);
         if (isGPSEnabled) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            LSPLog.onTextMsgForce("request gps location update");
+            FileLogWritter.writeString("request gps location update");
         }
         if (isNetworkEnabled) {
             locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);

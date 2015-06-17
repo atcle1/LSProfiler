@@ -10,8 +10,6 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Calendar;
-
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
@@ -49,8 +47,10 @@ public class LSPApplication extends Application {
 
     private LSPLog lspLog;
 
+    public static final boolean bLocationTracerEnabled = true;
+
     private ReceiverManager receiverManager;
-    private LocationTracer locationTracker;
+    private LocationTracer locationTracer;
     private LSPNotificationService notificationService;
     private LSPAlarmManager alarmManager;
 
@@ -84,7 +84,7 @@ public class LSPApplication extends Application {
         lspLog = new LSPLog(context);
         prefMgr = LSPPreferenceManager.getInstance(context);
         receiverManager = new ReceiverManager(context);
-        locationTracker = new LocationTracer(context);
+        locationTracer = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
 
         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -187,7 +187,8 @@ public class LSPApplication extends Application {
         try {
             lspLog.resumeLogging();
             receiverManager.registerReceivers();
-            locationTracker.startTrace();
+            if (bLocationTracerEnabled)
+                locationTracer.startTrace();
             LSPNotificationService.startSelf(this);
             LSPLog.onTextMsg("resumeLogging");
         }catch (Exception ex) {
@@ -205,7 +206,7 @@ public class LSPApplication extends Application {
         }
         state = State.paused;
         receiverManager.unregisterReceivers();
-        locationTracker.stopTrace();
+        locationTracer.stopTrace();
         LSPNotificationService.stopSelf(this);
         LSPLog.onTextMsg("pauseLogging " + msg);
         lspLog.pauseLogging();
@@ -270,8 +271,7 @@ public class LSPApplication extends Application {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
         if (state == State.resumed)
-            FileLogWritter.writeString("ERR APP onLowMemory() state " + state);
-        showToast("onLowMemory()");
+            FileLogWritter.writeString("APP : onLowMemory() state " + state);
     }
 
     @Override

@@ -33,8 +33,7 @@ public class FileLogWritter {
             }
             FileWriter fw = new FileWriter(logfile, true);
             BufferedWriter bufferWritter = new BufferedWriter(fw);
-            Date date = Calendar.getInstance().getTime();
-            bufferWritter.write(date.toString() + "\n");
+            bufferWritter.write(Util.getTimeStringFromSystemMillis((System.currentTimeMillis())) + "\n");
             bufferWritter.write(msg + "\n");
             bufferWritter.close();
         } catch (Exception e) {

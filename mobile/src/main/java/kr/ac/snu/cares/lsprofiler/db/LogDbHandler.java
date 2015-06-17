@@ -120,7 +120,7 @@ public class LogDbHandler {
         return 0;
     }
 
-    synchronized public int writeLog(long timestamp, String msg)
+    synchronized public int writeLog(String timestamp, String msg)
     {
         if (msg == null)
             return -1;
@@ -129,7 +129,7 @@ public class LogDbHandler {
                 FileLogWritter.writeString("if (InsertLogdbStmt == null) {");
                 open();
             }
-            InsertLogdbStmt_wt.bindLong(1, timestamp);
+            InsertLogdbStmt_wt.bindString(1, timestamp);
             InsertLogdbStmt_wt.bindString(2, msg);
             InsertLogdbStmt_wt.execute();
             InsertLogdbStmt_wt.clearBindings();

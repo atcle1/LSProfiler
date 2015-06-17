@@ -179,9 +179,9 @@ public class MainActivity extends ActionBarActivity {
                 Toast.makeText(v.getContext(), "start", Toast.LENGTH_SHORT).show();
                 //DaemonStarter.startDaemon();
                 //lspApplication.startLogging();
-                Su.isRooted();
+                //Su.isRooted();
                 lspApplication.startProfiling();
-                lspApplication.getFitnessResolver().connect();
+                //lspApplication.getFitnessResolver().connect();
                 updateStatus();
             } else if (v.getId() == R.id.bTStopService) {
                 Toast.makeText(v.getContext(), "stop", Toast.LENGTH_SHORT).show();

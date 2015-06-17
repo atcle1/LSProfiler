@@ -128,7 +128,6 @@ public class LSPService extends Service {
 
     @Override
     public void onLowMemory() {
-        LSPLog.onTextMsgForce("LSPService : onLowMemory()");
         super.onLowMemory();
     }
 

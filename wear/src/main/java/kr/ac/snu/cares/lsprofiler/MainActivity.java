@@ -13,9 +13,7 @@ public class MainActivity extends Activity {
     private TextView txtStatus;
     private TextView mTextView;
     private onBtClickListener btClickListener;
-
     private LSPApplication lspApplication;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +29,9 @@ public class MainActivity extends Activity {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 mTextView = (TextView) stub.findViewById(R.id.text);
-                txtStatus = (TextView)findViewById(R.id.txtStatus);
+                txtStatus = (TextView) findViewById(R.id.txtStatus);
                 setButton(R.id.bTStatus, btClickListener);
+                updateStatus();
             }
         });
     }
@@ -50,7 +49,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
         updateStatus();
     }
 

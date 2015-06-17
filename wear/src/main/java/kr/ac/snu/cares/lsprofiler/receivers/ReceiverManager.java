@@ -4,12 +4,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneStateListener;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.Display;
 
 import java.util.Date;
 
@@ -30,15 +32,15 @@ public class ReceiverManager extends BroadcastReceiver {
     public void registerReceivers() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        filter.addAction(Intent.ACTION_BATTERY_LOW);
-        filter.addAction(Intent.ACTION_BATTERY_OKAY);
-        filter.addAction(Intent.ACTION_POWER_CONNECTED);
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        //filter.addAction(Intent.ACTION_BATTERY_LOW);
+        //filter.addAction(Intent.ACTION_BATTERY_OKAY);
+        //filter.addAction(Intent.ACTION_POWER_CONNECTED);
+        //filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_SCREEN_OFF);
         filter.addAction(Intent.ACTION_SCREEN_ON);
         //filter.addAction("android.provider.Telephony.SMS_RECEIVED");
-        filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        filter.addAction("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING");
+        //filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+        //filter.addAction("kr.ac.snu.lsprofiler.intent.action.TOPACTIVITY_RESUMEING");
 
         context.registerReceiver(this, filter);
 
@@ -54,10 +56,17 @@ public class ReceiverManager extends BroadcastReceiver {
             //ex.printStackTrace();
         }
     }
-
+    public void test(){
+        DisplayManager dm = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+        boolean screenOn = false;
+        for (Display display : dm.getDisplays()) {
+            Log.i(TAG, "display state "  +display.getName() + " " + display.getState() + " " + display.getDisplayId());
+        }
+    }
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+
         if (action.equals(Intent.ACTION_SCREEN_ON)) {
             Log.i(TAG, "Screen ON");
             LSPLog.onScreenChagned(1);
@@ -67,7 +76,7 @@ public class ReceiverManager extends BroadcastReceiver {
         } else if (action.equals(Intent.ACTION_BATTERY_CHANGED)) {
             LSPLog.onBatteryStatusChagned(intent);
         } else {
-            Log.i(TAG, action);
+            Log.i(TAG, action + " : " + intent);
         }
     }
 }

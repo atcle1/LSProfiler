@@ -48,7 +48,7 @@ public class LSPAlarmManager {
         this.alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         for (int i = 0; i < 24; ) {
             alarmList.add(new AlarmTime(i, 0));
-            i+=4;
+            i+=6;
         }
     }
 

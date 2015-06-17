@@ -40,21 +40,79 @@ public class LSPLog {
         bWriteLog = true;
     }
 
-    private void writeAllLogOnFile() {
+    public static boolean checkDbHandler() {
+        if (logDbHandler != null)
+            return true;
+        try {
+            onException(new Exception("checkDbHandler() dbHandler is null"));
+            if (logDbHandler == null)
+                logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }catch (Exception ex) {
+            onException(ex);
+        }
+        if (logDbHandler != null)
+            return true;
+        return false;
+    }
 
+    public static void onException(Exception ex) {
+        /*
+        String message = null;
+        String logMsg = null;
+        if (logDbHandler == null) {
+            logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }
+        if (logDbHandler != null) {
+            try {
+                message = Util.getStackTrace(ex);
+                logMsg = "EXP " + Log.getStackTraceString(ex) + "\n" + message;
+
+                logDbHandler.writeLog(logMsg);
+
+            }catch (Exception ex2) {
+                ex2.printStackTrace();
+            }
+        }
+        */
+        try {
+            FileLogWritter.WriteException(ex);
+        } catch (Exception ex3) {
+            ex3.printStackTrace();
+        }
+    }
+
+    public static void onWatchDog() {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("WATCHDOG ALIVE");
     }
 
     /* logging methods */
-    public static void onLocationUpdate(Location loc) {
+    public static void onTextMsg(String msg){
         if(!bWriteLog) return;
-        Date fixed = new Date(loc.getTime());
-        logDbHandler.writeLog("LOC UPDATE : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
+        logDbHandler.writeLog("TXT : " + msg);
     }
 
-    public static void onKnownLocation(Location loc) {
+    public static void onTextMsgForce(String msg){
+        if ( checkDbHandler()) {
+            try {
+                logDbHandler.writeLog("TFC : " + msg);
+                FileLogWritter.writeString("TFC : " + msg);
+                Log.e(TAG, "TF " + msg);
+            }catch (Exception ex) {
+                onException(ex);
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public static void onPowerStateChagned(int state) {
         if(!bWriteLog) return;
-        Date fixed = new Date(loc.getTime());
-        logDbHandler.writeLog("LOC KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
+        logDbHandler.writeLog("PST : "+state);
+    }
+
+    public static void onScreenChagned(int onOff){
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("SCR : "+onOff);
     }
 
     private static int prev_status = -1;
@@ -108,14 +166,16 @@ public class LSPLog {
         }
     }
 
-    public static void onScreenChagned(int onOff){
+    public static void onLocationUpdate(Location loc) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("SCR : "+onOff);
+        Date fixed = new Date(loc.getTime());
+        logDbHandler.writeLog("LOC_UPDATE : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
     }
 
-    public static void onPowerStateChagned(int state) {
+    public static void onKnownLocation(Location loc) {
         if(!bWriteLog) return;
-        logDbHandler.writeLog("PST : "+state);
+        Date fixed = new Date(loc.getTime());
+        logDbHandler.writeLog("LOC_KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
     }
 
     public static void onNotificationPosted(StatusBarNotification sbn) {
@@ -181,6 +241,7 @@ public class LSPLog {
         }
 
     }
+
     public static void onNotificationRemoved(StatusBarNotification sbn) {
         Log.i(TAG, "onNotificationRemoved " + sbn.toString());
         if(!bWriteLog) return;
@@ -226,27 +287,10 @@ public class LSPLog {
         String message = smsMessage[0].getMessageBody().toString();
         //Log.d("문자 내용", "발신자 : " + origNumber + ", 내용 : " + message);
 
-        logDbHandler.writeLog("SMSR : " + Util.encryptData(origNumber) + " " + Util.encryptData(message));
+        logDbHandler.writeLog("SMSR : " + Util.encryptData(origNumber) + " " + message.length()+"|"+message.hashCode());
     }
 
-    public static void onTextMsg(String msg){
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("TXT : " + msg);
-    }
-
-    public static void onTextMsgForce(String msg){
-        if ( checkDbHandler()) {
-            try {
-                logDbHandler.writeLog("TFC : " + msg);
-                FileLogWritter.writeString("TFC : " + msg);
-                Log.e(TAG, "TF " + msg);
-            }catch (Exception ex) {
-                onException(ex);
-                ex.printStackTrace();
-            }
-        }
-    }
-
+    /* package */
     public static void onPackageAdded(String packageName) {
         if(!bWriteLog) return;
         logDbHandler.writeLog("PAD : " + packageName);
@@ -267,90 +311,53 @@ public class LSPLog {
         logDbHandler.writeLog2("FIT : " + msg);
     }
 
-    public static boolean checkDbHandler() {
-        if (logDbHandler != null)
-            return true;
-        try {
-            onException(new Exception("checkDbHandler() dbHandler is null"));
-            if (logDbHandler == null)
-                logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
-        }catch (Exception ex) {
-            onException(ex);
-        }
-        if (logDbHandler != null)
-            return true;
-        return false;
-    }
-
-    public static void onException(Exception ex) {
-        String message = null;
-        String logMsg = null;
-        if (logDbHandler == null) {
-            logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
-        }
-        if (logDbHandler != null) {
-            try {
-                message = Util.getStackTrace(ex);
-                logMsg = "EXP  " + Log.getStackTraceString(ex) + "\n" + message;
-
-                logDbHandler.writeLog(logMsg);
-
-            }catch (Exception ex2) {
-                ex2.printStackTrace();
-            }
-        }
-        try {
-            FileLogWritter.writeString(logMsg);
-        } catch (Exception ex3) {
-            ex3.printStackTrace();
-        }
-    }
-
-    public static void onWatchDog() {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("WATCHDOG ALIVE");
-    }
+    /* framework logging */
 
     public static void onFTopActivityResuming(Intent intent) {
         if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
+            String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(bundle.getLong("time"), "FFGA : " + message);
-            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-            Log.i(TAG, strDT + " FGA " + message);
+            logDbHandler.writeLog(strDT, "FFGA : " + message);
+
+            Log.i(TAG, strDT + " FFGA " + message);
         }
     }
 
-    static SimpleDateFormat timeSDF = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
     public static void onFNotification(Intent intent){
         if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
+            String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(bundle.getLong("time"), "FNOR : " + message);
-            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-            Log.i(TAG, strDT + " NOTIFICATION " + message);
+            logDbHandler.writeLog(strDT, "FNOR : " + message);
+
+            Log.i(TAG, strDT + " FNOR " + message);
         }
     }
+
     public static void onFPanel(Intent intent){
         if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
+            String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(bundle.getLong("time"), "FPAN : " + message);
-            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-            Log.i(TAG, strDT + " PANEL " + message);
+            logDbHandler.writeLog(strDT, "FPAN : " + message);
+
+            Log.i(TAG, strDT + " FPAN " + message);
         }
     }
+
     public static void onFStatusbar(Intent intent){
         if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
+            String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(bundle.getLong("time"), "FSTB : " + message);
-            String strDT = timeSDF.format(new Date(bundle.getLong("time")));
-            Log.i(TAG, strDT + " STATUSBAR " + message);
+            logDbHandler.writeLog(strDT, "FSTB : " + message);
+
+            Log.i(TAG, strDT + " FSTB " + message);
         }
     }
 }

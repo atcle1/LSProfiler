@@ -12,6 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 
 /**
  * TimeoutableLocationListner is implementation of LocationListener.
@@ -48,7 +49,7 @@ public class TimeoutableLocationListener {
     private void stopLocationUpdateAndTimer() {
         locaMan.removeUpdates(locationListener);
         Log.i(TAG, "stopLocationUpdateAndTimer()");
-        LSPLog.onTextMsgForce("location listener timeout, remove updates");
+        FileLogWritter.writeString("location listener timeout, remove updates");
 
         timerTimeout.cancel();
         timerTimeout.purge();

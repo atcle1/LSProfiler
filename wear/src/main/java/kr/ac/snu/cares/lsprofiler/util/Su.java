@@ -80,7 +80,8 @@ public class Su {
             }
 
         } finally {
-            process.destroy();
+            if (process != null)
+                process.destroy();
         }
         return -1;
     }

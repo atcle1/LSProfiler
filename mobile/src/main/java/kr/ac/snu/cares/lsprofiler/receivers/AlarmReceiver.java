@@ -42,7 +42,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 handler.sendEmptyMessage(LSPService.ALARM_REQUEST);
                 LSPLog.onTextMsgForce("AlarmReceiver() bRunning sendMessage");
             } else {
-                LSPLog.onTextMsgForce("AlarmReceiver() bRunning bug handler is null");
+                LSPLog.onTextMsgForce("AlarmReceiver() bRunning but handler is null");
             }
         }
 

@@ -228,7 +228,7 @@ public class LSPReporter {
                 for (i = 0; i < timeLimits; i++) {
                     reportServer.join(1000);
                     if (!reportServer.isAlive()) {
-                        FileLogWritter.writeString("reportServer join within "+timeLimits +" s");
+                        FileLogWritter.writeString("reportServer join within " + i + 1 + "/" + timeLimits + " s");
                         break;
                     }
                     Log.i(TAG, "reportServer.join " + (i + 1));

@@ -8,6 +8,9 @@ import android.service.notification.StatusBarNotification;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.Util;
@@ -34,15 +37,81 @@ public class LSPLog {
         bWriteLog = true;
     }
 
-    private void writeAllLogOnFile() {
+    public static boolean checkDbHandler() {
+        if (logDbHandler != null)
+            return true;
+        try {
+            onException(new Exception("checkDbHandler() dbHandler is null"));
+            if (logDbHandler == null)
+                logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }catch (Exception ex) {
+            onException(ex);
+        }
+        if (logDbHandler != null)
+            return true;
+        return false;
+    }
 
+    public static void onException(Exception ex) {
+        /*
+        String message = null;
+        String logMsg = null;
+        if (logDbHandler == null) {
+            logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
+        }
+        if (logDbHandler != null) {
+            try {
+                message = Util.getStackTrace(ex);
+                logMsg = "EXP " + Log.getStackTraceString(ex) + "\n" + message;
+
+                logDbHandler.writeLog(logMsg);
+
+            }catch (Exception ex2) {
+                ex2.printStackTrace();
+            }
+        }
+        */
+        try {
+            FileLogWritter.WriteException(ex);
+        } catch (Exception ex3) {
+            ex3.printStackTrace();
+        }
+    }
+
+    public static void onWatchDog() {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("WATCHDOG ALIVE");
     }
 
     /* logging methods */
+    public static void onTextMsg(String msg){
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("TXT : " + msg);
+    }
+
+    public static void onTextMsgForce(String msg){
+        if ( checkDbHandler()) {
+            try {
+                logDbHandler.writeLog("TFC : " + msg);
+                FileLogWritter.writeString("TFC : " + msg);
+                Log.e(TAG, "TF " + msg);
+            }catch (Exception ex) {
+                onException(ex);
+                ex.printStackTrace();
+            }
+        }
+    }
+
     public static void onPowerStateChagned(int state) {
-        //if(!bWriteLog) return;
+        if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
     }
+
+    public static void onScreenChagned(int onOff){
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("SCR : "+onOff);
+    }
+
     private static int prev_status = -1;
     private static int prev_chargePlug = -1;
     private static int prev_level = -1;
@@ -91,78 +160,7 @@ public class LSPLog {
             prev_status = status;
             prev_chargePlug = chargePlug;
             logDbHandler.writeLog("BAT : "+batteryPct+" "+statusStr+" "+plugStr + " " + temperature);
+            Log.i(TAG, "BAT : " + batteryPct + " " + statusStr + " " + plugStr + " " + temperature);
         }
-    }
-    public static void onTeleponyStateChagned(double a){
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("TEL : "+a);
-    }
-    public static void onScreenChagned(int onOff){
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("SCR : "+onOff);
-    }
-
-
-    public static void onTextMsg(String msg){
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("TXT : " + msg);
-    }
-
-    public static void onTextMsgForce(String msg){
-        if ( checkDbHandler()) {
-            try {
-                logDbHandler.writeLog("TFC : " + msg);
-                FileLogWritter.writeString("TFC : " + msg);
-            }catch (Exception ex) {
-                onException(ex);
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    public static boolean checkDbHandler() {
-        if (logDbHandler != null)
-            return true;
-        try {
-            onException(new Exception("checkDbHandler() dbHandler is null"));
-            if (logDbHandler == null)
-                logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
-        }catch (Exception ex) {
-            onException(ex);
-        }
-        if (logDbHandler != null)
-            return true;
-        return false;
-    }
-
-
-
-    public static void onException(Exception ex) {
-        String message = null;
-        String logMsg = null;
-        if (logDbHandler == null) {
-            logDbHandler = ((LSPApplication) context.getApplicationContext()).getDbHandler();
-        }
-        if (logDbHandler != null) {
-            try {
-                message = Util.getStackTrace(ex);
-                logMsg = "EXP " + Log.getStackTraceString(ex) + "\n" + message;
-
-                logDbHandler.writeLog(logMsg);
-
-            }catch (Exception ex2) {
-                ex2.printStackTrace();
-            }
-        }
-        try {
-            FileLogWritter.writeString(logMsg);
-        } catch (Exception ex3) {
-            ex3.printStackTrace();
-        }
-    }
-
-    public static void onWatchDog() {
-        if(!bWriteLog) return;
-        logDbHandler.writeLog("WATCHDOG ALIVE");
     }
 }
