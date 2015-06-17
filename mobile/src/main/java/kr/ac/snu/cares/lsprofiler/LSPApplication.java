@@ -112,7 +112,6 @@ public class LSPApplication extends Application {
         app = this;
 
         handler = new Handler();
-
         // watchDog = new WatchDog();
         bRoot = Su.isRooted();
         Log.i(TAG, "onCreate() end");
@@ -147,7 +146,6 @@ public class LSPApplication extends Application {
         //su.execSu("/data/local/sprofiler 7");   // clear logs
         Su.executeSuOnce("/data/local/sprofiler 1", 30000);
     }
-
 
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
@@ -215,16 +213,15 @@ public class LSPApplication extends Application {
     public void stopLogging() {
         alarmManager.clearAlarm();
         if (state == State.resumed)
-            pauseLogging("called stopLogging");
+            pauseLogging("stopLogging() called");
 
         if (state != State.paused) {
-            Log.e(TAG, "stopLogging() : not paused");
+            Log.i(TAG, "stopLogging() : not paused");
             return;
         }
 
         state = State.stopped;
         prefMgr.setAppState(State.stopped.name());
-
 
         stopService(new Intent(this, LSPService.class));
     }
@@ -252,7 +249,7 @@ public class LSPApplication extends Application {
                 reporter.requestReportToDaemon(item);
                 reporter.waitForKlogFinish(item);
             }
-        }catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
         }

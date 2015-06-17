@@ -190,7 +190,6 @@ public class LogDbHandler {
             while(cursor.moveToNext()) {
                 Log.i(TAG, cursor.getInt(0) + " " + cursor.getString(1) + " " + cursor.getString(2));
             }
-
         } else {
             Log.i(TAG, "printLog() null");
         }
@@ -255,8 +254,9 @@ public class LogDbHandler {
                 return false;
             }
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            FileLogWritter.WriteException(ex);
         }
         return false;
     }

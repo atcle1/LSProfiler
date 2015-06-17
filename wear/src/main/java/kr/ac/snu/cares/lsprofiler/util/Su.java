@@ -93,7 +93,6 @@ public class Su {
             LSPLog.onException(e);
             e.printStackTrace();
         }
-
         return 0;
     }
 
@@ -123,7 +122,7 @@ public class Su {
     }
 
     public int stopSu(int sleep) {
-        Log.i(TAG, "StopSu()");
+        //Log.i(TAG, "StopSu()");
         int exitCode = -1;
         if (bReady == false)
             return 0;

@@ -16,6 +16,7 @@ import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
 import kr.ac.snu.cares.lsprofiler.service.WSLPReportService;
 import kr.ac.snu.cares.lsprofiler.util.DeviceID;
+import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 
@@ -127,19 +128,18 @@ public class LSPApplication extends Application {
         LSPLog.onTextMsg("startLogging()");
         startKernelLog();
     }
+
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsg("resumeLogging() " + Calendar.getInstance().getTime().toString());
+        LSPLog.onTextMsg("resumeLogging()");
         state = State.resumed;
         try {
             lspLog.resumeLogging();
             receiverManager.registerReceivers();
-            //locationTracker.startTrace();
-            //LSPNotificationService.startSelf(this);
         }catch (Exception ex) {
             ex.printStackTrace();
-            LSPLog.onTextMsg(ex.getLocalizedMessage());
+            FileLogWritter.WriteException(ex);
         }
     }
 
@@ -171,7 +171,6 @@ public class LSPApplication extends Application {
         state = State.stopped;
         prefMgr.setAppState(State.stopped.name());
 
-        //alarmManager.clearAlarm();
         //stopService(new Intent(this, LSPService.class));
     }
 
@@ -199,10 +198,9 @@ public class LSPApplication extends Application {
 
     @Override
     public void onTerminate() {
-        LSPLog.onTextMsgForce("ERR APP onTerminate()");
-        showToast("onTerminate()");
+        if (state == State.resumed)
+            FileLogWritter.writeString("ERR APP onTerminate() state " + state);
         super.onTerminate();
-        Log.i(TAG, "onTerminate()");
         receiverManager.unregisterReceivers();
     }
 
@@ -210,7 +208,8 @@ public class LSPApplication extends Application {
     public void onLowMemory() {
         super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
-        LSPLog.onTextMsgForce("APP onLowMemory()");
+        if (state == State.resumed)
+            FileLogWritter.writeString("APP : onLowMemory() state " + state);
     }
 
     @Override

@@ -87,13 +87,8 @@ public class LogDbHandler {
             InsertLogdbStmt.execute();
             InsertLogdbStmt.clearBindings();
         } catch (Exception ex) {
-            try {
-                ex.printStackTrace();
-                FileLogWritter.writeString(ex.getLocalizedMessage());
-                open();
-            }catch (Exception ex2){
-                FileLogWritter.writeString(ex2.getLocalizedMessage());
-            }
+            ex.printStackTrace();
+            FileLogWritter.writeString(ex.getLocalizedMessage());
         }
         return 0;
     }
