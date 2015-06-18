@@ -113,7 +113,7 @@ public class LSPApplication extends Application {
 
         handler = new Handler();
         // watchDog = new WatchDog();
-        bRoot = Su.isRooted();
+        // bRoot = Su.isRooted();
         Log.i(TAG, "onCreate() end");
     }
 
