@@ -206,7 +206,7 @@ public class Su {
             InputStreamReader isr = new InputStreamReader(inputStream);
             BufferedReader bfr = new BufferedReader(isr);
             String output = bfr.readLine();
-            if (output.contains("uid=0")) {
+            if (output != null && output.contains("uid=0")) {
                 Log.i(TAG, "rooted " + output);
                 bRooted = true;
                 return true;

@@ -115,6 +115,8 @@ public class LSPApplication extends Application {
         // watchDog = new WatchDog();
         // bRoot = Su.isRooted();
         Log.i(TAG, "onCreate() end");
+
+        startProfilingIfStarted();
     }
 
     public LogDbHandler getDbHandler() {
@@ -149,7 +151,7 @@ public class LSPApplication extends Application {
 
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
-        if (savedState.equals("start")) {
+        if (savedState.equals("start") && state == State.stopped) {
             Log.i(TAG, "startProfilingIfStarted() start profiling...");
             startProfiling();
         } else {
