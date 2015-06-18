@@ -169,13 +169,13 @@ public class LSPLog {
     public static void onLocationUpdate(Location loc) {
         if(!bWriteLog) return;
         Date fixed = new Date(loc.getTime());
-        logDbHandler.writeLog("LOC_UPDATE : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
+        logDbHandler.writeLog("LOC_UPDATE : " + loc.getProvider() + " " + loc.getLatitude() + " " +  loc.getLongitude() + " " + loc.getAccuracy() + " " + fixed.toString());
     }
 
     public static void onKnownLocation(Location loc) {
         if(!bWriteLog) return;
         Date fixed = new Date(loc.getTime());
-        logDbHandler.writeLog("LOC_KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + " " + loc.getLongitude() + " (" + loc.getAccuracy() + ") " + fixed.toString());
+        logDbHandler.writeLog("LOC_KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + loc.getLongitude() + " " + loc.getAccuracy() + " " + fixed.toString());
     }
 
     public static void onNotificationPosted(StatusBarNotification sbn) {

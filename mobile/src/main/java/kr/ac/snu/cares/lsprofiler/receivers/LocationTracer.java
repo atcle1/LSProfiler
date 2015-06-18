@@ -165,7 +165,7 @@ public class LocationTracer implements LocationListener {
                 LSPLog.onKnownLocation(location);
             }
             if (location2 != null) {
-                LSPLog.onKnownLocation(location);
+                LSPLog.onKnownLocation(location2);
             }
             requestUpdate();
         }
