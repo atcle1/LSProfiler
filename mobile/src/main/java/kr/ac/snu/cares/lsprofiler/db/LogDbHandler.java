@@ -256,7 +256,7 @@ public class LogDbHandler {
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         }
         return false;
     }

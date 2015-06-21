@@ -15,6 +15,7 @@ import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.LocationTracer;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
+import kr.ac.snu.cares.lsprofiler.resolvers.BtLogResolver;
 import kr.ac.snu.cares.lsprofiler.resolvers.FitnessResolver;
 import kr.ac.snu.cares.lsprofiler.service.LSPNotificationService;
 import kr.ac.snu.cares.lsprofiler.service.LSPService;
@@ -191,9 +192,10 @@ public class LSPApplication extends Application {
                 locationTracer.startTrace();
             LSPNotificationService.startSelf(this);
             LSPLog.onTextMsg("resumeLogging");
+            BtLogResolver.enableBtLog();
         }catch (Exception ex) {
             ex.printStackTrace();
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         }
     }
 
@@ -209,6 +211,7 @@ public class LSPApplication extends Application {
         locationTracer.stopTrace();
         LSPNotificationService.stopSelf(this);
         LSPLog.onTextMsg("pauseLogging " + msg);
+        BtLogResolver.disableBtLog();
         lspLog.pauseLogging();
     }
 

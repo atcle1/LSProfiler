@@ -143,7 +143,7 @@ public class Mail {
         } catch (Exception ex) {
             Log.i("EMAIL", "Email sent exception");
             ex.printStackTrace();
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
             return -1;
         }
         LSPLog.onTextMsgForce(TAG + " sendReport success");

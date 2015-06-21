@@ -11,7 +11,6 @@ import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
@@ -75,7 +74,7 @@ public class LSPLog {
         }
         */
         try {
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         } catch (Exception ex3) {
             ex3.printStackTrace();
         }

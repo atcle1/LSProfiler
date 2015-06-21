@@ -8,8 +8,6 @@ import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.Calendar;
-
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
@@ -139,12 +137,12 @@ public class LSPApplication extends Application {
             receiverManager.registerReceivers();
         }catch (Exception ex) {
             ex.printStackTrace();
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         }
     }
 
     public void pauseLogging(String msg) {
-        showToast("pauseLogging()");
+        //showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
         LSPLog.onTextMsg("pauseLogging() "+msg);
         if (state != State.resumed) {

@@ -55,7 +55,7 @@ public class Util {
         return sw.getBuffer().toString();
     }
 
-    static SimpleDateFormat timeSDF = new SimpleDateFormat("MM-dd HH:mm:ss.SSS");
+    static SimpleDateFormat timeSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public static String getTimeStringFromSystemMillis(long timeMillis) {
         return timeSDF.format(new Date(timeMillis));
     }

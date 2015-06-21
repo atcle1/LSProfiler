@@ -230,8 +230,11 @@ public class LSPReporter {
                     if (!reportServer.isAlive()) {
                         FileLogWritter.writeString("reportServer join within " + i + 1 + "/" + timeLimits + " s");
                         break;
+                    } else if (reportServer.isAlive() && reportServer.isCompleted()) {
+                        // Sometime Thread alive evenif run() end, I don't know why.
+                        reportServer.interrupt();
                     }
-                    Log.i(TAG, "reportServer.join " + (i + 1));
+                    Log.i(TAG, "reportServer.join " + (i + 1) + " " + reportServer.isCompleted() + " " + reportServer.isAlive());
                 }
                 if (i == timeLimits) {
                     Log.e(TAG, "reportServer join timeout, interrupt()");

@@ -31,6 +31,10 @@ public class LSPReportServer extends Thread {
     private byte[] filesizeBuffer = new byte[8];
 
     private long FileSize;
+    private boolean bCompleted = false;
+    public boolean isCompleted() {
+        return bCompleted;
+    }
 
     //int last_byte_count;
     long bytesReceived;
@@ -151,5 +155,6 @@ public class LSPReportServer extends Thread {
             LSPLog.onException(e);
         }
         Log.i(TAG, "server end");
+        bCompleted = true;
     }
 }

@@ -3,17 +3,10 @@ package kr.ac.snu.cares.lsprofiler;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
-import android.os.Bundle;
-import android.service.notification.StatusBarNotification;
-import android.telephony.TelephonyManager;
 import android.util.Log;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
-import kr.ac.snu.cares.lsprofiler.util.Util;
 
 /**
  * Created by summer on 3/28/15.
@@ -72,7 +65,7 @@ public class LSPLog {
         }
         */
         try {
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         } catch (Exception ex3) {
             ex3.printStackTrace();
         }

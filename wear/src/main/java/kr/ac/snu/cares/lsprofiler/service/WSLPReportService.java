@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -15,18 +14,10 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
 
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.MessageEvent;
-
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
@@ -157,7 +148,7 @@ public class WSLPReportService extends Service {
         } catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
             return false;
         }
 
@@ -202,7 +193,7 @@ public class WSLPReportService extends Service {
         } catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
         } finally {
             if (bBackup)
                 reporter.backupReports(item);
@@ -220,7 +211,7 @@ public class WSLPReportService extends Service {
         }catch (Exception ex) {
             ex.printStackTrace();
             LSPLog.onException(ex);
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
             return false;
         }
         return true;

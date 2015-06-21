@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
@@ -70,13 +69,13 @@ public class Su {
                 worker.interrupt();
             }
         } catch(Exception ex) {
-            FileLogWritter.WriteException(ex);
+            FileLogWritter.writeException(ex);
             try {
                 if (worker != null)
                     worker.interrupt();
             }catch (Exception ex2) {
                 ex.printStackTrace();
-                FileLogWritter.WriteException(ex2);
+                FileLogWritter.writeException(ex2);
             }
 
         } finally {

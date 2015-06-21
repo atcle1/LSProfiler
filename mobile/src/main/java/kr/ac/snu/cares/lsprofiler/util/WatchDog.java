@@ -2,8 +2,6 @@ package kr.ac.snu.cares.lsprofiler.util;
 
 import android.util.Log;
 
-import kr.ac.snu.cares.lsprofiler.LSPLog;
-
 /**
  * Created by summer on 15. 5. 18.
  */
@@ -19,7 +17,7 @@ public class WatchDog extends Thread {
                 Thread.sleep(60 * 1000);
             } catch (Exception ex) {
                 FileLogWritter.writeString("watchdog exception");
-                FileLogWritter.WriteException(ex);
+                FileLogWritter.writeException(ex);
             }
         }
     }

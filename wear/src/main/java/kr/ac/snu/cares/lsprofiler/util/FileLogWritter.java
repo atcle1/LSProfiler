@@ -41,7 +41,7 @@ public class FileLogWritter {
         }
     }
 
-    public static void WriteException(Exception ex) {
+    public static void writeException(Exception ex) {
         try {
             String stackTrace = Util.getStackTrace(ex);
             writeString(stackTrace + "\n" + ex.getLocalizedMessage());
