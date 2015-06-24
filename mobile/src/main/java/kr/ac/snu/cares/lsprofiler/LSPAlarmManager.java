@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import org.w3c.dom.ls.LSParserFilter;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -88,6 +90,13 @@ public class LSPAlarmManager {
         clearAlarm();
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTimeMillis, alarmPendingIntent);
         Log.i(TAG, "set first alarm " + nextAlarmCal.getTime());
+        FileLogWritter.writeString("set first alarm " + nextAlarmCal.getTime());
+    }
+
+    public void setFirstAlarmIfNotSetted() {
+        if (nextAlarmTimeMillis < System.currentTimeMillis()) {
+            setFirstAlarm();
+        }
     }
 
     public void clearAlarm() {

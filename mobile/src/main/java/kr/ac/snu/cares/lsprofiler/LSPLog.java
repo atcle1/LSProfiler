@@ -119,7 +119,9 @@ public class LSPLog {
     private static int prev_level = -1;
     public static void onBatteryStatusChagned(Intent intent) {
         if(!bWriteLog) return;
-
+        LSPAlarmManager alarmManager = LSPAlarmManager.getInstance(context);
+        if (alarmManager != null)
+            alarmManager.setFirstAlarmIfNotSetted();
         //int health= intent.getIntExtra(BatteryManager.EXTRA_HEALTH, 0);
         //int icon_small= intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, 0);
         //boolean present= intent.getExtras().getBoolean(BatteryManager.EXTRA_PRESENT);

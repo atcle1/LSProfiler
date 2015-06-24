@@ -389,7 +389,7 @@ public class LSPReporter {
                 if (logFileArray2 != null)
                     item.fileList.addAll(Arrays.asList(logFileArray2));
 
-                if (NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI) {
+                if (false /*&& NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI*/) {
                     // not wifi
                     Log.i(TAG, "doReport() but not connected WIFI");
                     LSPLog.onTextMsg("try report, NOT WIFI");

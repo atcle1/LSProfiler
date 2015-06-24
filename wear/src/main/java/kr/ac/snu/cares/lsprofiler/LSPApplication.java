@@ -1,5 +1,6 @@
 package kr.ac.snu.cares.lsprofiler;
 
+import android.app.AlarmManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
@@ -115,12 +116,6 @@ public class LSPApplication extends Application {
         prefMgr.setAppState(State.started.name());
         // start service
         //Intent startServiceIntent = new Intent(this, LSPService.class);
-
-        //startServiceIntent.putExtra("setting", setting);
-        //startServiceIntent.putExtra("first_start", true);
-        //startService(startServiceIntent);
-
-        //alarmManager.setFirstAlarm();
 
         resumeLogging();
         LSPLog.onTextMsg("startLogging()");

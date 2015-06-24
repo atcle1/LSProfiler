@@ -163,6 +163,7 @@ public class LSPApplication extends Application {
 
     public void startLogging() {
         Log.i(TAG, "startLogging()");
+        alarmManager.setFirstAlarmIfNotSetted();
         if (state != State.stopped) {
             Log.i(TAG, "startLogging() : not stopped");
             return;
@@ -187,9 +188,11 @@ public class LSPApplication extends Application {
         state = State.resumed;
         try {
             lspLog.resumeLogging();
+            alarmManager.setFirstAlarmIfNotSetted();
             receiverManager.registerReceivers();
             if (bLocationTracerEnabled)
                 locationTracer.startTrace();
+
             LSPNotificationService.startSelf(this);
             LSPLog.onTextMsg("resumeLogging");
             BtLogResolver.enableBtLog();
