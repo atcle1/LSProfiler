@@ -19,8 +19,7 @@ public class ShutdownReceiver extends BroadcastReceiver{
         // power off
         LSPLog.onPowerStateChagned(0);
         LSPApplication app = LSPApplication.getInstance();
-        if (app != null)
+        if (app != null && (app.state == LSPApplication.State.resumed || app.state == LSPApplication.State.paused))
             app.doKLogBackup();
-
     }
 }
