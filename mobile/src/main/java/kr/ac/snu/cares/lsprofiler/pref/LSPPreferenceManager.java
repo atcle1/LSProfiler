@@ -65,4 +65,14 @@ public class LSPPreferenceManager {
         String deviceID = prefs.getString("deviceID", "");
         return deviceID;
     }
+
+    public void setWearEnabled(Boolean bEnabled) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("wear_enabled", bEnabled);
+        editor.commit();
+    }
+
+    public Boolean getWearEnabled() {
+        return prefs.getBoolean("wear_enabled", true);
+    }
 }

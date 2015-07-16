@@ -14,7 +14,7 @@ import kr.ac.snu.cares.lsprofiler.service.WLSPService;
  * Created by summer on 4/26/15.
  */
 public class BootReceiver extends BroadcastReceiver {
-    public static final String TAG = BroadcastReceiver.class.getSimpleName();
+    public static final String TAG = BootReceiver.class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "BootReceiver - onRecive()");
 

@@ -43,6 +43,7 @@ public class FileLogWritter {
 
     public static void writeException(Exception ex) {
         try {
+            ex.printStackTrace();
             String stackTrace = Util.getStackTrace(ex);
             writeString(stackTrace + "\n" + ex.getLocalizedMessage());
         } catch (Exception ex2) {

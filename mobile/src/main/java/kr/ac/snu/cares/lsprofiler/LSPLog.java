@@ -96,7 +96,7 @@ public class LSPLog {
             try {
                 logDbHandler.writeLog("TFC : " + msg);
                 FileLogWritter.writeString("TFC : " + msg);
-                Log.e(TAG, "TF " + msg);
+                Log.e(TAG, "TFC " + msg);
             }catch (Exception ex) {
                 onException(ex);
                 ex.printStackTrace();
@@ -179,6 +179,7 @@ public class LSPLog {
         logDbHandler.writeLog("LOC_KNOWN : " + loc.getProvider() + " " + loc.getLatitude() + " " + loc.getLongitude() + " " + loc.getAccuracy() + " " + fixed.toString());
     }
 
+
     public static void onNotificationPosted(StatusBarNotification sbn) {
         String title = "", text = "", bigtext="";
         String log = "";
@@ -226,8 +227,9 @@ public class LSPLog {
 
             try {
                 if (actions != null) {
+                    log+=" |action=";
                     for (int i = 0; i < actions.length; i++)
-                        log+="\naction : " + actions[i].title + " " + actions[i].actionIntent.getCreatorPackage();
+                        log+="[" + actions[i].title + " " + actions[i].actionIntent.getCreatorPackage()+"]";
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -243,6 +245,7 @@ public class LSPLog {
 
     }
 
+    // deprecated
     public static void onNotificationRemoved(StatusBarNotification sbn) {
         Log.i(TAG, "onNotificationRemoved " + sbn.toString());
         if(!bWriteLog) return;
@@ -326,15 +329,28 @@ public class LSPLog {
         }
     }
 
-    public static void onFNotification(Intent intent){
+    public static void onNotification(Intent intent){
         if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
             String message = (String) bundle.getString("message");
-            logDbHandler.writeLog(strDT, "FNOR : " + message);
-
-            Log.i(TAG, strDT + " FNOR " + message);
+            String type = (String) bundle.getString("type");
+            if (type != null) {
+                StatusBarNotification sbn = bundle.getParcelable("sbn");
+                if (type.equals("enq")) {
+                    if (sbn == null) {
+                        Log.i(TAG, "sbn is null");
+                    }
+                    onNotificationPosted(sbn);
+                } else if (type.equals("cancel")) {
+                    logDbHandler.writeLog(strDT, "NOR : " + message);
+                    Log.i(TAG, strDT + " NOR : " + message);
+                }
+            } else {
+                logDbHandler.writeLog(strDT, "NOT : " + type + " " + message);
+                Log.i(TAG, strDT + " NOT : " + type + " " + message);
+            }
         }
     }
 

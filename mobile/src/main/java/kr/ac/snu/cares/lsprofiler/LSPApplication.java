@@ -38,7 +38,16 @@ public class LSPApplication extends Application {
 
     private LSPReporter reporter;
 
-    public boolean wearLoggingEnabled = true;
+    private static boolean wearLoggingEnabled = true;
+    public boolean getWearLoggingEnabled() {
+        return wearLoggingEnabled;
+    }
+    public void setWearLoggingEnabled(boolean bEnabled) {
+        wearLoggingEnabled = bEnabled;
+        prefMgr.setWearEnabled(bEnabled);
+    }
+
+    public static boolean fitnessEnabled = false;
 
     //private DaemonClient clientHandler;
     //HandlerThread daemonClientThread;
@@ -48,7 +57,7 @@ public class LSPApplication extends Application {
 
     private LSPLog lspLog;
 
-    public static final boolean bLocationTracerEnabled = true;
+    public static final boolean bLocationTracerEnabled = false;
 
     private ReceiverManager receiverManager;
     private LocationTracer locationTracer;
@@ -81,9 +90,12 @@ public class LSPApplication extends Application {
         super.onCreate();
         Log.i(TAG, "onCreate()");
         Context context = getApplicationContext();
+        prefMgr = LSPPreferenceManager.getInstance(context);
+        wearLoggingEnabled = prefMgr.getWearEnabled();
+
         dbHandler = new LogDbHandler(context);
         lspLog = new LSPLog(context);
-        prefMgr = LSPPreferenceManager.getInstance(context);
+
         receiverManager = new ReceiverManager(context);
         locationTracer = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
@@ -131,7 +143,10 @@ public class LSPApplication extends Application {
         Log.i(TAG, "startProfiling()");
         prefMgr.setLoggingState("start");
         //connection.sendMessage("/LSP/WINFO", "MAC");
-        connection.sendMessage("/LSP/CONTROL", "START");
+        if (wearLoggingEnabled) {
+            connection.sendMessage("/LSP/CONTROL", "START");
+            Log.i(TAG, "wear enabled");
+        }
         //connection.sendMessage("/LSP/WINFO", "STATUS");
 
         startLogging();
@@ -153,7 +168,7 @@ public class LSPApplication extends Application {
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
         if (savedState.equals("start") && state == State.stopped) {
-            Log.i(TAG, "startProfilingIfStarted() start profiling...");
+            Log.i(TAG, "startProfilingIfStarted() start profiling..." + savedState);
             startProfiling();
         } else {
             Log.i(TAG, "startProfilingIfStarted() not start");
@@ -192,12 +207,15 @@ public class LSPApplication extends Application {
             receiverManager.registerReceivers();
             if (bLocationTracerEnabled)
                 locationTracer.startTrace();
+        }catch (Exception ex) {
+            FileLogWritter.writeException(ex);
+        }
 
+        try {
             LSPNotificationService.startSelf(this);
             LSPLog.onTextMsg("resumeLogging");
             BtLogResolver.enableBtLog();
-        }catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
             FileLogWritter.writeException(ex);
         }
     }

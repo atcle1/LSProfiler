@@ -75,7 +75,7 @@ public class WLSPWearableListenerService extends WearableListenerService impleme
         if (node == null)
             mGoogleApiClient.connect();
 
-        Toast.makeText(getApplication(), msg, Toast.LENGTH_SHORT).show();
+        // Toast.makeText(getApplication(), msg, Toast.LENGTH_SHORT).show();
         Log.i(TAG, "MsgReceived : " + path + " / " + msg + " by "+messageEvent.getSourceNodeId());
 
         if (path.equals("/LSP/CONTROL")) {

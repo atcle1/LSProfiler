@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -72,6 +73,7 @@ public class MainActivity extends ActionBarActivity {
     private Button btReadLog;
     private Button btSendMail;
     private Button btCallLog;
+    private ToggleButton tgWearEnabled;
 
     private DaemonClient clientHandler;
     private HandlerThread daemonClientThread;
@@ -88,6 +90,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        lspApplication = (LSPApplication)getApplication();
+
         setContentView(R.layout.activity_main);
         onBtClickListener btClickListener = new onBtClickListener();
 
@@ -98,13 +102,15 @@ public class MainActivity extends ActionBarActivity {
         btReadLog = (Button)findViewById(R.id.bTReadLog);
         btSendMail = (Button)findViewById(R.id.bTSendMail);
         btCallLog = (Button)findViewById(R.id.bTCallLog);
-        lspApplication = (LSPApplication)getApplication();
+        tgWearEnabled = (ToggleButton)findViewById(R.id.tgWearEnable);
+
 
         btStartStresser.setOnClickListener(btClickListener);
         btStopStresser.setOnClickListener(btClickListener);
         btReadLog.setOnClickListener(btClickListener);
         btSendMail.setOnClickListener(btClickListener);
         btCallLog.setOnClickListener(btClickListener);
+        tgWearEnabled.setOnClickListener(btClickListener);
 
         setButton(R.id.bTBackupLog, btClickListener);
         setButton(R.id.bTStatus, btClickListener);
@@ -120,6 +126,12 @@ public class MainActivity extends ActionBarActivity {
 
         //buildFitnessClient();
         Log.i(TAG, "onCreate() end");
+
+        if (lspApplication.getWearLoggingEnabled()) {
+            tgWearEnabled.setChecked(true);
+        } else {
+            tgWearEnabled.setChecked(false);
+        }
     }
 
 
@@ -151,6 +163,19 @@ public class MainActivity extends ActionBarActivity {
         status += "watch : " + lspApplication.getLSPConnection().isWearConnected()+ "\n";
         txtStatus.setText(status);
 
+        tgWearEnabled.setEnabled(true);
+        if (lspApplication.state == LSPApplication.State.resumed) {
+            btStartStresser.setEnabled(false);
+            btStopStresser.setEnabled(true);
+            tgWearEnabled.setEnabled(false);
+        } else if (lspApplication.state == LSPApplication.State.stopped) {
+            btStartStresser.setEnabled(true);
+            btStopStresser.setEnabled(false);
+        } else {
+            btStartStresser.setEnabled(true);
+            btStopStresser.setEnabled(true);
+        }
+
     }
 
     @Override
@@ -158,14 +183,15 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         Log.i(TAG, "onResume()");
         updateStatus();
-        lspApplication.getFitnessResolver().setMainActivity(this);
+        //lspApplication.getFitnessResolver().setMainActivity(this);
         Log.i(TAG, "onResume() end");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        lspApplication.getFitnessResolver().setMainActivity(null);
+        //lspApplication.getFitnessResolver().setMainActivity(null);
+
     }
     static boolean pop = false;
     class onBtClickListener implements View.OnClickListener
@@ -243,8 +269,12 @@ public class MainActivity extends ActionBarActivity {
             } else if (v.getId() == R.id.bTBackupLog) {
                 ReportThread reportThread = new ReportThread();
                 reportThread.start();
-
-
+            } else if (v.getId() == R.id.tgWearEnable) {
+                if (tgWearEnabled.isChecked()) {
+                    lspApplication.setWearLoggingEnabled(true);
+                } else {
+                    lspApplication.setWearLoggingEnabled(false);
+                }
             }
         }
     }

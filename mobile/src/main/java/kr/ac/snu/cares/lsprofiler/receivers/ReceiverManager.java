@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -99,7 +98,7 @@ public class ReceiverManager extends BroadcastReceiver {
             LSPLog.onFTopActivityResuming(intent);
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION")) {
             // notification remove
-            LSPLog.onFNotification(intent);
+            LSPLog.onNotification(intent);
         } else if (action.equals("kr.ac.snu.lsprofiler.intent.action.STATUSBAR")) {
             // statusbar click
             LSPLog.onFStatusbar(intent);

@@ -74,7 +74,6 @@ public class Su {
                 if (worker != null)
                     worker.interrupt();
             }catch (Exception ex2) {
-                ex.printStackTrace();
                 FileLogWritter.writeException(ex2);
             }
 

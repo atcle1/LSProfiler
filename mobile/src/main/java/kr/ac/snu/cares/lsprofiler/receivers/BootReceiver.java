@@ -18,7 +18,7 @@ import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
  * Created by summer on 3/24/15.
  */
 public class BootReceiver extends BroadcastReceiver {
-    public static final String TAG = BroadcastReceiver.class.getSimpleName();
+    public static final String TAG = BootReceiver .class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
     //    if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
         Log.i("LP", "BootReceiver - onRecive() " + Calendar.getInstance().getTime() + " " + System.currentTimeMillis() + " " + new Date());
@@ -37,6 +37,6 @@ public class BootReceiver extends BroadcastReceiver {
 
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
         context.startService(startServiceIntent);
-        Log.i("LP", "BootReceiver - onRecive() end");
+        Log.i(TAG, "BootReceiver - onRecive() end");
     }
 }

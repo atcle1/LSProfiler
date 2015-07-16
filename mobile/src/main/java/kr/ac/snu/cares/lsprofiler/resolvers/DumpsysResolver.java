@@ -19,9 +19,9 @@ public class DumpsysResolver {
     public static void doWriteDump(String fileName, int timeMilis) {
         try {
             if (Su.isRooted()) {
-                Su.executeSuOnce(dumpscripPath + fileName, 1000 * 100);
+                Su.executeSuOnce(dumpscripPath + fileName, timeMilis);
             } else {
-                Su.executeCommandLine(dumpscripPath + fileName, 1000 * 100);
+                Su.executeCommandLine(dumpscripPath + fileName, timeMilis);
             }
         } catch (Exception ex) {
             LSPLog.onException(ex);

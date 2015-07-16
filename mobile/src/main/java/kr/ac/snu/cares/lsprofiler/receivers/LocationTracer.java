@@ -58,7 +58,8 @@ public class LocationTracer implements LocationListener {
         }
         checkState();
         if (!isGPSEnabled && !isNetworkEnabled) {
-            showSettingsAlert();
+            // showSettingsAlert();
+            // exception occured...
         }
         //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 

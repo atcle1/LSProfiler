@@ -106,7 +106,7 @@ public class LSPApplication extends Application {
         }
     }
 
-    public void startLogging() {
+    private void startLogging() {
         Log.i(TAG, "startLogging()");
         if (state != State.stopped) {
             Log.i(TAG, "startLogging() : not stopped");
@@ -131,7 +131,6 @@ public class LSPApplication extends Application {
             lspLog.resumeLogging();
             receiverManager.registerReceivers();
         }catch (Exception ex) {
-            ex.printStackTrace();
             FileLogWritter.writeException(ex);
         }
     }

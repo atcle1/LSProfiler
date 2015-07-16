@@ -33,6 +33,8 @@ public class LSPAlarmManager {
     public static Calendar nextAlarmCal;
     public static long nextAlarmTimeMillis;
 
+    public static boolean bAlarmEnabled = false;
+
     //public static AlarmTime nextAlarmTimeMillis;
     //public static int start_hour = 4;
     //public static int start_minute = 0;
@@ -50,7 +52,7 @@ public class LSPAlarmManager {
         this.alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         for (int i = 0; i < 24; ) {
             alarmList.add(new AlarmTime(i, 0));
-            i+=6;
+            i+=24;
         }
     }
 
@@ -80,6 +82,7 @@ public class LSPAlarmManager {
     }
 
     public void setFirstAlarm() {
+        if (bAlarmEnabled == false) return;
         nextAlarmTime = getNearestAlarm();
         nextAlarmCal = nextAlarmTime.getCallendar();
         nextAlarmTimeMillis = nextAlarmCal.getTimeInMillis();
@@ -100,6 +103,7 @@ public class LSPAlarmManager {
     }
 
     public void clearAlarm() {
+        if (bAlarmEnabled == false) return;
         Intent intent = new Intent(context, AlarmReceiver.class);
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (alarmPendingIntent != null) {
@@ -109,6 +113,7 @@ public class LSPAlarmManager {
     }
 
     public void setNextAlarmAfter(int millis) {
+        if (bAlarmEnabled == false) return;
         // setTestTime();
         Calendar calendar = Calendar.getInstance();
         LSPAlarmManager.nextAlarmTimeMillis = calendar.getTimeInMillis() + millis;

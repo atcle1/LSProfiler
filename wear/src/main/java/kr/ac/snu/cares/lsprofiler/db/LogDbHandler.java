@@ -167,7 +167,6 @@ public class LogDbHandler {
             }
             return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
             FileLogWritter.writeException(ex);
         }
         return false;

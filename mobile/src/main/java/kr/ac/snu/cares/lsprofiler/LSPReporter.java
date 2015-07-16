@@ -19,6 +19,7 @@ import kr.ac.snu.cares.lsprofiler.util.MyConsoleExe;
 import kr.ac.snu.cares.lsprofiler.util.NetworkUtil;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
+import kr.ac.snu.cares.lsprofiler.util.Util;
 import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 import kr.ac.snu.cares.lsprofiler.wear.LSPReportServer;
 
@@ -139,7 +140,7 @@ public class LSPReporter {
     public AsyncTask sendReportByAsyncTask(ReportItem item) {
         SendMailAsyncTask sendMailAsyncTask = new SendMailAsyncTask();
         sendMailAsyncTask.title = "LSP report from " + app.deviceID;
-        sendMailAsyncTask.message = "writting... " + Calendar.getInstance().getTime();
+        sendMailAsyncTask.message = Util.getTimeStringFromSystemMillis(System.currentTimeMillis());
 
         // get file path
         //sendMailAsyncTask.files = new String []{backupDbPath};
@@ -228,7 +229,7 @@ public class LSPReporter {
                 for (i = 0; i < timeLimits; i++) {
                     reportServer.join(1000);
                     if (!reportServer.isAlive()) {
-                        FileLogWritter.writeString("reportServer join within " + i + 1 + "/" + timeLimits + " s");
+                        FileLogWritter.writeString("reportServer join within " + (i + 1) + "/" + timeLimits + " s");
                         break;
                     } else if (reportServer.isAlive() && reportServer.isCompleted()) {
                         // Sometime Thread alive evenif run() end, I don't know why.
@@ -274,10 +275,12 @@ public class LSPReporter {
         }
     }
 
-    final static boolean fitnessEnabled = false;
+
     public void doReport() {
         Log.i(TAG, "doReport() start");
-        FitnessCollectThread fitnessCollectThread;
+        boolean fitnessEnabled = LSPApplication.fitnessEnabled;
+
+        FitnessCollectThread fitnessCollectThread = null;
         try {
             // first, check wear connecting
             boolean bCollectWear = false;
@@ -286,13 +289,12 @@ public class LSPReporter {
 
             if (fitnessEnabled) {
                 connectFitnessResolver(1000 * 30);  // blocking...
-
                 fitnessCollectThread = new FitnessCollectThread();
                 fitnessCollectThread.start();
             }
             WearCollectThread wearCollectThread = null;
             try {
-                if (app.wearLoggingEnabled) {
+                if (app.getWearLoggingEnabled()) {
                     // slip short time...
                     if (!app.getLSPConnection().isWearConnected()) {
                         app.getLSPConnection().connect();
@@ -346,7 +348,7 @@ public class LSPReporter {
                 }
             }
 
-            if (fitnessEnabled) {
+            if (fitnessEnabled && fitnessCollectThread != null) {
                 // join for fitness collect thread
                 fitnessCollectThread.join(1000 * 30);
 
@@ -391,8 +393,8 @@ public class LSPReporter {
 
                 if (false /*&& NetworkUtil.getConnectivityStatus(app) != NetworkUtil.TYPE_WIFI*/) {
                     // not wifi
-                    Log.i(TAG, "doReport() but not connected WIFI");
-                    LSPLog.onTextMsg("try report, NOT WIFI");
+                    // Log.i(TAG, "doReport() but not connected WIFI");
+                    // LSPLog.onTextMsg("try report, NOT WIFI");
                     app.getAlarmManager().clearAlarm();
                     app.getAlarmManager().setNextAlarmAfter(1000 * 60 * 60 * 2); // 2 hour later...
 
@@ -401,7 +403,7 @@ public class LSPReporter {
                     sendReportByAsyncTask(item);
                 }
         }catch (Exception ex) {
-            ex.printStackTrace();
+            FileLogWritter.writeException(ex);
         }
 
         // backup report
@@ -448,7 +450,7 @@ public class LSPReporter {
                 backupReports(reportItem);
                 LSPLog.onTextMsg("backupReports end");
             }catch(Exception ex) {
-                ex.printStackTrace();
+                FileLogWritter.writeException(ex);
             } finally {
                 LSPApplication.getInstance().resumeLogging();
                 wl.release();
@@ -472,7 +474,7 @@ public class LSPReporter {
                 Log.i(TAG, "rename " + origFile.getAbsolutePath() + " to " + destFile.getAbsolutePath());
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            FileLogWritter.writeException(ex);
         }
     }
 }

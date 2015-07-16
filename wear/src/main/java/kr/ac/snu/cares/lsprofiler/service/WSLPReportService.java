@@ -146,7 +146,6 @@ public class WSLPReportService extends Service {
 
 
         } catch (Exception ex) {
-            ex.printStackTrace();
             LSPLog.onException(ex);
             FileLogWritter.writeException(ex);
             return false;
@@ -191,7 +190,6 @@ public class WSLPReportService extends Service {
                 return false;
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             LSPLog.onException(ex);
             FileLogWritter.writeException(ex);
         } finally {
@@ -209,7 +207,6 @@ public class WSLPReportService extends Service {
             btClientSocket = btDevice.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
             btClientSocket.connect();
         }catch (Exception ex) {
-            ex.printStackTrace();
             LSPLog.onException(ex);
             FileLogWritter.writeException(ex);
             return false;

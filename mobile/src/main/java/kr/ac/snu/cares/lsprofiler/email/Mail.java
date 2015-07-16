@@ -134,7 +134,7 @@ public class Mail {
         String password = "jxhjdwdvmkymcisp";
 
         // message info
-        String mailTo = "summer@davinci.snu.ac.kr";
+        String mailTo = "lgcares@davinci.snu.ac.kr";
 
         try {
             sendEmailWithAttachments(host, port, mailFrom, password, mailTo,
@@ -142,7 +142,6 @@ public class Mail {
             Log.i("EMAIL", "Email sent.");
         } catch (Exception ex) {
             Log.i("EMAIL", "Email sent exception");
-            ex.printStackTrace();
             FileLogWritter.writeException(ex);
             return -1;
         }
