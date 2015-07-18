@@ -71,6 +71,8 @@ public class LSPApplication extends Application {
         clientHandler.init(this);
         */
         app = this;
+
+        startProfilingIfStarted();
     }
 
     public LogDbHandler getDbHandler() {

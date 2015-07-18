@@ -17,7 +17,7 @@ public class BootReceiver extends BroadcastReceiver {
     public static final String TAG = BootReceiver.class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "BootReceiver - onRecive()");
-
+        LSPLog.onPowerStateChagned(1);
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
         context.startService(startServiceIntent);
 
@@ -35,6 +35,5 @@ public class BootReceiver extends BroadcastReceiver {
         }
 
         Log.i(TAG, "BootReceiver - onRecive() before state change");
-        LSPLog.onPowerStateChagned(1);
     }
 }

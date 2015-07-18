@@ -39,7 +39,7 @@ public class CallLogResolver {
         String timestamp = String.valueOf(Util.getTodayTimestamp());
         /*
         Cursor c = resolver.query(
-                android.provider.CallLog.Calls.CONTENT_URI, null,
+                android.provider.CallLog.Calls.CONTENT_URI, nuAll,
                 null,   null,
                 android.provider.CallLog.Calls.DATE + " DESC");
         */

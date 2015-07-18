@@ -96,7 +96,6 @@ public class LSPLog {
     }
 
     public static void onPowerStateChagned(int state) {
-        if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
     }
 

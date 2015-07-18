@@ -7,6 +7,9 @@ import android.util.Log;
 
 import kr.ac.snu.cares.lsprofiler.LSPApplication;
 import kr.ac.snu.cares.lsprofiler.LSPLog;
+import kr.ac.snu.cares.lsprofiler.LSPReporter;
+import kr.ac.snu.cares.lsprofiler.resolvers.DumpsysResolver;
+import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 
 /**
  * Created by summer on 4/26/15.
@@ -20,5 +23,12 @@ public class ShutdownReceiver extends BroadcastReceiver{
         LSPApplication app = LSPApplication.getInstance();
         if (app != null)
             app.doKLogBackup();
+
+        // dumpsys start
+        ReportItem item = new ReportItem();
+        DumpsysResolver dumpsysResolver = new DumpsysResolver();
+        dumpsysResolver.doWriteDumpAsync(LSPReporter.COLLECT_PATH + item.reportDateString + ".dump.w.txt");
+        dumpsysResolver.joinDumpAsync(10 * 1000);
+        LSPLog.onTextMsg("shutdown end");
     }
 }

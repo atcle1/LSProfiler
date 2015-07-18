@@ -105,7 +105,6 @@ public class LSPLog {
     }
 
     public static void onPowerStateChagned(int state) {
-        if(!bWriteLog) return;
         logDbHandler.writeLog("PST : "+state);
     }
 
@@ -262,10 +261,10 @@ public class LSPLog {
                 logDbHandler.writeLog("CST : RINGING " + enc);
                 break;
             case TelephonyManager.CALL_STATE_OFFHOOK:
-                logDbHandler.writeLog("CST : OFFHOOK" + enc);
+                logDbHandler.writeLog("CST : OFFHOOK " + enc);
                 break;
             case TelephonyManager.CALL_STATE_IDLE:
-                logDbHandler.writeLog("CST : IDLE" + enc);
+                logDbHandler.writeLog("CST : IDLE " + enc);
                 break;
         }
     }

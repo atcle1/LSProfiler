@@ -19,8 +19,6 @@ public class ShutdownReceiver extends BroadcastReceiver{
         int i = 0;
         Log.v("ShutdownReceiver", "action - " + intent.getAction());
 
-        LSPLog.onTextMsg("Shutdown");
-
         // power off
         LSPLog.onPowerStateChagned(0);
         LSPApplication app = LSPApplication.getInstance();
@@ -31,5 +29,7 @@ public class ShutdownReceiver extends BroadcastReceiver{
         ReportItem item = new ReportItem();
         DumpsysResolver dumpsysResolver = new DumpsysResolver();
         dumpsysResolver.doWriteDumpAsync(LSPReporter.COLLECT_MOBILE_PATH + item.reportDateString + ".dump.txt");
+        dumpsysResolver.joinDumpAsync(10 * 1000);
+        LSPLog.onTextMsg("shutdown end");
     }
 }

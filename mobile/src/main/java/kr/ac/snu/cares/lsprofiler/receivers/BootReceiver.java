@@ -25,7 +25,7 @@ public class BootReceiver extends BroadcastReceiver {
         //Intent i = new Intent(context, LSPService.class);
         //context.startService(i);
 
-        LSPLog.onTextMsg("Boot");
+        LSPLog.onPowerStateChagned(1);
 
         // power on
         LSPApplication app = LSPApplication.getInstance();
@@ -34,7 +34,6 @@ public class BootReceiver extends BroadcastReceiver {
         } else {
             Log.i(TAG, "app is null");
         }
-        LSPLog.onPowerStateChagned(1);
         //}
 
         Intent startServiceIntent = new Intent(context, LSPBootService.class);
