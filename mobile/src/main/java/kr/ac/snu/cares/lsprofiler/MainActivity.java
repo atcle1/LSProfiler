@@ -159,7 +159,7 @@ public class MainActivity extends ActionBarActivity {
     private void updateStatus() {
         String status = "";
         status += "status : " + lspApplication.state + "\n";
-        status += "nextAlarm : " + LSPAlarmManager.getNextAlarm().getTime().toString() + "\n";
+        // status += "nextAlarm : " + LSPAlarmManager.getNextAlarm().getTime().toString() + "\n";
         status += "watch : " + lspApplication.getLSPConnection().isWearConnected()+ "\n";
         txtStatus.setText(status);
 

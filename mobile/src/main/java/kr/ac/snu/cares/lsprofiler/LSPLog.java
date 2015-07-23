@@ -241,7 +241,6 @@ public class LSPLog {
             ex.printStackTrace();
             onException(ex);
         }
-
     }
 
     // deprecated
@@ -251,6 +250,105 @@ public class LSPLog {
         String packName = sbn.getPackageName();
         Log.i(TAG, "NOR : " + sbn.getPackageName() + "|" + sbn.getId());
         logDbHandler.writeLog("NOR : "+sbn.getKey());
+    }
+
+    public static void onNotificationPosted2(int status, StatusBarNotification sbn, StatusBarNotification oldsbn) {
+        String title = "", text = "", bigtext="";
+        String log = "";
+        boolean bEnc = true;
+        try {
+            String packName = sbn.getPackageName();
+            //if (sbn.getNotification().tickerText != null)
+            //    ticker = sbn.getNotification().tickerText.toString();
+            Bundle extras = sbn.getNotification().extras;
+            if (extras != null) {
+                title = extras.getString("android.title");
+                CharSequence textSequence = extras.getCharSequence("android.text");
+                if (textSequence != null)
+                    text = textSequence.toString();
+                if (extras.containsKey("android.bigText"))
+                    bigtext = extras.getCharSequence("android.bigText").toString();
+            }
+            Notification no = sbn.getNotification();
+            Notification.Action actions[] = no.actions;
+
+            if (title == null)
+                title = "";
+            if (text == null)
+                text = "";
+            if (bigtext == null)
+                bigtext = "";
+
+            if (packName.equals("android") || packName.equals("com.android.vending") ||
+                    packName.equals("com.android.systemui"))
+                bEnc = false;
+
+            if (!title.equals("") && bEnc)
+                title = title.length()+"|"+title.hashCode();
+            if (!text.equals("") && bEnc)
+                text = text.length()+"|"+text.hashCode();
+            if (!bigtext.equals("") && bEnc)
+                bigtext = bigtext.length()+"|"+bigtext.hashCode();
+
+            //system -1
+            /** notification_enqueue status value for a newly enqueued notification. */
+            //private static final int EVENTLOG_ENQUEUE_STATUS_NEW = 0;
+            /** notification_enqueue status value for an existing notification. */
+            //private static final int EVENTLOG_ENQUEUE_STATUS_UPDATE = 1;
+            /** notification_enqueue status value for an ignored notification. */
+            //private static final int EVENTLOG_ENQUEUE_STATUS_IGNORED = 2;
+
+            switch (status) {
+                case 0:
+                    log += "NOP : ";
+                    break;
+                case 1:
+                    log += "NOU : ";
+                    break;
+                case -1:
+                    log += "NOS : ";
+                    break;
+                default:
+                    log += "NOPP " + status + " : ";
+                    break;
+
+            }
+            log += sbn.getKey() +  ";ing=" + sbn.isOngoing()+";cl="+sbn.isClearable()+";title="+ title + ";text=" + text;
+            if (bigtext.length() > 0)
+                log  += ";bigtext=" + bigtext;
+            if (oldsbn != null) {
+                log += ";oldtime="+Util.getTimeStringFromSystemMillis(oldsbn.getPostTime());
+            }
+
+
+            try {
+                if (actions != null) {
+                    log+=" |action=";
+                    for (int i = 0; i < actions.length; i++)
+                        log+=actions[i].title+";";
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            Log.i(TAG, log);
+            if (!bWriteLog) return;
+            logDbHandler.writeLog(Util.getTimeStringFromSystemMillis(sbn.getPostTime()), log);
+        } catch (Exception ex){
+            ex.printStackTrace();
+            onException(ex);
+            logDbHandler.writeLog(Util.getTimeStringFromSystemMillis(sbn.getPostTime()), log);
+        }
+    }
+
+
+    public static void onNotificationCancel(String delTime, StatusBarNotification sbn, boolean sendDelete, int reason) {
+        Log.i(TAG, "onNotificationCancel " + sbn.toString());
+        if(!bWriteLog) return;
+        String log = "NOC : ";
+        log += sbn.getKey()+";" +
+        Log.i(TAG, "NOC : " + sbn.getKey() + " id " + sbn.getId());
+        logDbHandler.writeLog(delTime, "NOC : " + sbn.getKey() + ";sd=" + sendDelete + ";reason=" + reason + ";post="+Util.getTimeStringFromSystemMillis(sbn.getPostTime()));
     }
 
     public static void onCallStateChanged(int state, String incomingNumber) {
@@ -336,15 +434,18 @@ public class LSPLog {
             String message = (String) bundle.getString("message");
             String type = (String) bundle.getString("type");
             if (type != null) {
-                StatusBarNotification sbn = bundle.getParcelable("sbn");
                 if (type.equals("enq")) {
-                    if (sbn == null) {
-                        Log.i(TAG, "sbn is null");
-                    }
-                    onNotificationPosted(sbn);
+                    StatusBarNotification sbn = bundle.getParcelable("sbn");
+                    StatusBarNotification oldsbn = bundle.getParcelable("oldsbn");
+                    int enqueueStatus = bundle.getInt("status");
+                    onNotificationPosted2(enqueueStatus, sbn, oldsbn);
                 } else if (type.equals("cancel")) {
-                    logDbHandler.writeLog(strDT, "NOR : " + message);
-                    Log.i(TAG, strDT + " NOR : " + message);
+                    StatusBarNotification sbn = bundle.getParcelable("sbn");
+                    Boolean sd = bundle.getBoolean("sd");
+                    int reason = bundle.getInt("reason");
+                    onNotificationCancel(strDT, sbn, sd, reason);
+                } else {
+                    Log.i(TAG, type + " : " + message);
                 }
             } else {
                 logDbHandler.writeLog(strDT, "NOT : " + type + " " + message);

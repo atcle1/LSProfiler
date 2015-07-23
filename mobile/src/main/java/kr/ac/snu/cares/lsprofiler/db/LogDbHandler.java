@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
+import kr.ac.snu.cares.lsprofiler.util.Util;
 
 /**
  * Created by summer on 3/28/15.
@@ -120,6 +121,11 @@ public class LogDbHandler {
         return 0;
     }
 
+    synchronized public int writeLog(long timestamp, String msg)
+    {
+        return writeLog(Util.getTimeStringFromSystemMillis(timestamp), msg);
+    }
+
     synchronized public int writeLog(String timestamp, String msg)
     {
         if (msg == null)
@@ -137,6 +143,7 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
+        Log.i(TAG, "writeLog " + timestamp + " : " + msg);
         return 0;
     }
 
@@ -158,6 +165,7 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
+        Log.i(TAG, "writeLog " + msg);
         return 0;
     }
 
