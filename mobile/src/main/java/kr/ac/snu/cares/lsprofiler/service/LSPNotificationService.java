@@ -22,6 +22,7 @@ public class LSPNotificationService extends NotificationListenerService{
         // start service
         Intent startServiceIntent = new Intent(context, LSPNotificationService.class);
         //startServiceIntent.putExtra("setting", setting);
+
         context.startService(startServiceIntent);
     }
 
@@ -55,19 +56,19 @@ public class LSPNotificationService extends NotificationListenerService{
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        Log.i(TAG, "onNotificationPosted()");
-        LSPLog.onNotificationPosted(sbn);
+        //Log.i(TAG, "onNotificationPosted()");
+        //LSPLog.onNotificationPosted(sbn);
     }
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-        Log.i(TAG, "onNotificationRemoved()");
+        //Log.i(TAG, "onNotificationRemoved()");
         //LSPLog.onNotificationRemoved(sbn);
     }
 
     @Override
     public void onNotificationRankingUpdate(RankingMap rankingMap) {
-        Log.i(TAG, "onNotificationRankingUpdate()");
+        //Log.i(TAG, "onNotificationRankingUpdate()");
 
     }
 }

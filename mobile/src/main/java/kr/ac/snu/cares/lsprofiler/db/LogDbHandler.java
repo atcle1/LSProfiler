@@ -143,7 +143,7 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
-        Log.i(TAG, "writeLog " + timestamp + " : " + msg);
+        //Log.i(TAG, "writeLog " + timestamp + " : " + msg);
         return 0;
     }
 
@@ -165,7 +165,7 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
-        Log.i(TAG, "writeLog " + msg);
+        //Log.i(TAG, "writeLog " + msg);
         return 0;
     }
 
