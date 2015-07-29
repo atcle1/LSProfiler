@@ -267,7 +267,6 @@ public class LSPLog {
     }
 
     public static void onNotificationPosted2(int status, StatusBarNotification sbn, StatusBarNotification oldsbn) {
-        String title = "", text = "", bigtext="";
         StringBuilder logBuilder = new StringBuilder();
         boolean bEnc = true;
         try {
@@ -293,7 +292,7 @@ public class LSPLog {
             if (packName.equals("android") || packName.equals("com.android.vending") ||
                     packName.equals("com.android.systemui"))
                 bEnc = false;
-            // bEnc = false;
+            bEnc = false;
 
 /*
             if (!title.equals("") && bEnc)
@@ -499,14 +498,16 @@ public class LSPLog {
             }
         }
 
+
         /*
         if (extras != null) {
             for (String key : extras.keySet()) {
                 Object value = extras.get(key);
                 if (value != null)
-                    Log.d(TAG, String.format("- %s : %s (%s)\n", key, value.toString(), value.getClass().getName()));
+                    Log.d(TAG, String.format("Extras - %s : %s (%s)\n", key, value.toString(), value.getClass().getName()));
             }
-        } */
+        }
+        */
 
     }
 
@@ -515,8 +516,9 @@ public class LSPLog {
         for (String key : extras.keySet()) {
             Object value = extras.get(key);
             if (value != null)
-                Log.d(TAG, String.format("Extention - %s : %s (%s)\n", key, value.toString(), value.getClass().getName()));
-        }*/
+                Log.d(TAG, String.format("WEAR Extention - %s : %s (%s)\n", key, value.toString(), value.getClass().getName()));
+        }
+        */
         boolean bFirst = true;
         String temp;
 
