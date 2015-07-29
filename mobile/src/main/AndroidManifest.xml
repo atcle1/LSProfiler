@@ -93,6 +93,15 @@
         </receiver>
 
         <receiver
+            android:name=".klog.KlogAlarmReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name=".klog.KlogAlarmReceiver" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".receivers.RestartServiceReceiver"
             android:enabled="true"
             android:exported="true"

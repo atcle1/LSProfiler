@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
+import kr.ac.snu.cares.lsprofiler.klog.KlogAlarmManager;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.LocationTracer;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
@@ -63,6 +64,7 @@ public class LSPApplication extends Application {
     private LocationTracer locationTracer;
     private LSPNotificationService notificationService;
     private LSPAlarmManager alarmManager;
+    private KlogAlarmManager klogAlarmManager;
 
     private FitnessResolver fitnessResolver;
 
@@ -99,6 +101,7 @@ public class LSPApplication extends Application {
         receiverManager = new ReceiverManager(context);
         locationTracer = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
+        klogAlarmManager = KlogAlarmManager.getInstance(context);
 
         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         reportWl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "doReport");
@@ -165,6 +168,11 @@ public class LSPApplication extends Application {
         Su.executeSuOnce("/data/local/sprofiler 1", 30000);
     }
 
+    public void stopKernelLog() {
+        Su su = new Su();
+        Su.executeSuOnce("/data/local/sprofiler 2", 30000);
+    }
+
     public void startProfilingIfStarted() {
         String savedState = prefMgr.getLoggingState();
         if (savedState.equals("start") && state == State.stopped) {
@@ -178,7 +186,6 @@ public class LSPApplication extends Application {
 
     public void startLogging() {
         Log.i(TAG, "startLogging()");
-        alarmManager.setFirstAlarmIfNotSetted();
         if (state != State.stopped) {
             Log.i(TAG, "startLogging() : not stopped");
             return;
@@ -191,8 +198,6 @@ public class LSPApplication extends Application {
         startServiceIntent.putExtra("first_start", true);
         startService(startServiceIntent);
 
-        alarmManager.setFirstAlarm();
-
         resumeLogging();
         startKernelLog();
     }
@@ -204,6 +209,7 @@ public class LSPApplication extends Application {
         try {
             lspLog.resumeLogging();
             alarmManager.setFirstAlarmIfNotSetted();
+            klogAlarmManager.setFirstAlarmIfNotSetted();
             receiverManager.registerReceivers();
             if (bLocationTracerEnabled)
                 locationTracer.startTrace();
@@ -238,6 +244,7 @@ public class LSPApplication extends Application {
 
     public void stopLogging() {
         alarmManager.clearAlarm();
+        klogAlarmManager.clearAlarm();
         if (state == State.resumed)
             pauseLogging("stopLogging() called");
 
@@ -250,6 +257,7 @@ public class LSPApplication extends Application {
         prefMgr.setAppState(State.stopped.name());
 
         stopService(new Intent(this, LSPService.class));
+        stopKernelLog();
     }
 
     public LSPReporter getReporter() {
