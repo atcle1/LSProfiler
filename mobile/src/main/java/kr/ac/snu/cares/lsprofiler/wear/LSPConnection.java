@@ -45,8 +45,8 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
         // 구글 플레이 서비스 객체를 시계 설정으로 초기화
         mGoogleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Wearable.API)
-                .addApi(LocationServices.API)
-                .addApi(ActivityRecognition.API)
+                //.addApi(LocationServices.API)
+                //.addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();

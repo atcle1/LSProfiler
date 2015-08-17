@@ -367,6 +367,12 @@ public class LSPLog {
         }
     }
 
+    public static boolean containsAD(String str) {
+        if (str != null && str.contains("광고")) {
+            return true;
+        }
+        return false;
+    }
     public static void extrasAnalysis(StringBuilder logBuilder, Notification notification, boolean bEnc) {
         Bundle extras = notification.extras;
         // Log.i(TAG, "extras size : " + extras.size());
@@ -399,7 +405,7 @@ public class LSPLog {
         if (extras.containsKey("android.title")) {
             try {
                 temp = ObjToString(extras.get("android.title"));
-                if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                 logBuilder.append(";title=" + temp);
             }catch (Exception ex) {}
         }
@@ -408,7 +414,7 @@ public class LSPLog {
             try {
                 if (extras.get("android.text") != null) {
                     temp = ObjToString(extras.get("android.text"));
-                    if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                    if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                     logBuilder.append(";text=" + temp);
                 }
             }catch (Exception ex) {}
@@ -418,7 +424,7 @@ public class LSPLog {
             try {
                 if (extras.get("android.subText") != null) {
                     temp = ObjToString(extras.get("android.subText"));
-                    if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                    if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                     logBuilder.append(";subText=" + temp);
                 }
             }catch (Exception ex) {}
@@ -427,7 +433,7 @@ public class LSPLog {
         if (extras.containsKey("android.bigText")) {
             try {
                 temp = ObjToString(extras.get("android.bigText"));
-                if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                 logBuilder.append(";bigText=" + temp);
             }catch (Exception ex) {}
         }
@@ -435,7 +441,7 @@ public class LSPLog {
         if (extras.containsKey("android.title.big")) {
             try {
                 temp = ObjToString(extras.get("android.title.big"));
-                if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                 logBuilder.append(";titleBig=" + temp);
             }catch (Exception ex) {}
         }
@@ -443,13 +449,21 @@ public class LSPLog {
         if (extras.containsKey("android.textLines")) {
             try {
                 java.lang.CharSequence[] seqs= (java.lang.CharSequence[]) extras.get("android.textLines");
+                Boolean bAd = false;
                 if (seqs != null) {
                     int totalLen = 0;
                     for (int i = 0; i < seqs.length; i++) {
                         totalLen += seqs[i].length();
                         //Log.i(TAG, i + " : "+seqs[i]);
+                        bAd |=  containsAD(seqs[i].toString());
                     }
-                    logBuilder.append(";tLines=" + totalLen);
+                    if (bAd == true){
+                        logBuilder.append(";tLines=" + totalLen + ";AD=true");
+                    } else {
+                        logBuilder.append(";tLines=" + totalLen);
+                    }
+
+
                 }
             }catch (Exception ex) {}
         }
@@ -458,7 +472,7 @@ public class LSPLog {
             try {
                 if (extras.get("android.summaryText") != null) {
                     temp = ObjToString(extras.get("android.summaryText"));
-                    if (bEnc) temp = temp.length() + "|" + temp.hashCode();
+                    if (bEnc && !containsAD(temp)) temp = temp.length() + "|" + temp.hashCode();
                     logBuilder.append(";smtext=" + temp);
                 }
             }catch (Exception ex) {}
@@ -549,6 +563,19 @@ public class LSPLog {
                         Bundle subNotiExtras = notiPage.extras;
                         boolean bwFirst = true;
 
+                        long[] vibration = notiPage.vibrate;
+                        if (vibration != null) {
+                            if (!bwFirst) logBuilder.append(";");
+                            logBuilder.append("vib=");
+                            for (int j = 0; j < vibration.length; j++) {
+                                logBuilder.append(vibration[j]);
+                                if (j != vibration.length - 1) {
+                                    logBuilder.append(",");
+                                }
+                            }
+                            bwFirst = false;
+                        }
+
                         /*
                         for (String key : subNotiExtras.keySet()) {
                             Object value = subNotiExtras.get(key);
@@ -560,7 +587,8 @@ public class LSPLog {
                         if (subNotiExtras.containsKey("android.title")) {
                             temp = ObjToString(subNotiExtras.get("android.title"));
                             if (!temp.equals("null")) {
-                                if (bEnc) temp = temp.length() + "";
+                                if (bEnc && !containsAD(temp)) temp = temp.length() + "";
+                                if (!bwFirst) logBuilder.append(";");
                                 logBuilder.append("title="+temp);
                                 bwFirst = false;
                             }
@@ -569,9 +597,9 @@ public class LSPLog {
                         if (subNotiExtras.containsKey("android.text")) {
                             temp = ObjToString(subNotiExtras.get("android.text"));
                             if (!temp.equals("null")) {
-                                if (bEnc) temp = temp.length() + "";
-                                if (!bFirst) logBuilder.append(";");
-                                logBuilder.append(";text=" + temp);
+                                if (bEnc && !containsAD(temp)) temp = temp.length() + "";
+                                if (!bwFirst) logBuilder.append(";");
+                                logBuilder.append("text=" + temp);
                                 bwFirst = false;
                             }
                         }
@@ -579,8 +607,8 @@ public class LSPLog {
                         if (subNotiExtras.containsKey("android.bigText")) {
                             temp = ObjToString(subNotiExtras.get("android.bigText"));
                             if (!temp.equals("null")) {
-                                if (bEnc) temp = temp.length() + "";
-                                if (!bFirst) logBuilder.append(";");
+                                if (bEnc && !containsAD(temp)) temp = temp.length() + "";
+                                if (!bwFirst) logBuilder.append(";");
                                 logBuilder.append("bigText=" + temp);
                                 bwFirst = false;
                             }
@@ -589,8 +617,6 @@ public class LSPLog {
                         // page wear extention
                         if (subNotiExtras.containsKey("android.wearable.EXTENSIONS")) {
                             Bundle subNotiExtrasEx = subNotiExtras.getBundle("android.wearable.EXTENSIONS");
-
-
                             /*
                             for (String key : subNotiExtrasEx.keySet()) {
                                 Object value = subNotiExtrasEx.get(key);
@@ -603,7 +629,8 @@ public class LSPLog {
                                 try {
                                     Bitmap picture = (Bitmap) extras.get("background");
                                     int size = picture.getAllocationByteCount();
-                                    logBuilder.append("(pbgsize:" + size + ")");
+                                    if (!bwFirst) logBuilder.append(";");
+                                    logBuilder.append("webgsize:" + size);
                                 } catch (Exception ex) {
                                 }
                             }
