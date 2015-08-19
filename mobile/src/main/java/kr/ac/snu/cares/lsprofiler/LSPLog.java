@@ -290,7 +290,7 @@ public class LSPLog {
 
 
             if (packName.equals("android") || packName.equals("com.android.vending") ||
-                    packName.equals("com.android.systemui"))
+                    packName.equals("com.android.systemui") || packName.equals("com.google.android.gms"))
                 bEnc = false;
             // bEnc = false;
 
