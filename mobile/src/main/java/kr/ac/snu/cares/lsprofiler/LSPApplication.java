@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
@@ -219,7 +221,8 @@ public class LSPApplication extends Application {
 
         try {
             LSPNotificationService.startSelf(this);
-            LSPLog.onTextMsg("resumeLogging");
+            Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            LSPLog.onTextMsg("resumeLogging ds=" + display.getState());
             BtLogResolver.enableBtLog();
         } catch (Exception ex) {
             FileLogWritter.writeException(ex);
@@ -289,6 +292,15 @@ public class LSPApplication extends Application {
         }
     }
 
+    public void resetLog() {
+        try {
+            Su.executeSuOnce("/data/local/sprofiler 7", 5000);
+            dbHandler.resetDB();
+        } catch (Exception ex) {
+            LSPLog.onException(ex);
+        }
+    }
+
     @Override
     public void onTerminate() {
         if (state == State.resumed)
@@ -299,8 +311,8 @@ public class LSPApplication extends Application {
 
     @Override
     public void onLowMemory() {
-        super.onLowMemory();
         Log.i(TAG, "onLowMemory()");
+        super.onLowMemory();
         if (state == State.resumed)
             FileLogWritter.writeString("APP : onLowMemory() state " + state);
     }

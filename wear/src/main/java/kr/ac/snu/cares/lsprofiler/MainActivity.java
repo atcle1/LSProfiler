@@ -31,6 +31,7 @@ public class MainActivity extends Activity {
                 mTextView = (TextView) stub.findViewById(R.id.text);
                 txtStatus = (TextView) findViewById(R.id.txtStatus);
                 setButton(R.id.bTStatus, btClickListener);
+                setButton(R.id.bTReset, btClickListener);
                 updateStatus();
             }
         });
@@ -62,8 +63,13 @@ public class MainActivity extends Activity {
     class onBtClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            if (v.getId() == R.id.bTStatus) {
-                updateStatus();
+            switch (v.getId()) {
+                case R.id.bTStatus:
+                    updateStatus();
+                    break;
+                case R.id.bTReset:
+                    lspApplication.resetLog();
+                    break;
             }
         }
     }

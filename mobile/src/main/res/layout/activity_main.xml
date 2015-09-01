@@ -86,6 +86,14 @@
             android:layout_gravity="center_horizontal"/>
 
         <Button
+            android:id="@+id/bTResetLog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="25sp"
+            android:text="ResetLog"
+            android:layout_gravity="center_horizontal"/>
+
+        <Button
             android:id="@+id/bTSendMail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -102,6 +110,8 @@
             android:text="CallLog"
             android:visibility="invisible"
             android:layout_gravity="center_horizontal"/>
+
+
 
 
 

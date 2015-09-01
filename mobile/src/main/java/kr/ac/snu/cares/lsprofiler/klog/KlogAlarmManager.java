@@ -42,7 +42,7 @@ public class KlogAlarmManager {
         this.context = context;
         this.alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         // 4hour term
-        for (int i = 0; i < 24; i+=4) {
+        for (int i = 1; i < 24; i+=3) {
             alarmList.add(new AlarmTime(i, 0));
         }
     }

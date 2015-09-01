@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 
@@ -127,12 +129,19 @@ public class LSPApplication extends Application {
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
-        LSPLog.onTextMsg("resumeLogging()");
+
         state = State.resumed;
         try {
             lspLog.resumeLogging();
             receiverManager.registerReceivers();
         }catch (Exception ex) {
+            FileLogWritter.writeException(ex);
+        }
+
+        try {
+            Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+            LSPLog.onTextMsg("resumeLogging ds=" + display.getState());
+        } catch (Exception ex) {
             FileLogWritter.writeException(ex);
         }
     }
@@ -186,6 +195,15 @@ public class LSPApplication extends Application {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+            LSPLog.onException(ex);
+        }
+    }
+
+    public void resetLog() {
+        try {
+            Su.executeSuOnce("/data/local/sprofiler 7", 5000);
+            dbHandler.resetDB();
+        } catch (Exception ex) {
             LSPLog.onException(ex);
         }
     }

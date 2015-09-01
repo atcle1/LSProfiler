@@ -41,10 +41,10 @@ public class ReceiverManager extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_USER_PRESENT);
         //filter.addAction("android.provider.Telephony.SMS_RECEIVED");
         filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        filter.addAction("kr.ac.snu.lsprofiler.intent.action.ACTIVITYSTACK");
-        filter.addAction("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION");
-        filter.addAction("kr.ac.snu.lsprofiler.intent.action.STATUSBAR");
-        filter.addAction("kr.ac.snu.lsprofiler.intent.action.PANELBAR");
+//        filter.addAction("kr.ac.snu.lsprofiler.intent.action.ACTIVITYSTACK");
+//        filter.addAction("kr.ac.snu.lsprofiler.intent.action.NOTIFICATION");
+//        filter.addAction("kr.ac.snu.lsprofiler.intent.action.STATUSBAR");
+//        filter.addAction("kr.ac.snu.lsprofiler.intent.action.PANELBAR");
 
         context.registerReceiver(this, filter);
 

@@ -115,6 +115,7 @@ public class MainActivity extends ActionBarActivity {
         setButton(R.id.bTBackupLog, btClickListener);
         setButton(R.id.bTStatus, btClickListener);
         setButton(R.id.bTRoot, btClickListener);
+        setButton(R.id.bTResetLog, btClickListener);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -275,6 +276,8 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     lspApplication.setWearLoggingEnabled(false);
                 }
+            } else if (v.getId() == R.id.bTResetLog) {
+                lspApplication.resetLog();
             }
         }
     }

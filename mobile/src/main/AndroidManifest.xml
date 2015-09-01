@@ -75,6 +75,18 @@
         </receiver>
 
         <receiver
+            android:name=".receivers.StaticReceiver"
+            android:enabled="true"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="kr.ac.snu.lsprofiler.intent.action.ACTIVITYSTACK" />
+                <action android:name="kr.ac.snu.lsprofiler.intent.action.NOTIFICATION" />
+                <action android:name="kr.ac.snu.lsprofiler.intent.action.STATUSBAR" />
+                <action android:name="kr.ac.snu.lsprofiler.intent.action.PANELBAR" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".receivers.ShutdownReceiver"
             android:enabled="true"
             android:exported="false" >
