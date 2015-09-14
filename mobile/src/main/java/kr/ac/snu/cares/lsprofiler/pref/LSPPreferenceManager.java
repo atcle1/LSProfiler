@@ -1,5 +1,6 @@
 package kr.ac.snu.cares.lsprofiler.pref;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -74,5 +75,32 @@ public class LSPPreferenceManager {
 
     public Boolean getWearEnabled() {
         return prefs.getBoolean("wear_enabled", true);
+    }
+
+    public void setAlarmEnabled(boolean bEnabled) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("alarm_enabled", bEnabled);
+        editor.commit();
+    }
+    public boolean getAlarmEnabled() {
+        return prefs.getBoolean("alarm_enabled", false);
+    }
+
+    public void setAlarmTime(int hour, int min) {
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt("alarm_hour", hour);
+        editor.putInt("alarm_min", min);
+        editor.commit();
+    }
+
+    public int[] getAlarmTime() {
+        int hour_min[] = new int[2];
+        int hour = prefs.getInt("alarm_hour", 0);
+        int min = prefs.getInt("alarm_min", 0);
+
+        hour_min[0] = hour;
+        hour_min[1] = min;
+
+        return hour_min;
     }
 }

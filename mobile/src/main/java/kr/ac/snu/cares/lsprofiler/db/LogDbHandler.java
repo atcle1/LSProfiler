@@ -34,6 +34,8 @@ public class LogDbHandler {
     private SQLiteStatement InsertLogdbStmt_wt;
     private SQLiteStatement InsertLogdbStmt2;
 
+    public static boolean bWriteDebug = false;   // print all logs on logcat
+
     @Override
     public void finalize() {
         if (db != null && db.isOpen())
@@ -50,7 +52,7 @@ public class LogDbHandler {
         //      "VALUES (strftime('%s', 'now', 'localtime'), ?)";
         try {
             String sql = "INSERT INTO logdb(t_datetime, t_log) " +
-                    "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
+                    "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', '+9 hour'), ?)";
             InsertLogdbStmt = db.compileStatement(sql);
             sql = "INSERT INTO logdb(t_datetime, t_log) " +
                     "VALUES (?, ?)";
@@ -114,7 +116,8 @@ public class LogDbHandler {
             InsertLogdbStmt.bindString(1, msg);
             InsertLogdbStmt.execute();
             InsertLogdbStmt.clearBindings();
-            Log.i(TAG, "writeLog : " + msg);
+            if (bWriteDebug)
+                Log.i(TAG, "writeLog : " + msg);
         } catch (Exception ex) {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
@@ -144,7 +147,8 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
-        Log.i(TAG, "writeLog " + timestamp + " : " + msg);
+        if (bWriteDebug)
+            Log.i(TAG, "writeLog : " + timestamp + " : " + msg);
         return 0;
     }
 
@@ -166,7 +170,8 @@ public class LogDbHandler {
             ex.printStackTrace();
             FileLogWritter.writeString(ex.getLocalizedMessage());
         }
-        Log.i(TAG, "writeLog " + msg);
+        if (bWriteDebug)
+            Log.i(TAG, "writeLog : " + msg);
         return 0;
     }
 

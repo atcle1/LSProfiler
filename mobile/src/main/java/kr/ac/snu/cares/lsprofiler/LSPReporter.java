@@ -374,12 +374,16 @@ public class LSPReporter {
 
             // listing all log files...
             File collectMobileDir = new File(COLLECT_MOBILE_PATH);
+            if(!collectMobileDir.exists())
+                collectMobileDir.mkdirs();
             File[] logFileArray = collectMobileDir.listFiles();
             File collectWearDir;
             File[] logFileArray2 = null;
 
             if (bCollectWear) {
                 collectWearDir = new File(COLLECT_WEAR_PATH);
+                if(!collectWearDir.exists())
+                    collectWearDir.mkdirs();
                 logFileArray2 = collectWearDir.listFiles();
             }
 

@@ -44,7 +44,7 @@ public class LogDbHandler {
         //String sql = "INSERT INTO logdb(i_datetime, t_log) " +
         //      "VALUES (strftime('%s', 'now', 'localtime'), ?)";
         String sql = "INSERT INTO logdb(t_datetime, t_log) " +
-              "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', 'localtime'), ?)";
+              "VALUES (strftime('%Y-%m-%d %H:%M:%f', 'now', '+9 hour'), ?)";
         InsertLogdbStmt = db.compileStatement(sql);
     }
     private void closePrepareStatement() {

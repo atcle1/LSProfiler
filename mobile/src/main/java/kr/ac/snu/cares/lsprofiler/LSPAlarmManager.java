@@ -33,7 +33,7 @@ public class LSPAlarmManager {
     public static Calendar nextAlarmCal;
     public static long nextAlarmTimeMillis;
 
-    public static boolean bAlarmEnabled = false;
+    public static boolean bAlarmEnabled = true;
 
     //public static AlarmTime nextAlarmTimeMillis;
     //public static int start_hour = 4;
@@ -50,13 +50,23 @@ public class LSPAlarmManager {
     private LSPAlarmManager(Context context) {
         this.context = context;
         this.alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+        /*
         for (int i = 0; i < 24; ) {
             alarmList.add(new AlarmTime(i, 0));
-            i+=24;
+            i += 24;
         }
+        */
+    }
+
+    private int alarm_hour = 0;
+    private int alarm_min = 0;
+    public void setAlarmTime(int hour, int min) {
+        alarm_hour = hour;
+        alarm_min = min;
     }
 
     private AlarmTime getNearestAlarm() {
+        /*
         long current = System.currentTimeMillis();
         long minTerm = 24 * 60 * 60 * 1000;
         AlarmTime nextAlarmTime = null;
@@ -72,6 +82,8 @@ public class LSPAlarmManager {
                 nextAlarmTime = alarmTime;
             }
         }
+        */
+        nextAlarmTime = new AlarmTime(alarm_hour, alarm_min);
         return nextAlarmTime;
     }
 
@@ -83,6 +95,7 @@ public class LSPAlarmManager {
 
     public void setFirstAlarm() {
         if (bAlarmEnabled == false) return;
+        clearAlarm();
         nextAlarmTime = getNearestAlarm();
         nextAlarmCal = nextAlarmTime.getCallendar();
         nextAlarmTimeMillis = nextAlarmCal.getTimeInMillis();
@@ -90,9 +103,9 @@ public class LSPAlarmManager {
         // LSPService intent
         Intent intent = new Intent(context, AlarmReceiver.class);
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        clearAlarm();
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTimeMillis, alarmPendingIntent);
-        Log.i(TAG, "set first alarm " + nextAlarmCal.getTime());
+
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP,nextAlarmTimeMillis, alarmPendingIntent);
+        Log.i(TAG, "set first alarm " + nextAlarmCal.getTime() + " " + nextAlarmTimeMillis);
         FileLogWritter.writeString("set first alarm " + nextAlarmCal.getTime());
     }
 
@@ -103,13 +116,13 @@ public class LSPAlarmManager {
     }
 
     public void clearAlarm() {
-        if (bAlarmEnabled == false) return;
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        if (alarmPendingIntent != null) {
-            alarmManager.cancel(alarmPendingIntent);
-            Log.i(TAG, "clearAlarm()");
+        if (alarmPendingIntent == null) {
+            Intent intent = new Intent(context, AlarmReceiver.class);
+            alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }
+        alarmManager.cancel(alarmPendingIntent);
+        nextAlarmTimeMillis = 0;
+        Log.i(TAG, "clearAlarm()");
     }
 
     public void setNextAlarmAfter(int millis) {
@@ -122,5 +135,16 @@ public class LSPAlarmManager {
         alarmPendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, LSPAlarmManager.nextAlarmTimeMillis, alarmPendingIntent);
         Log.i(TAG, "setNextAlarmAfter alarm " + calendar.getTime());
+    }
+
+    public void setAlarmEnabled(boolean bEnabled) {
+        Log.i(TAG, "setAlarmEnabled " + bEnabled);
+        if (bEnabled) {
+            bAlarmEnabled = bEnabled;
+            clearAlarm();
+        } else {
+            clearAlarm();
+            bAlarmEnabled = bEnabled;
+        }
     }
 }

@@ -21,7 +21,7 @@ public class BootReceiver extends BroadcastReceiver {
     public static final String TAG = BootReceiver .class.getSimpleName();
     public void onReceive(Context context, Intent intent) {
     //    if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
-        Log.i("LP", "BootReceiver - onRecive() " + Calendar.getInstance().getTime() + " " + System.currentTimeMillis() + " " + new Date());
+        Log.i("LSP", "BootReceiver - onRecive() " + Calendar.getInstance().getTime() + " " + System.currentTimeMillis() + " " + new Date());
         //Intent i = new Intent(context, LSPService.class);
         //context.startService(i);
 

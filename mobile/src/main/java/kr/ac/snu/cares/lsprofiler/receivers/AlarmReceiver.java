@@ -22,7 +22,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         Log.i(TAG, "onReceive() "+context.getPackageName());
 
         if (LSPAlarmManager.nextAlarmTimeMillis < System.currentTimeMillis() - 1000 * 60 * 60) {
-            Log.i(TAG, "alarm expired more then 1 hour, ignored");
+            Log.i(TAG, "alarm expired more then 1 hour, ignored " + LSPAlarmManager.nextAlarmTimeMillis + " < " + (System.currentTimeMillis() - 1000 * 60 * 60));
             LSPAlarmManager.getInstance(context).setFirstAlarm();
             return;
         }

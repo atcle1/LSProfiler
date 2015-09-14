@@ -67,6 +67,15 @@
             android:enabled="true"
             android:exported="true" >
         </service>
+
+        <receiver
+            android:name=".klog.KlogAlarmReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name=".klog.KlogAlarmReceiver" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

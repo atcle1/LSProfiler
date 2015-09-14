@@ -792,4 +792,9 @@ public class LSPLog {
             //Log.i(TAG, strDT + " FSTB " + message);
         }
     }
+
+    public static void onScreenTimeoutChanged(int millis) {
+        if(!bWriteLog) return;
+        logDbHandler.writeLog("STO : " + millis);
+    }
 }

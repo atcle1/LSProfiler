@@ -3,13 +3,9 @@ package kr.ac.snu.cares.lsprofiler.klog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.util.Log;
 
-import kr.ac.snu.cares.lsprofiler.LSPAlarmManager;
-import kr.ac.snu.cares.lsprofiler.LSPLog;
 import kr.ac.snu.cares.lsprofiler.LSPReporter;
-import kr.ac.snu.cares.lsprofiler.service.LSPService;
 import kr.ac.snu.cares.lsprofiler.util.ReportItem;
 import kr.ac.snu.cares.lsprofiler.util.Su;
 
@@ -30,7 +26,7 @@ public class KlogAlarmReceiver extends BroadcastReceiver {
 
         Log.i(TAG, "check kbuf");
         ReportItem item = new ReportItem();
-        Su.executeSuOnce("/data/local/sprofiler 9 " + LSPReporter.COLLECT_MOBILE_PATH + " " + item.reportDateString + ".klog", 30000);
+        Su.executeSuOnce("/data/local/sprofiler 9 " + LSPReporter.COLLECT_PATH + " " + item.reportDateString + ".klog", 30000);
 
 
         // set next first alarm

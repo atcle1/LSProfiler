@@ -1,6 +1,8 @@
 package kr.ac.snu.cares.lsprofiler.service;
 
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -62,8 +64,15 @@ public class LSPNotificationService extends NotificationListenerService{
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
-        //Log.i(TAG, "onNotificationRemoved()");
-        //LSPLog.onNotificationRemoved(sbn);
+        Log.i(TAG, "onNotificationRemoved()");
+        LSPLog.onNotificationRemoved(sbn);
+        Notification notification = sbn.getNotification();
+        PendingIntent deleteIntent = notification.deleteIntent;
+        if (deleteIntent != null) {
+            Log.i(TAG, deleteIntent.toString() + " " +deleteIntent.getCreatorPackage() + " " +deleteIntent.describeContents());
+        } else {
+            Log.i(TAG, "delete intent is null");
+        }
     }
 
     @Override

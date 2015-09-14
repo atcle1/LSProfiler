@@ -7,115 +7,156 @@
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="fill_parent"
-        android:layout_width="fill_parent" >
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/txtStatus"
-            android:text="status" android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+        android:layout_width="fill_parent">
 
         <LinearLayout
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_gravity="center_horizontal">
-            <TextView
-                android:text="Watch Logging : "
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            <ToggleButton
-                android:id="@+id/tgWearEnable"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="toogle"
-                android:textOff="Disabled"
-                android:textOn="Enabled"/>
+                android:layout_height="fill_parent"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/txtStatus"
+                    android:text="status" android:layout_width="fill_parent"
+                    android:layout_height="wrap_content" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center_horizontal">
+                    <TextView
+                        android:text="Watch Logging : "
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                    <ToggleButton
+                        android:id="@+id/tgWearEnable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="toogle"
+                        android:textOff="Disabled"
+                        android:textOn="Enabled"/>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/bTStartService"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Start"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTStopService"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Stop"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTStatus"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Status"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTRoot"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Root"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTReadLog"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="ReadLog"
+                    android:layout_gravity="center_horizontal"
+                    />
+
+
+                <LinearLayout
+                    android:layout_width="fill_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    >
+                    <TextView
+                        android:id="@+id/txtAlarmTime"
+                        android:text="alarmTime"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center"
+                        android:textAlignment="center"
+                        />
+                    <ToggleButton
+                        android:id="@+id/tgAlarmEnable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="toogle"
+                        android:textOff="Disabled"
+                        android:textOn="Enabled"
+                        />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/bTAlarmTime"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Set alarm time"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTBackupLog"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="BackupLog"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTResetLog"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50sp"
+                    android:textSize="25sp"
+                    android:text="ResetLog"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTSendMail"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="SendMail"
+                    android:visibility="invisible"
+                    android:layout_gravity="center_horizontal"/>
+
+                <Button
+                    android:id="@+id/bTCallLog"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="CallLog"
+                    android:visibility="invisible"
+                    android:layout_gravity="center_horizontal"/>
+
+
+            </LinearLayout>
+
+
         </LinearLayout>
 
-        <Button
-            android:id="@+id/bTStartService"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="Start"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTStopService"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="Stop"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="Status"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTRoot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="Root"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTReadLog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="ReadLog"
-            android:layout_gravity="center_horizontal"
-            />
-
-        <Button
-            android:id="@+id/bTBackupLog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="BackupLog"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTResetLog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="ResetLog"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTSendMail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="SendMail"
-            android:visibility="invisible"
-            android:layout_gravity="center_horizontal"/>
-
-        <Button
-            android:id="@+id/bTCallLog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="25sp"
-            android:text="CallLog"
-            android:visibility="invisible"
-            android:layout_gravity="center_horizontal"/>
-
-
-
-
-
-    </LinearLayout>
     </ScrollView>
 
 </RelativeLayout>

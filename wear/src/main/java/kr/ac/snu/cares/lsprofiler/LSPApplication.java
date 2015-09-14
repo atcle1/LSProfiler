@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
+import kr.ac.snu.cares.lsprofiler.klog.KlogAlarmManager;
 import kr.ac.snu.cares.lsprofiler.pref.LSPPreferenceManager;
 import kr.ac.snu.cares.lsprofiler.receivers.ReceiverManager;
 import kr.ac.snu.cares.lsprofiler.service.WSLPReportService;
@@ -44,6 +45,7 @@ public class LSPApplication extends Application {
     private LSPLog lspLog;
 
     private ReceiverManager receiverManager;
+    private KlogAlarmManager klogAlarmManager;
 
     public String deviceID;
 
@@ -56,6 +58,7 @@ public class LSPApplication extends Application {
         lspLog = new LSPLog(context);
         prefMgr = LSPPreferenceManager.getInstance(context);
         receiverManager = new ReceiverManager(context);
+        klogAlarmManager = KlogAlarmManager.getInstance(context);
 
         deviceID = prefMgr.getDeviceID();
         if (deviceID.equals("")) {
@@ -134,6 +137,7 @@ public class LSPApplication extends Application {
         try {
             lspLog.resumeLogging();
             receiverManager.registerReceivers();
+            klogAlarmManager.setFirstAlarmIfNotSetted();
         }catch (Exception ex) {
             FileLogWritter.writeException(ex);
         }
@@ -150,6 +154,7 @@ public class LSPApplication extends Application {
         //showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
         LSPLog.onTextMsg("pauseLogging() "+msg);
+        klogAlarmManager.clearAlarm();
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -163,6 +168,7 @@ public class LSPApplication extends Application {
 
     public void stopLogging() {
         LSPLog.onTextMsg("stopLogging()");
+        klogAlarmManager.clearAlarm();
         if (state == State.resumed)
             pauseLogging("stopLogging() called");
 

@@ -3,6 +3,7 @@ package kr.ac.snu.cares.lsprofiler;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -19,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -53,7 +55,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import kr.ac.snu.cares.lsprofiler.daemon.DaemonClient;
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
 import kr.ac.snu.cares.lsprofiler.resolvers.DumpsysResolver;
@@ -66,6 +67,7 @@ import kr.ac.snu.cares.lsprofiler.wear.LSPConnection;
 public class MainActivity extends ActionBarActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     private TextView txtStatus;
+    private TextView txtAlarmTime;
 
     private Button btStartStresser;
     private Button btStopStresser;
@@ -74,8 +76,8 @@ public class MainActivity extends ActionBarActivity {
     private Button btSendMail;
     private Button btCallLog;
     private ToggleButton tgWearEnabled;
+    private ToggleButton tgAlarmTimeEnabled;
 
-    private DaemonClient clientHandler;
     private HandlerThread daemonClientThread;
     private LSPApplication lspApplication;
 
@@ -96,6 +98,7 @@ public class MainActivity extends ActionBarActivity {
         onBtClickListener btClickListener = new onBtClickListener();
 
         txtStatus = (TextView)findViewById(R.id.txtStatus);
+        txtAlarmTime = (TextView)findViewById(R.id.txtAlarmTime);
 
         btStartStresser = (Button)findViewById(R.id.bTStartService);
         btStopStresser = (Button)findViewById(R.id.bTStopService);
@@ -103,6 +106,7 @@ public class MainActivity extends ActionBarActivity {
         btSendMail = (Button)findViewById(R.id.bTSendMail);
         btCallLog = (Button)findViewById(R.id.bTCallLog);
         tgWearEnabled = (ToggleButton)findViewById(R.id.tgWearEnable);
+        tgAlarmTimeEnabled = (ToggleButton)findViewById(R.id.tgAlarmEnable);
 
 
         btStartStresser.setOnClickListener(btClickListener);
@@ -111,11 +115,13 @@ public class MainActivity extends ActionBarActivity {
         btSendMail.setOnClickListener(btClickListener);
         btCallLog.setOnClickListener(btClickListener);
         tgWearEnabled.setOnClickListener(btClickListener);
+        tgAlarmTimeEnabled.setOnClickListener(btClickListener);
 
         setButton(R.id.bTBackupLog, btClickListener);
         setButton(R.id.bTStatus, btClickListener);
         setButton(R.id.bTRoot, btClickListener);
         setButton(R.id.bTResetLog, btClickListener);
+        setButton(R.id.bTAlarmTime, btClickListener);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -123,7 +129,7 @@ public class MainActivity extends ActionBarActivity {
         clientHandler = new DaemonClient(daemonClientThread.getLooper());
         clientHandler.init(this);
         */
-        connection = new LSPConnection(getApplicationContext());
+        connection = lspApplication.getLSPConnection();
 
         //buildFitnessClient();
         Log.i(TAG, "onCreate() end");
@@ -162,6 +168,7 @@ public class MainActivity extends ActionBarActivity {
         status += "status : " + lspApplication.state + "\n";
         // status += "nextAlarm : " + LSPAlarmManager.getNextAlarm().getTime().toString() + "\n";
         status += "watch : " + lspApplication.getLSPConnection().isWearConnected()+ "\n";
+        status += "device id : " + lspApplication.deviceID;
         txtStatus.setText(status);
 
         tgWearEnabled.setEnabled(true);
@@ -176,6 +183,11 @@ public class MainActivity extends ActionBarActivity {
             btStartStresser.setEnabled(true);
             btStopStresser.setEnabled(true);
         }
+
+        tgAlarmTimeEnabled.setChecked(lspApplication.getAlarmEnabled());
+
+        int alarmTime[] = lspApplication.getAlarmTime();
+        txtAlarmTime.setText("Alarm time : " + alarmTime[0] + " : " + alarmTime[1]);
 
     }
 
@@ -207,6 +219,19 @@ public class MainActivity extends ActionBarActivity {
                 //DaemonStarter.startDaemon();
                 //lspApplication.startLogging();
                 //Su.isRooted();
+
+                if (tgWearEnabled.isChecked()) {
+                    lspApplication.setWearLoggingEnabled(true);
+                } else {
+                    lspApplication.setWearLoggingEnabled(false);
+                }
+
+                if (tgAlarmTimeEnabled.isChecked()) {
+                    lspApplication.setAlamEnabled(true);
+                } else {
+                    lspApplication.setAlamEnabled(false);
+                }
+
                 lspApplication.startProfiling();
                 //lspApplication.getFitnessResolver().connect();
                 updateStatus();
@@ -232,27 +257,6 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
             } else if (v.getId() == R.id.bTCallLog) {
-                /*
-                if (connection.sendPing(10000)) {
-                    Toast.makeText(getApplicationContext(), "PONG", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "No PONG!!!", Toast.LENGTH_SHORT).show();
-                }
-                */
-                /*
-                DumpsysResolver dumpsysResolver = new DumpsysResolver();
-                dumpsysResolver.doWriteDumpAsync("");
-                dumpsysResolver.joinDumpAsync(1000 * 10);
-                */
-                // dumpsy
-/*
-                AsyncTask.execute(new Runnable() {
-                    public void run() {
-                        lspApplication.getReporter().collectFitnessReport(1000 * 30);
-                    }
-                });
-*/
-
                 Log.i(TAG, "onClick btBackupLog end");
 
                 if (pop) {
@@ -278,6 +282,15 @@ public class MainActivity extends ActionBarActivity {
                 }
             } else if (v.getId() == R.id.bTResetLog) {
                 lspApplication.resetLog();
+            } else if (v.getId() == R.id.bTAlarmTime) {
+                int alarmTime[] = lspApplication.getAlarmTime();
+                new TimePickerDialog(MainActivity.this, timeSetListener, alarmTime[0], alarmTime[1], false).show();
+            } else if (v.getId() == R.id.tgAlarmEnable) {
+                if (tgAlarmTimeEnabled.isChecked()) {
+                    lspApplication.setAlamEnabled(true);
+                } else {
+                    lspApplication.setAlamEnabled(false);
+                }
             }
         }
     }
@@ -315,4 +328,14 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
+    private TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            // TODO Auto-generated method stub
+            String msg = String.format(" %d / %d", hourOfDay, minute);
+            Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+            lspApplication.setAlarmTime(hourOfDay, minute);;
+            updateStatus();
+        }
+    };
 }

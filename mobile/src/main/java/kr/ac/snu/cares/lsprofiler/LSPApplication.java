@@ -1,12 +1,16 @@
 package kr.ac.snu.cares.lsprofiler;
 
 import android.app.Application;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.database.ContentObserver;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
@@ -94,8 +98,11 @@ public class LSPApplication extends Application {
         super.onCreate();
         Log.i(TAG, "onCreate()");
         Context context = getApplicationContext();
+        cr = getContentResolver();
         prefMgr = LSPPreferenceManager.getInstance(context);
         wearLoggingEnabled = prefMgr.getWearEnabled();
+        int alarmTime[] = prefMgr.getAlarmTime();
+        boolean bAlarmEnabled = prefMgr.getAlarmEnabled();
 
         dbHandler = new LogDbHandler(context);
         lspLog = new LSPLog(context);
@@ -103,6 +110,9 @@ public class LSPApplication extends Application {
         receiverManager = new ReceiverManager(context);
         locationTracer = new LocationTracer(context);
         alarmManager = LSPAlarmManager.getInstance(context);
+        alarmManager.setAlarmTime(alarmTime[0], alarmTime[1]);
+        alarmManager.setAlarmEnabled(bAlarmEnabled);
+
         klogAlarmManager = KlogAlarmManager.getInstance(context);
 
         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -204,17 +214,37 @@ public class LSPApplication extends Application {
         startKernelLog();
     }
 
+    private final Uri SCREEN_OFF_TIMEOUT_URI
+            = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT);
+    ContentResolver cr = null;
+    SettingsObserver observer = null;
+
     public void resumeLogging() {
         showToast("resumeLogging()");
         Log.i(TAG, "resumeLogging()");
+        int timeout = 0;
+
+        try {
+            timeout = Settings.System.getInt(cr, Settings.System.SCREEN_OFF_TIMEOUT);
+        } catch (Exception ex) {
+            lspLog.onException(ex);
+        }
         state = State.resumed;
         try {
             lspLog.resumeLogging();
+            alarmManager.setAlarmEnabled(prefMgr.getAlarmEnabled());
             alarmManager.setFirstAlarmIfNotSetted();
             klogAlarmManager.setFirstAlarmIfNotSetted();
             receiverManager.registerReceivers();
             if (bLocationTracerEnabled)
                 locationTracer.startTrace();
+            if (handler == null)
+                handler = new Handler();
+            observer = new SettingsObserver(handler);
+            if (cr == null)
+                cr = getContentResolver();
+            cr.registerContentObserver(SCREEN_OFF_TIMEOUT_URI, true, observer);
+            FileLogWritter.writeString("resumeLogging()");
         }catch (Exception ex) {
             FileLogWritter.writeException(ex);
         }
@@ -223,6 +253,7 @@ public class LSPApplication extends Application {
             LSPNotificationService.startSelf(this);
             Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
             LSPLog.onTextMsg("resumeLogging ds=" + display.getState());
+            lspLog.onScreenTimeoutChanged(timeout);
             BtLogResolver.enableBtLog();
         } catch (Exception ex) {
             FileLogWritter.writeException(ex);
@@ -232,6 +263,8 @@ public class LSPApplication extends Application {
     public void pauseLogging(String msg) {
         showToast("pauseLogging()");
         Log.i(TAG, "pauseLogging()");
+        FileLogWritter.writeString("pauseLogging()");
+        klogAlarmManager.clearAlarm();
         if (state != State.resumed) {
             Log.i(TAG, "pauseLogging() : not resumed");
             return;
@@ -242,6 +275,9 @@ public class LSPApplication extends Application {
         LSPNotificationService.stopSelf(this);
         LSPLog.onTextMsg("pauseLogging " + msg);
         BtLogResolver.disableBtLog();
+        if (cr != null) {
+            cr.unregisterContentObserver(observer);
+        }
         lspLog.pauseLogging();
     }
 
@@ -339,5 +375,48 @@ public class LSPApplication extends Application {
             Toast.makeText(LSPApplication.getInstance(), msg, Toast.LENGTH_SHORT).show();
         else
             handler.post(new ToastMsgThread(msg));
+    }
+
+    public void setAlarmTime(int hour, int min) {
+        prefMgr.setAlarmTime(hour, min);
+        alarmManager.setAlarmTime(hour, min);
+    }
+
+    public int[] getAlarmTime() {
+        return prefMgr.getAlarmTime();
+    }
+
+    public void setAlamEnabled(boolean bEnabled) {
+        prefMgr.setAlarmEnabled(bEnabled);
+        alarmManager.setAlarmEnabled(bEnabled);;
+        if (bEnabled && state == State.resumed) {
+            alarmManager.setFirstAlarmIfNotSetted();
+        }
+    }
+
+    public boolean getAlarmEnabled() {
+        return prefMgr.getAlarmEnabled();
+    }
+
+    class SettingsObserver extends ContentObserver{
+        private final Uri SCREEN_OFF_TIMEOUT_URI
+                = Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT);
+
+        SettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        @Override public void onChange(boolean selfChange, Uri uri) {
+            update(uri);
+        }
+
+        public void update(Uri uri) {
+            if (cr == null) return;
+            /* LSP start */
+            int timeout = Settings.System.getInt(cr, Settings.System.SCREEN_OFF_TIMEOUT, 30);
+            LSPLog.onScreenTimeoutChanged(timeout);
+            /* LSP end */
+
+        }
     }
 }
