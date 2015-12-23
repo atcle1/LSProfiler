@@ -5,7 +5,7 @@ import android.util.Log;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -14,23 +14,45 @@ import java.util.Date;
 public class FileLogWritter {
     public static final String TAG = FileLogWritter.class.getSimpleName();
     public static final String LOG_PATH = "/sdcard/LSP/";
-    public static final String LOG_FILE_NAME = "filelog.txt";
+    public static String LOG_FILE_NAME = null;
     private static File logfile;
     private static BufferedWriter bufferWritter;
 
-    public static void writeString(String msg) {
+    public static void makeFileLogFile() {
         try {
-            Log.e(TAG, "FileLogWritter : " + msg);
-            logfile = new File(LOG_PATH + LOG_FILE_NAME);
-            if (logfile == null) {
-                return;
+            SimpleDateFormat transFormat = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+            if (LOG_FILE_NAME == null) {
+                // just, once
+                LOG_FILE_NAME = transFormat.format(new Date()) + ".filelog.txt";
             }
+            logfile = new File(LOG_PATH + LOG_FILE_NAME);
+
             if (!logfile.exists()) {
+                // 1. check dirs
                 File dir = new File(LOG_PATH);
                 if (!dir.exists())
                     dir.mkdirs();
+
+                // 2. make new logfile
+                LOG_FILE_NAME = transFormat.format(new Date()) + ".filelog.txt";
+                logfile = new File(LOG_PATH + LOG_FILE_NAME);
                 logfile.createNewFile();
             }
+        }catch(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    public static void writeString(String msg) {
+        try {
+            Log.e(TAG, "FileLogWritter : " + msg);
+
+            makeFileLogFile();
+
+            //logfile = new File
+            if (logfile == null) {
+                return;
+            }
+
             FileWriter fw = new FileWriter(logfile, true);
             BufferedWriter bufferWritter = new BufferedWriter(fw);
             bufferWritter.write(Util.getTimeStringFromSystemMillis((System.currentTimeMillis())) + "\n");

@@ -151,6 +151,14 @@
                     android:visibility="invisible"
                     android:layout_gravity="center_horizontal"/>
 
+                <Button
+                    android:id="@+id/bTPing"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="25sp"
+                    android:text="Ping"
+                    android:layout_gravity="center_horizontal"/>
+
 
             </LinearLayout>
 

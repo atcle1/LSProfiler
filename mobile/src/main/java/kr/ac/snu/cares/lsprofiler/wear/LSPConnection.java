@@ -61,6 +61,7 @@ public class LSPConnection implements GoogleApiClient.ConnectionCallbacks,
     }
 
     private boolean isWatch(String name) {
+        Log.i(TAG, "isWatch " + name);
         if (name.contains("G Watch R") || name.contains("Urbane")) {
             return true;
         }

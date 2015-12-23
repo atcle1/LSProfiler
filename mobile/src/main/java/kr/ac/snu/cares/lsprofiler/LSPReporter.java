@@ -8,7 +8,6 @@ import android.util.Log;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.email.Mail;
@@ -456,7 +455,9 @@ public class LSPReporter {
             }catch(Exception ex) {
                 FileLogWritter.writeException(ex);
             } finally {
-                LSPApplication.getInstance().resumeLogging();
+                // resume logging after report
+                if (LSPApplication.bStopAfterReport == false)
+                    LSPApplication.getInstance().resumeLogging();
                 wl.release();
             }
             return null;

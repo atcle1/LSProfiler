@@ -20,7 +20,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i(TAG, "onReceive() "+context.getPackageName());
-
+        LSPApplication.bStopAfterReport = false;
         if (LSPAlarmManager.nextAlarmTimeMillis < System.currentTimeMillis() - 1000 * 60 * 60) {
             Log.i(TAG, "alarm expired more then 1 hour, ignored " + LSPAlarmManager.nextAlarmTimeMillis + " < " + (System.currentTimeMillis() - 1000 * 60 * 60));
             LSPAlarmManager.getInstance(context).setFirstAlarm();

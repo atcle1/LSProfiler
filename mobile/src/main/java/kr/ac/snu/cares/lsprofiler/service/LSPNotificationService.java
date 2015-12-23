@@ -64,6 +64,7 @@ public class LSPNotificationService extends NotificationListenerService{
 
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn) {
+        /*
         Log.i(TAG, "onNotificationRemoved()");
         LSPLog.onNotificationRemoved(sbn);
         Notification notification = sbn.getNotification();
@@ -73,6 +74,7 @@ public class LSPNotificationService extends NotificationListenerService{
         } else {
             Log.i(TAG, "delete intent is null");
         }
+        */
     }
 
     @Override

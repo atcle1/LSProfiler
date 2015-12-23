@@ -122,6 +122,7 @@ public class MainActivity extends ActionBarActivity {
         setButton(R.id.bTRoot, btClickListener);
         setButton(R.id.bTResetLog, btClickListener);
         setButton(R.id.bTAlarmTime, btClickListener);
+        setButton(R.id.bTPing, btClickListener);
 
         /*
         daemonClientThread = new HandlerThread("daemon client thread");
@@ -257,6 +258,8 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
             } else if (v.getId() == R.id.bTCallLog) {
+
+
                 Log.i(TAG, "onClick btBackupLog end");
 
                 if (pop) {
@@ -272,6 +275,10 @@ public class MainActivity extends ActionBarActivity {
                 boolean isRooted = Su.isRooted();
                 Toast.makeText(getApplicationContext(), "Rooted : "+isRooted, Toast.LENGTH_SHORT).show();
             } else if (v.getId() == R.id.bTBackupLog) {
+                if (lspApplication.state == LSPApplication.State.stopped)
+                    LSPApplication.bStopAfterReport = true;
+                else
+                    LSPApplication.bStopAfterReport = false;
                 ReportThread reportThread = new ReportThread();
                 reportThread.start();
             } else if (v.getId() == R.id.tgWearEnable) {
@@ -291,6 +298,8 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     lspApplication.setAlamEnabled(false);
                 }
+            } else if (v.getId() == R.id.bTPing) {
+                lspApplication.sendPing();
             }
         }
     }
@@ -317,7 +326,7 @@ public class MainActivity extends ActionBarActivity {
         mBuilder.setContentIntent(pendingIntent);
         mBuilder.setAutoCancel(true);
 
-        mBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
+        //mBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
 
         nm.notify(111, mBuilder.build());
     }

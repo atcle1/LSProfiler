@@ -1,7 +1,6 @@
 package kr.ac.snu.cares.lsprofiler;
 
 import android.app.Notification;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,19 +9,11 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.RemoteViews;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import kr.ac.snu.cares.lsprofiler.db.LogDbHandler;
 import kr.ac.snu.cares.lsprofiler.util.FileLogWritter;
@@ -292,7 +283,7 @@ public class LSPLog {
             if (packName.equals("android") || packName.equals("com.android.vending") ||
                     packName.equals("com.android.systemui") || packName.equals("com.google.android.gms"))
                 bEnc = false;
-            // bEnc = false;
+             //bEnc = false;
 
 /*
             if (!title.equals("") && bEnc)
@@ -312,7 +303,13 @@ public class LSPLog {
             //private static final int EVENTLOG_ENQUEUE_STATUS_IGNORED = 2;
 
 
-            logBuilder.append(sbn.getKey() +  ";ing=" + sbn.isOngoing()+";cl="+sbn.isClearable());
+            logBuilder.append(sbn.getKey());
+            if (sbn.getGroupKey() != null && !sbn.getGroupKey().equals(sbn.getKey())) {
+                logBuilder.append(";gkey=" + sbn.getGroupKey());
+            }
+            logBuilder.append(";ing=" + sbn.isOngoing()+";cl="+sbn.isClearable());
+            //public static final int FLAG_LOCAL_ONLY         = 0x00000100;
+            logBuilder.append(";flags=0x" + Integer.toHexString(sbn.getNotification().flags));
 
             logBuilder.append(";bEnc="+bEnc);
             try {
@@ -420,6 +417,7 @@ public class LSPLog {
             }catch (Exception ex) {}
         }
 
+
         if (extras.containsKey("android.subText")) {
             try {
                 if (extras.get("android.subText") != null) {
@@ -513,7 +511,7 @@ public class LSPLog {
         }
 
 
-        /*
+
         if (extras != null) {
             for (String key : extras.keySet()) {
                 Object value = extras.get(key);
@@ -521,7 +519,7 @@ public class LSPLog {
                     Log.d(TAG, String.format("Extras - %s : %s (%s)\n", key, value.toString(), value.getClass().getName()));
             }
         }
-        */
+
 
     }
 

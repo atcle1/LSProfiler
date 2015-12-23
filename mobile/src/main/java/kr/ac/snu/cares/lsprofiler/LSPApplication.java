@@ -92,6 +92,7 @@ public class LSPApplication extends Application {
     private WatchDog watchDog;
 
     private boolean bRoot = false;
+    public static boolean bStopAfterReport = false;
 
     @Override
     public void onCreate() {
@@ -418,5 +419,9 @@ public class LSPApplication extends Application {
             /* LSP end */
 
         }
+    }
+
+    public void sendPing() {
+        connection.sendPing(1000);
     }
 }
