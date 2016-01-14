@@ -336,7 +336,7 @@ public class LSPLog {
             int ledOff = notification.ledOffMS;
             int ledOn = notification.ledOnMS;
             int rgb = notification.ledARGB;
-            if (ledOff !=0 || ledOn != 0) {
+            if (ledOff !=0 || ledOn != 0 || rgb != 0) {
                 logBuilder.append(";led=" + rgb + ";ledOn=" + ledOn +";ledOff=" + ledOff);
             }
 
@@ -365,9 +365,11 @@ public class LSPLog {
     }
 
     public static boolean containsAD(String str) {
+        /*
         if (str != null && str.contains("광고")) {
             return true;
         }
+        */
         return false;
     }
     public static void extrasAnalysis(StringBuilder logBuilder, Notification notification, boolean bEnc) {
@@ -740,7 +742,7 @@ public class LSPLog {
     }
 
     public static void onNotification(Intent intent){
-        if(!bWriteLog) return;
+        //if(!bWriteLog) return;
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             String strDT = Util.getTimeStringFromSystemMillis((bundle.getLong("time")));
